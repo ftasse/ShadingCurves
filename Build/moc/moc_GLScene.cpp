@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'GLScene.h'
 **
-** Created: Tue Feb 5 18:00:29 2013
+** Created: Tue Feb 5 19:10:41 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!

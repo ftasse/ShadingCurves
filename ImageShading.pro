@@ -20,13 +20,15 @@ SOURCES += main.cpp\
     Utilities/ImageUtils.cpp \
     Views/GraphicsView.cpp \
     Views/GLScene.cpp \
-    Curve/ControlPoint.cpp
+    Curve/ControlPoint.cpp \
+    Curve/BSpline.cpp
 
 HEADERS  += mainwindow.h \
     Utilities/ImageUtils.h \
     Views/GraphicsView.h \
     Views/GLScene.h \
-    Curve/ControlPoint.h
+    Curve/ControlPoint.h \
+    Curve/BSpline.h
 
 FORMS    += mainwindow.ui
 
