@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
+#include <QDesktopWidget>
+
+#include "Views/GLScene.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -8,10 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     //Setup
     ui->setupUi(this);
-    scene = new QGraphicsScene ();
-    ui->graphicsView->setScene(scene);
-
-    imageItem = NULL;
+    center();
 
     //Connections
     connect(ui->actionOpen_Image, SIGNAL(triggered()), this, SLOT(loadImage()));
@@ -19,16 +19,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    if (imageItem != NULL)  delete imageItem;
-    delete scene;
     delete ui;
 }
 
-void MainWindow::setupImageView()
+void MainWindow::center()
 {
-    imageItem = new GraphicsImageItem();
-    imageItem->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
-    scene->addItem(imageItem);
+    QRect position = frameGeometry();
+    position.moveCenter(QDesktopWidget().availableGeometry().center());
+    move(position.topLeft());
 }
 
 void MainWindow::loadImage()
@@ -49,5 +47,11 @@ void MainWindow::loadImage()
 
 void MainWindow::loadImage(std::string imageLocation)
 {
-    if (imageItem != NULL)  imageItem->loadImage(imageLocation);
+    GLScene *scene = (GLScene *) ui->graphicsView->scene();
+    if (scene->openImage(imageLocation))
+    {
+        qDebug("Image loaded: %d %d", scene->currentImage().cols, scene->currentImage().rows);
+        resize(scene->currentImage().cols + 10, scene->currentImage().rows + 10);
+        center();
+    }
 }

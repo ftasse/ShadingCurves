@@ -11,6 +11,7 @@
 #define IMAGE_EXT ".tiff"
 
 std::string imageLocationWithID(std::string imageID);
+cv::Mat loadImage(std::string fname);
 cv::Mat loadImageWithID(std::string imageID);
 void displayImageWithID(std::string imageID);
 

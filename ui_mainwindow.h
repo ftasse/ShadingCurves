@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Thu Jan 31 21:38:21 2013
-**      by: Qt User Interface Compiler version 4.8.3
+** Created: Tue Feb 5 18:20:14 2013
+**      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -14,7 +14,6 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
-#include <QtGui/QGraphicsView>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QMainWindow>
@@ -23,6 +22,7 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QToolBar>
 #include <QtGui/QWidget>
+#include "Views/GraphicsView.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -33,7 +33,7 @@ public:
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout_2;
     QHBoxLayout *horizontalLayout;
-    QGraphicsView *graphicsView;
+    GraphicsView *graphicsView;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QToolBar *mainToolBar;
@@ -44,6 +44,7 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(400, 300);
+        MainWindow->setAutoFillBackground(true);
         actionOpen_Image = new QAction(MainWindow);
         actionOpen_Image->setObjectName(QString::fromUtf8("actionOpen_Image"));
         centralWidget = new QWidget(MainWindow);
@@ -55,7 +56,7 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        graphicsView = new QGraphicsView(centralWidget);
+        graphicsView = new GraphicsView(centralWidget);
         graphicsView->setObjectName(QString::fromUtf8("graphicsView"));
 
         horizontalLayout->addWidget(graphicsView);

@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
-#include "Views/GraphicsImageItem.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,12 +18,9 @@ public:
     
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene * scene;
-    GraphicsImageItem *imageItem;
-
-    void setupImageView();
 
 public slots:
+    void center();
     void loadImage();
     void loadImage(std::string imageLocation);
 };

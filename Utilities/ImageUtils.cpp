@@ -11,15 +11,20 @@ std::string imageLocationWithID(std::string imageID)
     return location;
 }
 
+cv::Mat loadImage(std::string fname)
+{
+    cv::Mat image = cv::imread(fname);
+    if (image.cols == 0)
+    {
+        qDebug("Could not load image: %s", fname.c_str());
+    }
+    return image;
+}
+
 cv::Mat loadImageWithID(std::string imageID)
 {
     std::string location = imageLocationWithID(imageID);
-    cv::Mat image = cv::imread(location);
-    if (image.cols == 0)
-    {
-        qDebug("Could not load image: %s", location.c_str());
-    }
-    return image;
+    return loadImage(location);
 }
 
 void displayImageWithID(std::string imageID)

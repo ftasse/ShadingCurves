@@ -7,7 +7,10 @@ class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit GraphicsView(QObject *parent = 0);
+    explicit GraphicsView(QWidget *parent);
+
+protected:
+    void resizeEvent(QResizeEvent *event);
     
 signals:
     
