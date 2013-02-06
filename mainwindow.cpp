@@ -11,14 +11,21 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     //Setup
     ui->setupUi(this);
-    center();
+    scene = new GLScene ();
+    ui->graphicsView->setScene(scene);
 
     //Connections
-    connect(ui->actionOpen_Image, SIGNAL(triggered()), this, SLOT(loadImage()));
+    connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
+    connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));
+    connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));
+    connect(ui->actionSave_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(saveCurves()));
+
+    connect(ui->actionCreate_BSpline, SIGNAL(triggered()), ui->graphicsView, SLOT(create_bspline()));
 }
 
 MainWindow::~MainWindow()
 {
+    delete scene;
     delete ui;
 }
 
@@ -27,31 +34,4 @@ void MainWindow::center()
     QRect position = frameGeometry();
     position.moveCenter(QDesktopWidget().availableGeometry().center());
     move(position.topLeft());
-}
-
-void MainWindow::loadImage()
-{
-    QFileDialog::Options options;
-    QString selectedFilter;
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                    tr("Open Image Files"),
-                                    "",
-                                    tr("Image files (*.jpg *.jpeg *.png *.gif *.bmp)"),
-                                    &selectedFilter,
-                                    options);
-    if (!fileName.isEmpty())
-    {
-        loadImage(fileName.toStdString());
-    }
-}
-
-void MainWindow::loadImage(std::string imageLocation)
-{
-    GLScene *scene = (GLScene *) ui->graphicsView->scene();
-    if (scene->openImage(imageLocation))
-    {
-        qDebug("Image loaded: %d %d", scene->currentImage().cols, scene->currentImage().rows);
-        resize(scene->currentImage().cols + 10, scene->currentImage().rows + 10);
-        center();
-    }
 }

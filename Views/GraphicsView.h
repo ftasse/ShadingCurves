@@ -15,6 +15,11 @@ protected:
 signals:
     
 public slots:
+    void create_bspline();
+    void loadImage();
+    void saveImage();
+    void loadCurves();
+    void saveCurves();
     
 };
 

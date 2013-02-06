@@ -41,8 +41,19 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Image"/>
+    <addaction name="actionSave_Image"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Curves"/>
+    <addaction name="actionSave_Curves"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionCreate_BSpline"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -56,6 +67,26 @@
   <action name="actionOpen_Image">
    <property name="text">
     <string>Open Image</string>
+   </property>
+  </action>
+  <action name="actionCreate_BSpline">
+   <property name="text">
+    <string>Create BSpline</string>
+   </property>
+  </action>
+  <action name="actionSave_Image">
+   <property name="text">
+    <string>Save Image</string>
+   </property>
+  </action>
+  <action name="actionOpen_Curves">
+   <property name="text">
+    <string>Open Curves</string>
+   </property>
+  </action>
+  <action name="actionSave_Curves">
+   <property name="text">
+    <string>Save Curves</string>
    </property>
   </action>
  </widget>

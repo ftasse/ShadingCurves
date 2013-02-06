@@ -2,28 +2,41 @@
 #define BSPLINE_H
 
 #include <vector>
+#include <QPainterPath>
 #include "Curve/ControlPoint.h"
+
+class BSplineGroup;
 
 class BSpline
 {
 public:
     BSpline();
 
-    std::vector<int>& controlPointsRefs()
+    //Drawing
+    void updatePath();
+
+    //Utilites
+    QPointF pointAt(int index);
+    QPointF nextMiddlePoint(int index);
+
+    QPainterPath& path()
     {
-        return m_cptsRefs;;
+        return m_path;
     }
 
-    ControlPoint pointAt(int i)
+    int count()
     {
-        return (*cptsPtr)[ m_cptsRefs[i] ];
+        return connected_cpts.size();
     }
 
 public:
-    std::vector<ControlPoint> *cptsPtr;
+    BSplineGroup *m_splineGroup;
+    QList<int> connected_cpts;
+    int idx;
 
 private:
-    std::vector<int> m_cptsRefs;
+    QPainterPath m_path;
+    bool is_valid;
 };
 
 #endif // BSPLINE_H

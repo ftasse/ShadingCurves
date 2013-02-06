@@ -1,18 +1,20 @@
 #include "ControlPoint.h"
+#include "Curve/BSplineGroup.h"
 
-ControlPoint::ControlPoint(float x, float y) :
-    std::vector<float>(2, 0.0)
+ControlPoint::ControlPoint():
+    QPointF(), idx(-1)
 {
-    this->data()[0] = x;
-    this->data()[1] = y;
 }
 
-float ControlPoint::x()
+ControlPoint::ControlPoint(QPointF val):
+    QPointF(val), idx(-1)
 {
-    return this->data()[0];
+
 }
 
-float ControlPoint::y()
+
+BSpline& ControlPoint::splineAt(int index)
 {
-    return this->data()[1];
+    int spline_idx = connected_splines[index];
+    return m_splineGroup->spline(spline_idx);
 }

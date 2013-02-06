@@ -1,7 +1,8 @@
 #include <QPainter>
 #include <QPaintEngine>
+#include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
-#include <QGraphicsRectItem>
+#include <QKeyEvent>
 #include <GL/glu.h>
 #include <algorithm>
 
@@ -10,119 +11,121 @@
 GLScene::GLScene(QObject *parent) :
     QGraphicsScene(parent)
 {
-    m_curBsplineIndex = -1;
+    m_curSplineIdx = -1;
+    m_sketchmode = IDLE_MODE;
+    imageItem = NULL;
 }
 
 GLScene:: ~GLScene()
 {
+    if (imageItem) delete imageItem;
 }
 
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    int cptRef = registerPointAtScenePos(event->scenePos());
-    if (cptRef < 0)
-        return;
-
-    if (m_curBsplineIndex < 0)
+    if (m_sketchmode == ADD_CURVE_MODE)
     {
-        createBSpline();
-        m_curBsplineIndex = m_curves.size() - 1;
+        int cptRef = registerPointAtScenePos(event->scenePos());
+        if (cptRef < 0)
+            return;
+
+        if (m_curSplineIdx < 0)
+        {
+            createBSpline();
+        }
+
+        if (m_splineGroup.addControlPoint(m_curSplineIdx, cptRef))
+        {
+            updateCurveItem(m_curSplineIdx);
+        }
+    } else
+    {
+        QGraphicsScene::mousePressEvent(event);
     }
+}
 
-    BSpline& bspline = m_curves[m_curBsplineIndex];
-    std::vector<int>& cptRefs = bspline.controlPointsRefs();
-
-    if (std::find(cptRefs.begin(), cptRefs.end(), cptRef) == cptRefs.end())
+void GLScene::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Delete)
     {
-        bspline.controlPointsRefs().push_back(cptRef);
+        for (int i=0; i<pointItems.size();)
+        {
+
+            /*TODO Flora
+              Deletion is buggy.
+              Need to reassign indexes properly,
+              */
+            if (pointItems[i]->isSelected())
+            {
+                QList<int> itemsToUpdate;
+                for (int k=0; k<pointItems[i]->point.count(); ++k)
+                {
+                    itemsToUpdate.append(pointItems[i]->point.splineAt(k).idx);
+                }
+                removeItem(pointItems[i]);
+                m_splineGroup.removeControlPoint(pointItems[i]->point.idx);
+
+                pointItems.removeAt(i);
+                for (int k=0; k<itemsToUpdate.size(); ++k)
+                {
+                    updateCurveItem(itemsToUpdate.at(k));
+                }
+
+            } else
+            {
+                 ++i;
+            }
+        }
         update();
+
+    } else if (m_sketchmode == ADD_CURVE_MODE)
+    {
+        switch(event->key())
+        {
+            case Qt::Key_Enter:
+            case Qt::Key_Return:
+            {
+                m_sketchmode = IDLE_MODE;
+                break;
+            }
+            default:
+                break;
+        }
+
+    } else
+    {
+        QGraphicsScene::keyPressEvent(event);
     }
 }
 
 void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    if (painter->paintEngine()->type() != QPaintEngine::OpenGL) {
-        qWarning("GLScene: drawBackground needs a "
-                 "QGLWidget to be set as viewport on the "
-                 "graphics view");
-        return;
-    }
-
-    glClearColor(1.0, 1.0, 1.0, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, 1.0, 1.0, 0, -1.0, 1.0);
-
-    drawImage(m_curImage);
-}
-
-void GLScene::drawImage(cv::Mat& image)
-{
-    glColor3d(1.0, 1.0, 1.0);
-    glEnable( GL_TEXTURE_2D );
-
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
-
-    // Set texture interpolation methods for minification and magnification
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Set texture clamping method
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    GLenum inputColourFormat = GL_BGR;
-    if (image.channels() == 1)  inputColourFormat = GL_LUMINANCE;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, 3,image.cols, image.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, image.data);
-
-    //glBindTexture(GL_TEXTURE_2D, texture[index]);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0.0f, 1.0f);
-
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(1.0f, 1.0f);
-
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(1.0f, 0.0f);
-
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0.0f, 0.0f);
-    glEnd();
-
-    glDeleteTextures(1, &texId);
+    QGraphicsScene::drawBackground(painter, rect);
 }
 
 void GLScene::createBSpline()
 {
-    BSpline bspline;
-    bspline.cptsPtr = &m_cpts;
-    m_curves.push_back(bspline);
+    m_curSplineIdx = m_splineGroup.addBSpline();
+    addCurveItem(m_curSplineIdx);
+    m_sketchmode = ADD_CURVE_MODE;
 }
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
-    qDebug("Selected: %.2f %.2f", scenePos.x(), scenePos.y());
-
-    /*TODO Flora
-        Need to transform these coordinates so that they are indespedent of the scene size
-        Need to check if the point is already added
-     */
-
-    QGraphicsRectItem pointItem;
-    pointItem.setRect(scenePos.x() - 5, scenePos.y() - 5, 10, 10);
-    pointItem.setVisible(true);
-    pointItem.setBrush(QBrush(Qt::black));
-    addItem(&pointItem);
-    pointItem.setPos(scenePos);
-
-    ControlPoint cpt(scenePos.x(), scenePos.y());
-    m_cpts.push_back(cpt);
-    return m_cpts.size() - 1;
+    QGraphicsItem *item = itemAt(scenePos.x(), scenePos.y());
+    if (item)
+    {
+        for (int i=0; i<pointItems.size(); ++i)
+        {
+            if (item == pointItems[i])
+            {
+                return pointItems[i]->point.idx;
+            }
+        }
+    }
+    int pointIdx = m_splineGroup.addControlPoint(scenePos);
+    addPointItem(pointIdx);
+    return pointIdx;
 }
 
 bool GLScene::openImage(std::string fname)
@@ -133,7 +136,18 @@ bool GLScene::openImage(std::string fname)
     if (image.cols > 0)
     {
         m_curImage = image;
-        update();
+
+        QImage::Format format = QImage::Format_RGB888;
+        QImage img_qt = QImage((const unsigned char*)m_curImage.data,
+                                m_curImage.cols, m_curImage.rows,
+                                m_curImage.step, format);
+        img_qt = img_qt.rgbSwapped();
+        QPixmap pixmap = QPixmap::fromImage(img_qt);
+        if (!imageItem)  imageItem = addPixmap(pixmap);
+        else imageItem->setPixmap(pixmap);
+
+        setSceneRect(0, 0, m_curImage.cols, m_curImage.rows);
+
         return true;
     }
     else
@@ -145,13 +159,101 @@ void GLScene::saveImage(std::string fname)
     cv::imwrite(fname, m_curImage);
 }
 
-bool GLScene::openCurve(std::string fname)
+bool GLScene::openCurves(std::string fname)
 {
-    //TODO
-    return false;
+    if (m_splineGroup.load(fname))
+    {
+        for (int i=0; i<m_splineGroup.num_controlPoints(); ++i)
+        {
+            addPointItem(i);
+        }
+        for (int i=0; i<m_splineGroup.num_splines(); ++i)
+        {
+            addCurveItem(i);
+        }
+        return true;
+
+    } else
+    {
+        return false;
+    }
 }
 
-void GLScene::saveCurve(std::string fname)
+void GLScene::saveCurves(std::string fname)
 {
-    //TODO
+    m_splineGroup.save(fname);
+}
+
+void GLScene::addCurveItem(int cid)
+{
+    BSpline &bspline = m_splineGroup.spline(cid);
+    SplinePathItem *curveItem = new SplinePathItem(bspline);
+    curveItem->setPath(bspline.path());
+    /*curveItem->setFlags(QGraphicsItem::ItemIsMovable |
+                        QGraphicsItem::ItemIsSelectable |
+                        QGraphicsItem::ItemSendsScenePositionChanges);*/
+    addItem(curveItem);
+    curveItems.push_back(curveItem);
+}
+
+void GLScene::updateCurveItem(int cid)
+{
+    for (int i=0; i<curveItems.size(); ++i)
+    {
+        SplinePathItem *curveItem = curveItems.at(i);
+        if (curveItem->spline.idx == cid)
+        {
+            curveItem->setPath(curveItem->spline.path());
+            break;
+        }
+    }
+}
+
+void GLScene::addPointItem(int pid)
+{
+    ControlPoint& cpt = m_splineGroup.controlPoint(pid);
+    ControlPointItem *pointItem = new ControlPointItem (cpt);
+    pointItem->setRect(-4,-4, 8, 8);
+    pointItem->setPos(cpt.x(), cpt.y());
+    pointItem->setBrush(QBrush(Qt::black));
+    pointItem->setFlags(QGraphicsItem::ItemIsMovable |
+                        QGraphicsItem::ItemIsSelectable |
+                        QGraphicsItem::ItemSendsScenePositionChanges);
+    addItem(pointItem);
+    pointItems.push_back(pointItem);
+}
+
+QVariant SplinePathItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if(change == ItemPositionChange && scene())
+    {
+        //QPointF newPos = value.toPointF();
+    }
+
+    return QGraphicsPathItem::itemChange(change, value);
+}
+
+QVariant ControlPointItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if(change == ItemPositionHasChanged && scene())
+    {
+        QPointF newPos = scenePos();
+        {
+            GLScene *my_scene = (GLScene *)scene();
+            /*qDebug("%f  %f <-- %f %f / %f %f", newPos.x(), newPos.y(),
+                   cpt.x(), cpt.y(),
+                   x(), y());*/
+            point.setX(newPos.x());
+            point.setY(newPos.y());
+
+            for (int i=0; i<point.count(); ++i)
+            {
+                point.splineAt(i).updatePath();
+                my_scene->updateCurveItem(point.splineAt(i).idx);
+            }
+            my_scene->update();
+        }
+    }
+
+    return QGraphicsEllipseItem::itemChange(change, value);
 }

@@ -1,15 +1,32 @@
 #ifndef CONTROLPOINT_H
 #define CONTROLPOINT_H
 
-#include <vector>
+#include <QList>
+#include <QPointF>
+#include "Curve/BSpline.h"
 
-class ControlPoint : public std::vector<float>
+class BSplineGroup;
+
+class ControlPoint : public QPointF
 {
 public:
-    ControlPoint(float x = 0.0f, float y = 0.0f);
+    ControlPoint();
+    ControlPoint(QPointF val);
 
-    float x();
-    float y();
+    BSpline& splineAt(int index);
+
+    int count()
+    {
+        return connected_splines.size();
+    }
+
+public:
+    BSplineGroup *m_splineGroup;
+    QList<int> connected_splines;
+    int idx;
+
+private:
+    bool is_valid;
 };
 
 #endif // CONTROLPOINT_H

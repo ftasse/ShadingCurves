@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Tue Feb 5 19:06:17 2013
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Wed Feb 6 16:13:01 2013
+**      by: Qt User Interface Compiler version 4.8.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -30,12 +30,17 @@ class Ui_MainWindow
 {
 public:
     QAction *actionOpen_Image;
+    QAction *actionCreate_BSpline;
+    QAction *actionSave_Image;
+    QAction *actionOpen_Curves;
+    QAction *actionSave_Curves;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout_2;
     QHBoxLayout *horizontalLayout;
     GraphicsView *graphicsView;
     QMenuBar *menuBar;
     QMenu *menuFile;
+    QMenu *menuEdit;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -47,6 +52,14 @@ public:
         MainWindow->setAutoFillBackground(true);
         actionOpen_Image = new QAction(MainWindow);
         actionOpen_Image->setObjectName(QString::fromUtf8("actionOpen_Image"));
+        actionCreate_BSpline = new QAction(MainWindow);
+        actionCreate_BSpline->setObjectName(QString::fromUtf8("actionCreate_BSpline"));
+        actionSave_Image = new QAction(MainWindow);
+        actionSave_Image->setObjectName(QString::fromUtf8("actionSave_Image"));
+        actionOpen_Curves = new QAction(MainWindow);
+        actionOpen_Curves->setObjectName(QString::fromUtf8("actionOpen_Curves"));
+        actionSave_Curves = new QAction(MainWindow);
+        actionSave_Curves->setObjectName(QString::fromUtf8("actionSave_Curves"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         horizontalLayout_2 = new QHBoxLayout(centralWidget);
@@ -70,6 +83,8 @@ public:
         menuBar->setGeometry(QRect(0, 0, 400, 25));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
+        menuEdit = new QMenu(menuBar);
+        menuEdit->setObjectName(QString::fromUtf8("menuEdit"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -79,7 +94,13 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuEdit->menuAction());
         menuFile->addAction(actionOpen_Image);
+        menuFile->addAction(actionSave_Image);
+        menuFile->addSeparator();
+        menuFile->addAction(actionOpen_Curves);
+        menuFile->addAction(actionSave_Curves);
+        menuEdit->addAction(actionCreate_BSpline);
 
         retranslateUi(MainWindow);
 
@@ -90,7 +111,12 @@ public:
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
         actionOpen_Image->setText(QApplication::translate("MainWindow", "Open Image", 0, QApplication::UnicodeUTF8));
+        actionCreate_BSpline->setText(QApplication::translate("MainWindow", "Create BSpline", 0, QApplication::UnicodeUTF8));
+        actionSave_Image->setText(QApplication::translate("MainWindow", "Save Image", 0, QApplication::UnicodeUTF8));
+        actionOpen_Curves->setText(QApplication::translate("MainWindow", "Open Curves", 0, QApplication::UnicodeUTF8));
+        actionSave_Curves->setText(QApplication::translate("MainWindow", "Save Curves", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
+        menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

@@ -8,8 +8,9 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     w.setWindowTitle("2D Image lighting and shading");
-    //w.loadImage(imageLocationWithID("clouds3.jpg"));
+    w.scene->openImage(imageLocationWithID("bartsimpson.jpg"));
 
-    w.show();
+    w.showMaximized();
     return a.exec();
+    //displayImageWithID("bartsimpson.jpg");
 }
