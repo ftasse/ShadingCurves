@@ -1,14 +1,14 @@
 #include <QResizeEvent>
 #include <QGLWidget>
 #include <QFileDialog>
-#include "Views/GraphicsView.h"
-#include "Views/GLScene.h"
+#include "../Views/GraphicsView.h"
+#include "../Views/GLScene.h"
 
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
-    setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
-    setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
+    /*setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
+    setViewportUpdateMode( QGraphicsView::FullViewportUpdate);*/
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)

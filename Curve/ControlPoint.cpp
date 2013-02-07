@@ -1,6 +1,6 @@
 #include "ControlPoint.h"
-#include "Curve/BSpline.h"
-#include "Curve/BSplineGroup.h"
+#include "../Curve/BSpline.h"
+#include "../Curve/BSplineGroup.h"
 
 ControlPoint::ControlPoint():
     QPointF(), idx(-1)

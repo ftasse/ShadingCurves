@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <QPainterPath>
-#include "Curve/ControlPoint.h"
+#include "../Curve/ControlPoint.h"
 
 class BSplineGroup;
 

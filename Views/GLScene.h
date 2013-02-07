@@ -3,8 +3,8 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
-#include "Utilities/ImageUtils.h"
-#include "Curve/BSplineGroup.h"
+#include "../Utilities/ImageUtils.h"
+#include "../Curve/BSplineGroup.h"
 
 class ControlPointItem;
 class SplinePathItem;
