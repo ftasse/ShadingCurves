@@ -34,9 +34,10 @@ bool BSplineGroup::addControlPoint(int spline_id, int cpt_id)
 
 void BSplineGroup::removeControlPoint(int cpt_id)
 {
-    for (int i=0; i<controlPoint(cpt_id).connected_splines.size(); ++i)
+    ControlPoint& cpt = controlPoint(cpt_id);
+    for (int i=0; i<cpt.connected_splines.size(); ++i)
     {
-        BSpline& spline =  controlPoint(cpt_id).splineAt(i);
+        BSpline& spline =  cpt.splineAt(i);
         for (int k=0; k<spline.count(); )
         {
             if (spline.connected_cpts[k] == cpt_id)
@@ -61,7 +62,13 @@ void BSplineGroup::removeControlPoint(int cpt_id)
 
 void BSplineGroup::removeSpline(int spline_id)
 {
-
+    /*BSpline& spline = spline(spline_id);
+    for (int i=0; i<spline.count(); ++i)
+    {
+        ControlPoint cpt = spline.pointAt(i);
+        //TODO flora
+        // Delete spline from control point;
+    }*/
 }
 
 

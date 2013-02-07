@@ -11,8 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ImageShading
 TEMPLATE = app
 
-MOC_DIR = Build/moc/
-OBJECTS_DIR = Build/obj/
+MOC_DIR = ../imageshading-build/moc/
+OBJECTS_DIR = ../imageshading-build/obj/
 
 
 SOURCES += main.cpp\
@@ -34,4 +34,4 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
+unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU

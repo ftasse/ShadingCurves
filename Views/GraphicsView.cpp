@@ -18,10 +18,23 @@ void GraphicsView::resizeEvent(QResizeEvent *event)
     QGraphicsView::resizeEvent(event);
 }
 
+void GraphicsView::changeControlPointSize(int pointSize)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->pointSize = pointSize;
+    my_scene->updatePointItems();
+}
+
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->createBSpline();
+}
+
+void GraphicsView::move_bsplines()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->sketchmode() = GLScene::IDLE_MODE;
 }
 
 void GraphicsView::loadImage()

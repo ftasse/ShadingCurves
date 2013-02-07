@@ -36,6 +36,11 @@ public:
     {
         return m_curImage;
     }
+
+    SketchMode& sketchmode()
+    {
+        return m_sketchmode;
+    }
     
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect);
@@ -48,6 +53,7 @@ public slots:
     void addCurveItem(int cid);
     void updateCurveItem(int cid);
     void addPointItem(int pid);
+    void updatePointItems();
 
 private:
     cv::Mat m_curImage;
@@ -60,6 +66,7 @@ private:
 
 public:
     BSplineGroup m_splineGroup;
+    float pointSize;
 };
 
 class ControlPointItem : public QGraphicsEllipseItem

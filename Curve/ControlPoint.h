@@ -3,9 +3,9 @@
 
 #include <QList>
 #include <QPointF>
-#include "Curve/BSpline.h"
 
 class BSplineGroup;
+class BSpline;
 
 class ControlPoint : public QPointF
 {
