@@ -15,7 +15,7 @@ void GraphicsView::resizeEvent(QResizeEvent *event)
 {
     /*if (scene())
         scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));*/
-    QGraphicsView::resizeEvent(event);
+    QGraphicsView::resizeEvent(event); // HELLO WORLD!
 }
 
 void GraphicsView::changeControlPointSize(int pointSize)
