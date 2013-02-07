@@ -35,3 +35,6 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
+
+win32:LIBS +=
+win32:INCLUDEPATH +=
