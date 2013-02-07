@@ -3,7 +3,6 @@
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
-#include <GL/glu.h>
 #include <algorithm>
 
 #include "GLScene.h"
@@ -114,7 +113,7 @@ void GLScene::createBSpline()
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
-    QGraphicsItem *item = itemAt(scenePos.x(), scenePos.y());
+    QGraphicsItem *item = itemAt(scenePos.x(), scenePos.y(), QTransform());
     if (item)
     {
         for (int i=0; i<pointItems.size(); ++i)

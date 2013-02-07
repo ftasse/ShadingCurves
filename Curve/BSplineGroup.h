@@ -2,8 +2,8 @@
 #define BSPLINEGROUP_H
 
 #include <QList>
-#include "Curve/ControlPoint.h"
-#include "Curve/BSpline.h"
+#include "../Curve/ControlPoint.h"
+#include "../Curve/BSpline.h"
 
 class BSplineGroup
 {

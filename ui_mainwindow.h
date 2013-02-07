@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created: Thu Feb 7 12:56:30 2013
-**      by: Qt User Interface Compiler version 4.8.1
+** Created: Thu 7. Feb 14:43:19 2013
+**      by: Qt User Interface Compiler version 5.0.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -11,23 +11,23 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QHeaderView>
-#include <QtGui/QLabel>
-#include <QtGui/QMainWindow>
-#include <QtGui/QMenu>
-#include <QtGui/QMenuBar>
-#include <QtGui/QPushButton>
-#include <QtGui/QSlider>
-#include <QtGui/QSplitter>
-#include <QtGui/QStatusBar>
-#include <QtGui/QToolBar>
-#include <QtGui/QToolBox>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QToolBox>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 #include "Views/GraphicsView.h"
 
 QT_BEGIN_NAMESPACE
@@ -62,64 +62,64 @@ public:
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
-            MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
+            MainWindow->setObjectName(QStringLiteral("MainWindow"));
         MainWindow->resize(840, 455);
         MainWindow->setAutoFillBackground(true);
         actionOpen_Image = new QAction(MainWindow);
-        actionOpen_Image->setObjectName(QString::fromUtf8("actionOpen_Image"));
+        actionOpen_Image->setObjectName(QStringLiteral("actionOpen_Image"));
         actionCreate_BSpline = new QAction(MainWindow);
-        actionCreate_BSpline->setObjectName(QString::fromUtf8("actionCreate_BSpline"));
+        actionCreate_BSpline->setObjectName(QStringLiteral("actionCreate_BSpline"));
         actionSave_Image = new QAction(MainWindow);
-        actionSave_Image->setObjectName(QString::fromUtf8("actionSave_Image"));
+        actionSave_Image->setObjectName(QStringLiteral("actionSave_Image"));
         actionOpen_Curves = new QAction(MainWindow);
-        actionOpen_Curves->setObjectName(QString::fromUtf8("actionOpen_Curves"));
+        actionOpen_Curves->setObjectName(QStringLiteral("actionOpen_Curves"));
         actionSave_Curves = new QAction(MainWindow);
-        actionSave_Curves->setObjectName(QString::fromUtf8("actionSave_Curves"));
+        actionSave_Curves->setObjectName(QStringLiteral("actionSave_Curves"));
         centralWidget = new QWidget(MainWindow);
-        centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        centralWidget->setObjectName(QStringLiteral("centralWidget"));
         verticalLayout = new QVBoxLayout(centralWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         widget = new QWidget(centralWidget);
-        widget->setObjectName(QString::fromUtf8("widget"));
+        widget->setObjectName(QStringLiteral("widget"));
         widget->setAutoFillBackground(true);
         horizontalLayout = new QHBoxLayout(widget);
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         splitter = new QSplitter(widget);
-        splitter->setObjectName(QString::fromUtf8("splitter"));
+        splitter->setObjectName(QStringLiteral("splitter"));
         splitter->setOrientation(Qt::Horizontal);
         graphicsView = new GraphicsView(splitter);
-        graphicsView->setObjectName(QString::fromUtf8("graphicsView"));
+        graphicsView->setObjectName(QStringLiteral("graphicsView"));
         splitter->addWidget(graphicsView);
         toolBox = new QToolBox(splitter);
-        toolBox->setObjectName(QString::fromUtf8("toolBox"));
+        toolBox->setObjectName(QStringLiteral("toolBox"));
         toolBox->setAutoFillBackground(true);
         curves_toolbox = new QWidget();
-        curves_toolbox->setObjectName(QString::fromUtf8("curves_toolbox"));
+        curves_toolbox->setObjectName(QStringLiteral("curves_toolbox"));
         curves_toolbox->setGeometry(QRect(0, 0, 177, 297));
         createCurveButton = new QPushButton(curves_toolbox);
-        createCurveButton->setObjectName(QString::fromUtf8("createCurveButton"));
+        createCurveButton->setObjectName(QStringLiteral("createCurveButton"));
         createCurveButton->setGeometry(QRect(40, 10, 51, 27));
         moveCurveButton = new QPushButton(curves_toolbox);
-        moveCurveButton->setObjectName(QString::fromUtf8("moveCurveButton"));
+        moveCurveButton->setObjectName(QStringLiteral("moveCurveButton"));
         moveCurveButton->setGeometry(QRect(100, 10, 61, 27));
         pointSizeSlider = new QSlider(curves_toolbox);
-        pointSizeSlider->setObjectName(QString::fromUtf8("pointSizeSlider"));
+        pointSizeSlider->setObjectName(QStringLiteral("pointSizeSlider"));
         pointSizeSlider->setGeometry(QRect(10, 80, 160, 29));
         pointSizeSlider->setMinimum(1);
         pointSizeSlider->setValue(8);
         pointSizeSlider->setOrientation(Qt::Horizontal);
         label = new QLabel(curves_toolbox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(20, 60, 66, 17));
-        toolBox->addItem(curves_toolbox, QString::fromUtf8("Curves"));
+        toolBox->addItem(curves_toolbox, QStringLiteral("Curves"));
         shading_toolbox = new QWidget();
-        shading_toolbox->setObjectName(QString::fromUtf8("shading_toolbox"));
+        shading_toolbox->setObjectName(QStringLiteral("shading_toolbox"));
         shading_toolbox->setGeometry(QRect(0, 0, 177, 297));
-        toolBox->addItem(shading_toolbox, QString::fromUtf8("Shading"));
+        toolBox->addItem(shading_toolbox, QStringLiteral("Shading"));
         splitter->addWidget(toolBox);
 
         horizontalLayout->addWidget(splitter);
@@ -129,18 +129,18 @@ public:
 
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
-        menuBar->setObjectName(QString::fromUtf8("menuBar"));
+        menuBar->setObjectName(QStringLiteral("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 840, 25));
         menuFile = new QMenu(menuBar);
-        menuFile->setObjectName(QString::fromUtf8("menuFile"));
+        menuFile->setObjectName(QStringLiteral("menuFile"));
         menuEdit = new QMenu(menuBar);
-        menuEdit->setObjectName(QString::fromUtf8("menuEdit"));
+        menuEdit->setObjectName(QStringLiteral("menuEdit"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
-        mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
+        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
+        statusBar->setObjectName(QStringLiteral("statusBar"));
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
@@ -162,19 +162,19 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
-        actionOpen_Image->setText(QApplication::translate("MainWindow", "Open Image", 0, QApplication::UnicodeUTF8));
-        actionCreate_BSpline->setText(QApplication::translate("MainWindow", "Create BSpline", 0, QApplication::UnicodeUTF8));
-        actionSave_Image->setText(QApplication::translate("MainWindow", "Save Image", 0, QApplication::UnicodeUTF8));
-        actionOpen_Curves->setText(QApplication::translate("MainWindow", "Open Curves", 0, QApplication::UnicodeUTF8));
-        actionSave_Curves->setText(QApplication::translate("MainWindow", "Save Curves", 0, QApplication::UnicodeUTF8));
-        createCurveButton->setText(QApplication::translate("MainWindow", "Create", 0, QApplication::UnicodeUTF8));
-        moveCurveButton->setText(QApplication::translate("MainWindow", "Move", 0, QApplication::UnicodeUTF8));
-        label->setText(QApplication::translate("MainWindow", "Point Size", 0, QApplication::UnicodeUTF8));
-        toolBox->setItemText(toolBox->indexOf(curves_toolbox), QApplication::translate("MainWindow", "Curves", 0, QApplication::UnicodeUTF8));
-        toolBox->setItemText(toolBox->indexOf(shading_toolbox), QApplication::translate("MainWindow", "Shading", 0, QApplication::UnicodeUTF8));
-        menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
-        menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0));
+        actionOpen_Image->setText(QApplication::translate("MainWindow", "Open Image", 0));
+        actionCreate_BSpline->setText(QApplication::translate("MainWindow", "Create BSpline", 0));
+        actionSave_Image->setText(QApplication::translate("MainWindow", "Save Image", 0));
+        actionOpen_Curves->setText(QApplication::translate("MainWindow", "Open Curves", 0));
+        actionSave_Curves->setText(QApplication::translate("MainWindow", "Save Curves", 0));
+        createCurveButton->setText(QApplication::translate("MainWindow", "Create", 0));
+        moveCurveButton->setText(QApplication::translate("MainWindow", "Move", 0));
+        label->setText(QApplication::translate("MainWindow", "Point Size", 0));
+        toolBox->setItemText(toolBox->indexOf(curves_toolbox), QApplication::translate("MainWindow", "Curves", 0));
+        toolBox->setItemText(toolBox->indexOf(shading_toolbox), QApplication::translate("MainWindow", "Shading", 0));
+        menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
+        menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0));
     } // retranslateUi
 
 };
