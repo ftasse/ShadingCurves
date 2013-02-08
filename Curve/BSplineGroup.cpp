@@ -48,27 +48,30 @@ void BSplineGroup::removeControlPoint(int cpt_id)
                 ++k;
             }
         }
-        for (int k=0; k<spline.count(); ++k)
-        {
-            if (spline.connected_cpts[k] > cpt_id)
-            {
-                spline.connected_cpts[k]--;
-            }
-        }
         spline.updatePath();
     }
-    m_cpts.erase(m_cpts.begin()+cpt_id);
+    cpt.connected_splines.clear();
 }
 
 void BSplineGroup::removeSpline(int spline_id)
 {
-    /*BSpline& spline = spline(spline_id);
-    for (int i=0; i<spline.count(); ++i)
+    BSpline& bspline = spline(spline_id);
+    for (int i=0; i<bspline.count(); ++i)
     {
-        ControlPoint cpt = spline.pointAt(i);
-        //TODO flora
-        // Delete spline from control point;
-    }*/
+        ControlPoint& cpt = bspline.pointAt(i);
+        for (int k=0; k<cpt.count();)
+        {
+            if (cpt.connected_splines[k] == spline_id)
+            {
+                cpt.connected_splines.erase(cpt.connected_splines.begin()+k);
+            } else
+            {
+                 ++k;
+            }
+        }
+    }
+    bspline.connected_cpts.clear();
+    bspline.updatePath();
 }
 
 

@@ -16,7 +16,7 @@ public:
     void updatePath();
 
     //Utilites
-    QPointF pointAt(int index);
+    ControlPoint& pointAt(int index);
     QPointF nextMiddlePoint(int index);
 
     QPainterPath& path()
@@ -36,7 +36,6 @@ public:
 
 private:
     QPainterPath m_path;
-    bool is_valid;
 };
 
 #endif // BSPLINE_H

@@ -44,7 +44,7 @@ public:
     
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 signals:
@@ -72,19 +72,19 @@ public:
 class ControlPointItem : public QGraphicsEllipseItem
 {
 public:
-    ControlPointItem(ControlPoint& _point):QGraphicsEllipseItem(), point(_point){}
+    ControlPointItem(ControlPoint* _point):QGraphicsEllipseItem(), point(_point){}
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    ControlPoint& point;
+    ControlPoint* point;
 };
 
 class SplinePathItem: public QGraphicsPathItem
 {
 public:
-    SplinePathItem(BSpline& _spline):QGraphicsPathItem(), spline(_spline){}
+    SplinePathItem(BSpline* _spline):QGraphicsPathItem(), spline(_spline){}
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    BSpline&  spline;
+    BSpline*  spline;
 };
 
 #endif // GLSCENE_H

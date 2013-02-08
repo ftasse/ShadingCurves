@@ -22,7 +22,7 @@ GLScene:: ~GLScene()
     if (imageItem) delete imageItem;
 }
 
-void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     if (m_sketchmode == ADD_CURVE_MODE)
     {
@@ -41,7 +41,7 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
     } else
     {
-        QGraphicsScene::mousePressEvent(event);
+        QGraphicsScene::mouseDoubleClickEvent(event);
     }
 }
 
@@ -49,32 +49,37 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Delete)
     {
-        for (int i=0; i<pointItems.size();)
+        for (int i=0; i<curveItems.size(); ++i)
         {
+            if (curveItems[i]->isSelected())
+            {
+                curveItems[i]->setVisible(false);
+                curveItems[i]->setActive(false);
+                m_splineGroup.removeSpline(curveItems[i]->spline->idx);
+                curveItems[i]->setPath(curveItems[i]->spline->path());
+            }
+        }
 
-            /*TODO Flora
-              Deletion is buggy.
-              Need to reassign indexes properly,
-              */
-            if (pointItems[i]->isSelected())
+        for (int i=0; i<pointItems.size(); ++i)
+        {
+            if (pointItems[i]->isSelected() || pointItems[i]->point->count() == 0)
             {
                 QList<int> itemsToUpdate;
-                for (int k=0; k<pointItems[i]->point.count(); ++k)
+                for (int k=0; k<pointItems[i]->point->count(); ++k)
                 {
-                    itemsToUpdate.append(pointItems[i]->point.splineAt(k).idx);
+                    if (pointItems[i]->point->splineAt(k).count() > 0)
+                        itemsToUpdate.append(pointItems[i]->point->splineAt(k).idx);
                 }
-                removeItem(pointItems[i]);
-                m_splineGroup.removeControlPoint(pointItems[i]->point.idx);
 
-                pointItems.removeAt(i);
-                for (int k=0; k<itemsToUpdate.size(); ++k)
+                pointItems[i]->setVisible(false);
+                pointItems[i]->setActive(false);
+                m_splineGroup.removeControlPoint(pointItems[i]->point->idx);
+
+                for (int k=0; k<itemsToUpdate.size(); ++k)  //TODO Flora: move this to a method for cleanin up
                 {
                     updateCurveItem(itemsToUpdate.at(k));
                 }
 
-            } else
-            {
-                 ++i;
             }
         }
         update();
@@ -120,7 +125,7 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
         {
             if (item == pointItems[i])
             {
-                return pointItems[i]->point.idx;
+                return pointItems[i]->point->idx;
             }
         }
     }
@@ -188,11 +193,11 @@ void GLScene::saveCurves(std::string fname)
 void GLScene::addCurveItem(int cid)
 {
     BSpline &bspline = m_splineGroup.spline(cid);
-    SplinePathItem *curveItem = new SplinePathItem(bspline);
+    SplinePathItem *curveItem = new SplinePathItem(&bspline);
     curveItem->setPath(bspline.path());
-    /*curveItem->setFlags(QGraphicsItem::ItemIsMovable |
+    curveItem->setFlags(QGraphicsItem::ItemIsMovable |
                         QGraphicsItem::ItemIsSelectable |
-                        QGraphicsItem::ItemSendsScenePositionChanges);*/
+                        QGraphicsItem::ItemSendsScenePositionChanges);
     addItem(curveItem);
     curveItems.push_back(curveItem);
 }
@@ -202,9 +207,9 @@ void GLScene::updateCurveItem(int cid)
     for (int i=0; i<curveItems.size(); ++i)
     {
         SplinePathItem *curveItem = curveItems.at(i);
-        if (curveItem->spline.idx == cid)
+        if (curveItem->spline->idx == cid)
         {
-            curveItem->setPath(curveItem->spline.path());
+            curveItem->setPath(curveItem->spline->path());
             break;
         }
     }
@@ -213,7 +218,7 @@ void GLScene::updateCurveItem(int cid)
 void GLScene::addPointItem(int pid)
 {
     ControlPoint& cpt = m_splineGroup.controlPoint(pid);
-    ControlPointItem *pointItem = new ControlPointItem (cpt);
+    ControlPointItem *pointItem = new ControlPointItem (&cpt);
     pointItem->setRect(-pointSize/2.0,-pointSize/2, pointSize, pointSize);
     pointItem->setPos(cpt.x(), cpt.y());
     pointItem->setBrush(QBrush(Qt::black));
@@ -229,6 +234,7 @@ void GLScene::updatePointItems()
     for (int i=0; i< pointItems.size(); ++i)
     {
         pointItems[i]->setRect(-pointSize/2.0,-pointSize/2, pointSize, pointSize);
+        pointItems[i]->setPos(pointItems[i]->point->x(), pointItems[i]->point->y());
     }
 }
 
@@ -236,7 +242,19 @@ QVariant SplinePathItem::itemChange(GraphicsItemChange change, const QVariant &v
 {
     if(change == ItemPositionChange && scene())
     {
-        //QPointF newPos = value.toPointF();
+        QPointF newPos = value.toPointF();
+        GLScene *my_scene = (GLScene *)scene();
+
+        QPointF diff (newPos.x()-scenePos().x(), newPos.y() - scenePos().y());
+        for (int i = 0; i < spline->count(); ++i)
+        {
+            ControlPoint& cpt = spline->pointAt(i);
+            cpt.setX(cpt.x()+diff.x());
+            cpt.setY(cpt.y()+diff.y());
+        }
+        spline->updatePath();
+        setPath(spline->path());
+        my_scene->updatePointItems();
     }
 
     return QGraphicsPathItem::itemChange(change, value);
@@ -252,13 +270,13 @@ QVariant ControlPointItem::itemChange(GraphicsItemChange change, const QVariant 
             /*qDebug("%f  %f <-- %f %f / %f %f", newPos.x(), newPos.y(),
                    cpt.x(), cpt.y(),
                    x(), y());*/
-            point.setX(newPos.x());
-            point.setY(newPos.y());
+            point->setX(newPos.x());
+            point->setY(newPos.y());
 
-            for (int i=0; i<point.count(); ++i)
+            for (int i=0; i<point->count(); ++i)
             {
-                point.splineAt(i).updatePath();
-                my_scene->updateCurveItem(point.splineAt(i).idx);
+                point->splineAt(i).updatePath();
+                my_scene->updateCurveItem(point->splineAt(i).idx);
             }
             my_scene->update();
         }

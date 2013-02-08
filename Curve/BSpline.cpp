@@ -32,7 +32,7 @@ void BSpline::updatePath()
     }
 }
 
-QPointF BSpline::pointAt(int index)
+ControlPoint& BSpline::pointAt(int index)
 {
     int cpt_idx = connected_cpts[index];
     return m_splineGroup->controlPoint(cpt_idx);

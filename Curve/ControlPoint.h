@@ -26,7 +26,6 @@ public:
     int idx;
 
 private:
-    bool is_valid;
 };
 
 #endif // CONTROLPOINT_H
