@@ -3,7 +3,6 @@
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
-#include <GL/glu.h>
 #include <algorithm>
 
 #include "GLScene.h"
@@ -14,6 +13,8 @@ GLScene::GLScene(QObject *parent) :
     m_curSplineIdx = -1;
     m_sketchmode = IDLE_MODE;
     imageItem = NULL;
+
+    pointSize = 8.0;
 }
 
 GLScene:: ~GLScene()
@@ -112,7 +113,7 @@ void GLScene::createBSpline()
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
-    QGraphicsItem *item = itemAt(scenePos.x(), scenePos.y());
+    QGraphicsItem *item = itemAt(scenePos.x(), scenePos.y(), QTransform());
     if (item)
     {
         for (int i=0; i<pointItems.size(); ++i)
@@ -213,7 +214,7 @@ void GLScene::addPointItem(int pid)
 {
     ControlPoint& cpt = m_splineGroup.controlPoint(pid);
     ControlPointItem *pointItem = new ControlPointItem (cpt);
-    pointItem->setRect(-4,-4, 8, 8);
+    pointItem->setRect(-pointSize/2.0,-pointSize/2, pointSize, pointSize);
     pointItem->setPos(cpt.x(), cpt.y());
     pointItem->setBrush(QBrush(Qt::black));
     pointItem->setFlags(QGraphicsItem::ItemIsMovable |
@@ -221,6 +222,14 @@ void GLScene::addPointItem(int pid)
                         QGraphicsItem::ItemSendsScenePositionChanges);
     addItem(pointItem);
     pointItems.push_back(pointItem);
+}
+
+void GLScene::updatePointItems()
+{
+    for (int i=0; i< pointItems.size(); ++i)
+    {
+        pointItems[i]->setRect(-pointSize/2.0,-pointSize/2, pointSize, pointSize);
+    }
 }
 
 QVariant SplinePathItem::itemChange(GraphicsItemChange change, const QVariant &value)

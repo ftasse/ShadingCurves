@@ -16,10 +16,13 @@ signals:
     
 public slots:
     void create_bspline();
+    void move_bsplines();
     void loadImage();
     void saveImage();
     void loadCurves();
     void saveCurves();
+
+    void changeControlPointSize(int pointSize);
     
 };
 
