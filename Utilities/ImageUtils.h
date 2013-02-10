@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#define DATA_DIR "Data/"
+#define DATA_DIR "../imageshading/Data/"
 #define IMAGE_EXT ".tiff"
 
 std::string imageLocationWithID(std::string imageID);

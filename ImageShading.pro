@@ -11,10 +11,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ImageShading
 TEMPLATE = app
 
-MOC_DIR = ../imageshading-build/moc/
-OBJECTS_DIR = ../imageshading-build/obj/
-
-
 SOURCES += main.cpp\
         mainwindow.cpp \
     Utilities/ImageUtils.cpp \
@@ -34,12 +30,16 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += ./
+win32 {
+QMAKE_LFLAGS += -static-libgcc -static-libstdc++
+}
 
+INCLUDEPATH += $$PWD
+win32:INCLUDEPATH += C:/opencv/build/include
+
+win32:LIBS +=  -L"C:/opencv-build/bin" \
+               -L"C:/opencv/build/x86/vc10/bin" \
+               -L"C:/Qt/Qt5.0.1/Tools/MinGW/bin"
+win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopengl32
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 
-win32:CONFIG(release, debug|release): LIBS += -L./Libs/opencv/lib/ -L./Libs/opencv/bin/  -lopencv_core243 -lopencv_imgproc243 -lopencv_highgui243
-else:win32:CONFIG(debug, debug|release): LIBS += -L./Libs/opencv/lib/ -lopencv_core243d -lopencv_imgproc243d -lopencv_highgui243d
-
-win32:INCLUDEPATH += ./Libs/opencv/include
-win32:DEPENDPATH += ./Libs/opencv/include
