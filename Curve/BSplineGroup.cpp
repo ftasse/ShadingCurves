@@ -28,7 +28,7 @@ bool BSplineGroup::addControlPoint(int spline_id, int cpt_id)
 {
     m_splines[spline_id].connected_cpts.push_back(cpt_id);
     m_cpts[cpt_id].connected_splines.push_back(spline_id);
-    m_splines[spline_id].updatePath();
+    m_splines[spline_id].updateKnotVectors();
     return true;
 }
 
@@ -48,7 +48,7 @@ void BSplineGroup::removeControlPoint(int cpt_id)
                 ++k;
             }
         }
-        spline.updatePath();
+        spline.updateKnotVectors();
     }
     cpt.connected_splines.clear();
 }
@@ -70,8 +70,9 @@ void BSplineGroup::removeSpline(int spline_id)
             }
         }
     }
+
     bspline.connected_cpts.clear();
-    bspline.updatePath();
+    bspline.updateKnotVectors();
 }
 
 

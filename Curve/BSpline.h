@@ -10,18 +10,20 @@ class BSplineGroup;
 class BSpline
 {
 public:
-    BSpline();
-
-    //Drawing
-    void updatePath();
+    BSpline( int degree = 3);
+    void updateKnotVectors();
 
     //Utilites
     ControlPoint& pointAt(int index);
-    QPointF nextMiddlePoint(int index);
 
-    QPainterPath& path()
+    QVector<float>& knotVectors()
     {
-        return m_path;
+        return m_knotVectors;
+    }
+
+    unsigned int& degree()
+    {
+        return m_degree;
     }
 
     int count()
@@ -31,11 +33,13 @@ public:
 
 public:
     BSplineGroup *m_splineGroup;
-    QList<int> connected_cpts;
+    QVector<int> connected_cpts;
     int idx;
 
 private:
-    QPainterPath m_path;
+    unsigned int m_spec_degree;
+    unsigned int m_degree;
+    QVector<float> m_knotVectors;
 };
 
 #endif // BSPLINE_H

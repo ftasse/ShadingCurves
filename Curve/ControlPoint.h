@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QPointF>
+#include <QVector>
 
 class BSplineGroup;
 class BSpline;
@@ -22,7 +23,7 @@ public:
 
 public:
     BSplineGroup *m_splineGroup;
-    QList<int> connected_splines;
+    QVector<int> connected_splines;
     int idx;
 
 private:

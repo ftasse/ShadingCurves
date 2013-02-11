@@ -7,28 +7,36 @@
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
-    /*setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
-    setViewportUpdateMode( QGraphicsView::FullViewportUpdate);*/
+    setMouseTracking(true);
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
 {
-    /*if (scene())
-        scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));*/
-    QGraphicsView::resizeEvent(event); // HELLO WORLD!
+    if (scene())
+        scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->adjustDisplayedImageSize();
+
+    QGraphicsView::resizeEvent(event);
 }
 
 void GraphicsView::changeControlPointSize(int pointSize)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->pointSize = pointSize;
-    my_scene->updatePointItems();
+    my_scene->update();
 }
 
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->createBSpline();
+}
+
+void GraphicsView::edit_bspline()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
 }
 
 void GraphicsView::move_bsplines()

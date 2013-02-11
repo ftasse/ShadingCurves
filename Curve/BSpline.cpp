@@ -1,46 +1,36 @@
 #include "BSpline.h"
 #include "BSplineGroup.h"
+#include <cmath>
 
-BSpline::BSpline():
-    idx(-1)
+BSpline::BSpline(int degree):
+    idx(-1), m_spec_degree(degree), m_degree(degree)
 {
 }
 
-void BSpline::updatePath()
+void BSpline::updateKnotVectors()
 {
-    m_path = QPainterPath();
+    //Uniform knots
+    m_knotVectors.clear();
+    if (count() == 0)
+        return;
 
-    int nbPoints = count();
-    if(nbPoints>0)
-    {
-        if(nbPoints==2)
-        {
-            m_path.moveTo(pointAt(0)) ;
-            m_path.lineTo(pointAt(1)) ;
-        }
-        else
-        {
-             int i ;
-             m_path.moveTo(pointAt(0)) ;
-             m_path.lineTo(nextMiddlePoint(0)) ;
-             for(i=1; i<(nbPoints-1); i++)
-             {
-                m_path.quadTo(pointAt(i),nextMiddlePoint(i)) ;
-             }
-             m_path.lineTo(pointAt(nbPoints-1)) ;
-         }
+    if (count() > m_spec_degree)
+        m_degree = m_spec_degree;
+    else
+        m_degree = count()-1;
+
+    float last=0.0;
+    for (unsigned int i = 0; i < m_degree; i++) m_knotVectors.push_back(0.0);
+    for (int i = 0; i < (int)count() - (int)m_degree + 1; i++) {
+        m_knotVectors.push_back(i);
+        last=i;
     }
+    for (unsigned int i = 0; i < m_degree; i++)
+        m_knotVectors.push_back(last);
 }
 
 ControlPoint& BSpline::pointAt(int index)
 {
     int cpt_idx = connected_cpts[index];
     return m_splineGroup->controlPoint(cpt_idx);
-}
-
-QPointF BSpline::nextMiddlePoint(int index)
-{
-    QPointF point1 = pointAt(index) ;
-    QPointF point2 = pointAt((index+1)%count()) ;
-    return (point1+0.5*(point2-point1)) ;
 }

@@ -3,11 +3,9 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
+#include <QtOpenGL/QtOpenGL>
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
-
-class ControlPointItem;
-class SplinePathItem;
 
 class GLScene : public QGraphicsScene
 {
@@ -18,6 +16,7 @@ public:
         ADD_CURVE_MODE,
         IDLE_MODE
     } SketchMode;
+
 
     explicit GLScene(QObject *parent = 0);
     virtual ~GLScene();
@@ -31,6 +30,17 @@ public:
     //Sketching functions
     void createBSpline();
     int registerPointAtScenePos(QPointF scenePos);
+    QPointF sceneToImageCoords(QPointF scenePos);
+    QPointF imageToSceneCoords(QPointF imgPos);
+    bool pick(const QPoint& _mousePos, unsigned int &_nodeIdx,
+               unsigned int& _targetIdx, QPointF* _hitPointPtr = NULL);
+
+    //Drawing functions
+    void display();
+    void draw_image(cv::Mat &image);
+    void draw_control_point(int point_id);
+    void draw_spline(int spline_id);
+    void adjustDisplayedImageSize();
 
     cv::Mat& currentImage()
     {
@@ -43,48 +53,32 @@ public:
     }
     
 protected:
-    void drawBackground(QPainter *painter, const QRectF &rect);
+    void drawForeground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 signals:
     
 public slots:
-    void addCurveItem(int cid);
-    void updateCurveItem(int cid);
-    void addPointItem(int pid);
-    void updatePointItems();
 
 private:
     cv::Mat m_curImage;
     int m_curSplineIdx;
 
-    QGraphicsPixmapItem *imageItem;
-    QList<SplinePathItem *> curveItems;
-    QList<ControlPointItem *> pointItems;
     SketchMode m_sketchmode;
+    GLdouble  m_modelview [16];
+    GLdouble  m_projection [16];
+    QList<std::pair<uint, uint> > selectedObjects;
 
 public:
     BSplineGroup m_splineGroup;
     float pointSize;
+
+    QSizeF imSize;
 };
 
-class ControlPointItem : public QGraphicsEllipseItem
-{
-public:
-    ControlPointItem(ControlPoint* _point):QGraphicsEllipseItem(), point(_point){}
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-    ControlPoint* point;
-};
-
-class SplinePathItem: public QGraphicsPathItem
-{
-public:
-    SplinePathItem(BSpline* _spline):QGraphicsPathItem(), spline(_spline){}
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-    BSpline*  spline;
-};
+void nurbsError(GLenum errorCode);
 
 #endif // GLSCENE_H
