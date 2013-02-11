@@ -17,6 +17,7 @@ signals:
 public slots:
     void create_bspline();
     void move_bsplines();
+    void edit_bspline();
     void loadImage();
     void saveImage();
     void loadCurves();
