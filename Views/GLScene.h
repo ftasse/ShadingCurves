@@ -3,7 +3,6 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
-#include <QtOpenGL/QtOpenGL>
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
 
@@ -68,8 +67,8 @@ private:
     int m_curSplineIdx;
 
     SketchMode m_sketchmode;
-    GLdouble  m_modelview [16];
-    GLdouble  m_projection [16];
+    double  m_modelview [16];
+    double  m_projection [16];
     QList<std::pair<uint, uint> > selectedObjects;
 
 public:
@@ -79,6 +78,6 @@ public:
     QSizeF imSize;
 };
 
-void nurbsError(GLenum errorCode);
+void nurbsError(uint errorCode);
 
 #endif // GLSCENE_H

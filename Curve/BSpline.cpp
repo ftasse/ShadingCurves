@@ -14,7 +14,7 @@ void BSpline::updateKnotVectors()
     if (count() == 0)
         return;
 
-    if (count() > m_spec_degree)
+    if (count() > (int)m_spec_degree)
         m_degree = m_spec_degree;
     else
         m_degree = count()-1;
