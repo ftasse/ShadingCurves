@@ -45,7 +45,7 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     cpt.setY(newP.y());
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
-                    QPointF diff = sceneToImageCoords(event->scenePos() - event->lastScenePos());
+                    QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
                     BSpline& spline = m_splineGroup.spline(targetId);
                     for (int k=0; k<spline.count(); ++k)
                     {
@@ -153,10 +153,10 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
 {
     if (painter->paintEngine()->type()
                     != QPaintEngine::OpenGL) {
-                qWarning("OpenGLScene: drawBackground needs a "
+                /*qWarning("OpenGLScene: drawBackground needs a "
                          "QGLWidget to be set as viewport on the "
                          "graphics view");
-                return;
+                return;*/
             }
 
     glClearColor(0.5, 0.5, 0.5, 1.0);
