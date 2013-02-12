@@ -254,7 +254,12 @@ void GLScene::draw_image(cv::Mat& image)
         #ifdef GL_BGR
             inputColourFormat = GL_BGR;
         #else
-            inputColourFormat = GL_BGR_EXT;
+            #ifdef GL_BGR_EXT
+                inputColourFormat = GL_BGR_EXT;
+            #else
+                #define GL_BGR 0x80E0
+                inputColourFormat = GL_BGR;
+            #endif
         #endif
         if (image.channels() == 1)  inputColourFormat = GL_LUMINANCE;
 
