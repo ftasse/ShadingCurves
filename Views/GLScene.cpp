@@ -1,4 +1,3 @@
-#include <GL/glu.h>
 #include <QPainter>
 #include <QPaintEngine>
 #include <QGraphicsItem>
@@ -8,6 +7,11 @@
 #include <algorithm>
 
 #include "GLScene.h"
+
+#ifdef _WIN32 || _WIN64
+#include <Windows.h>
+#endif
+#include <GL/glu.h>
 
 static const unsigned int  SELECTION_BUFFER_SIZE = 10000;
 static const unsigned int  NAME_STACK_SIZE       = 2;
