@@ -35,10 +35,10 @@ public:
                unsigned int& _targetIdx, QPointF* _hitPointPtr = NULL);
 
     //Drawing functions
-    void display();
+    void display(bool only_show_splines = false);
     void draw_image(cv::Mat &image);
     void draw_control_point(int point_id);
-    void draw_spline(int spline_id);
+    void draw_spline(int spline_id, bool only_show_splines = false);
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
@@ -46,6 +46,8 @@ public:
     {
         return m_curImage;
     }
+
+    cv::Mat curvesImage();
 
     SketchMode& sketchmode()
     {

@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     Curve/BSpline.cpp \
     Curve/BSplineGroup.cpp \
     Curve/ControlPoint.cpp \
-    Curve/Surface.cpp
+    Curve/Surface.cpp \
+    Views/DebugWindow.cpp
 
 HEADERS  += mainwindow.h \
     Utilities/ImageUtils.h \
@@ -28,9 +29,11 @@ HEADERS  += mainwindow.h \
     Curve/BSpline.h \
     Curve/BSplineGroup.h \
     Curve/ControlPoint.h \
-    Curve/Surface.h
+    Curve/Surface.h \
+    Views/DebugWindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    Views/DebugWindow.ui
 
 win32 {
 QMAKE_LFLAGS += -static-libgcc -static-libstdc++
@@ -43,6 +46,6 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
                -L"C:/opencv-build/lib" \
                -L"C:/opencv/build/x86/vc10/bin" \
                -L"C:/Qt/Qt5.0.1/Tools/MinGW/bin"
-win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopengl32 -lglu32
+win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 

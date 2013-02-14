@@ -199,7 +199,7 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
     glGetDoublev(GL_PROJECTION_MATRIX, m_projection);
 }
 
-void GLScene::display()
+void GLScene::display(bool only_show_splines)
 {
     glInitNames();
     glEnable(GL_POINT_SMOOTH);
@@ -212,6 +212,7 @@ void GLScene::display()
         draw_image(m_curImage);
     }
 
+    if (!only_show_splines)
     for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
     {
         if (m_splineGroup.surface(i).controlPoints().size() == 0)
@@ -226,9 +227,10 @@ void GLScene::display()
         if (m_splineGroup.spline(i).count() == 0)
             continue;
 
-        draw_spline(m_splineGroup.spline(i).idx);
+        draw_spline(m_splineGroup.spline(i).idx, only_show_splines);
     }
 
+    if (!only_show_splines)
     for (int i=0; i<m_splineGroup.num_controlPoints(); ++i)
     {
         if (m_splineGroup.controlPoint(i).count() == 0)
@@ -322,7 +324,7 @@ void GLScene::draw_control_point(int point_id)
     glPopName();
 }
 
-void GLScene::draw_spline(int spline_id)
+void GLScene::draw_spline(int spline_id, bool only_show_splines)
 {
     glPushName(SPLINE_NODE_ID);
     glPushName(spline_id);
@@ -338,6 +340,7 @@ void GLScene::draw_spline(int spline_id)
       // Display normals
       glColor3f(0.5, 0.5, 0.0);
       glBegin(GL_LINES);
+      if (!only_show_splines)
       for (int i = 0; i < spline.count(); ++i)
       {
           float range = (spline.knotVectors()[spline.knotVectors().size()-spline.degree()-1] - spline.knotVectors()[spline.degree()]);
@@ -622,6 +625,49 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
     selectedObjects.push_back(std::pair<uint, uint>(CPT_NODE_ID, pointIdx));
     update();
     return pointIdx;
+}
+
+cv::Mat GLScene::curvesImage()
+{
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width(), height(), 0, -1.0, 1.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glRenderMode(GL_RENDER);
+    display(true);
+
+    cv::Mat img;
+    img.create(imSize.width(), imSize.height(), CV_8UC3);
+
+    //use fast 4-byte alignment (default anyway) if possible
+    glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);
+
+    //set length of one complete row in destination data (doesn't need to equal img.cols)
+    glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
+
+
+    GLenum inputColourFormat;
+    #ifdef GL_BGR
+        inputColourFormat = GL_BGR;
+    #else
+        #ifdef GL_BGR_EXT
+            inputColourFormat = GL_BGR_EXT;
+        #else
+            #define GL_BGR 0x80E0
+            inputColourFormat = GL_BGR;
+        #endif
+    #endif
+    QPointF topLeft(width()/2 - imSize.width()/2, height()/2 - imSize.height()/2);
+    glReadPixels(topLeft.x(), topLeft.y(), imSize.width(), imSize.height(), inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+    cv::flip(img, img, 0);
+
+    return img;
 }
 
 

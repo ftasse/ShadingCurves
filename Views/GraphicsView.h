@@ -2,6 +2,7 @@
 #define GRAPHICSVIEW_H
 
 #include <QGraphicsView>
+#include "../Views/DebugWindow.h"
 
 class GraphicsView : public QGraphicsView
 {
@@ -24,6 +25,10 @@ public slots:
     void saveCurves();
 
     void changeControlPointSize(int pointSize);
+    void createDistanceTransformDEBUG();
+
+private:
+    DebugWindow *dbw;
     
 };
 

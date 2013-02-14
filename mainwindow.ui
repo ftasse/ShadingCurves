@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>297</height>
+            <height>312</height>
            </rect>
           </property>
           <attribute name="label">
@@ -130,8 +130,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>150</width>
-            <height>297</height>
+            <width>200</width>
+            <height>312</height>
            </rect>
           </property>
           <attribute name="label">
@@ -151,7 +151,7 @@
      <x>0</x>
      <y>0</y>
      <width>840</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -170,8 +170,15 @@
     </property>
     <addaction name="actionCreate_BSpline"/>
    </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>Debug</string>
+    </property>
+    <addaction name="actionDistance_transform"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuDebug"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -205,6 +212,11 @@
   <action name="actionSave_Curves">
    <property name="text">
     <string>Save Curves</string>
+   </property>
+  </action>
+  <action name="actionDistance_transform">
+   <property name="text">
+    <string>Distance transform</string>
    </property>
   </action>
  </widget>

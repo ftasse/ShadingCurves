@@ -113,3 +113,26 @@ void GraphicsView::saveCurves()
         my_scene->saveCurves(fileName.toStdString());
     }
 }
+
+// ******** DEBUG FUNCTIONS ********
+void GraphicsView::createDistanceTransformDEBUG()
+{
+    dbw = new DebugWindow();
+
+    GLScene *my_scene = (GLScene *) scene();
+
+    cv::Mat curvesGrayIm;
+    cv::Mat curvesIm = my_scene->curvesImage();
+    cv::cvtColor(curvesIm, curvesGrayIm, CV_BGR2GRAY);
+    cv::cvtColor(curvesGrayIm,curvesIm,  CV_GRAY2BGR);
+
+    cv::Mat dt;
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
+
+    //QImage image(dt.ptr(), dt.cols, dt.rows,dt.step, QImage::Format_RGB888);
+    QImage image(curvesIm.ptr(), curvesIm.cols, curvesIm.rows, curvesIm.step, QImage::Format_RGB888);
+    image.rgbSwapped();
+    dbw->setImage(image);
+
+    dbw->show();
+}
