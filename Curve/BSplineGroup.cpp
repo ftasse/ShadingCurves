@@ -24,7 +24,46 @@ int BSplineGroup::addBSpline()
     return m_splines.size() - 1;
 }
 
-bool BSplineGroup::addControlPoint(int spline_id, int cpt_id)
+int BSplineGroup::addSurface()
+{
+    Surface surface;
+    surface.m_splineGroup = this;
+    surface.idx = num_surfaces();
+    m_surfaces.push_back(surface);
+    return num_surfaces() - 1;
+}
+
+int BSplineGroup::createSurface(int spline_id, float width)
+{
+    int surface_id = addSurface();
+    Surface& surf = surface(surface_id);
+    BSpline& bspline = spline(spline_id);
+
+    surf.connected_spline_id = spline_id;
+    surf.controlPoints().append(bspline.connected_cpts);
+    QVector<int> translated_cpts_ids;
+
+    for (int k=0; k<bspline.count(); ++k)
+    {
+        if (k == bspline.count()-1 && bspline.connected_cpts[k] == bspline.connected_cpts[0]) //if closed curve
+        {
+            translated_cpts_ids.push_back(translated_cpts_ids[0]);
+        } else
+        {
+            QPointF normal = bspline.inward_normal(k);
+            QPointF new_cpt = bspline.pointAt(k) + normal*width;
+            int cpt_id = addControlPoint(new_cpt);
+            translated_cpts_ids.push_back(cpt_id);
+        }
+    }
+
+    surf.controlPoints().append(translated_cpts_ids);
+
+    surf.updateKnotVectors();
+    return surface_id;
+}
+
+bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
 {
     m_splines[spline_id].connected_cpts.push_back(cpt_id);
     m_cpts[cpt_id].connected_splines.push_back(spline_id);
@@ -75,6 +114,13 @@ void BSplineGroup::removeSpline(int spline_id)
     bspline.updateKnotVectors();
 }
 
+void BSplineGroup::removeSurface(int surface_id)
+{
+    Surface& surf = surface(surface_id);
+    surf.connected_cpts.clear();
+    surf.updateKnotVectors();
+}
+
 
 bool BSplineGroup::load(std::string fname)
 {
@@ -106,7 +152,7 @@ bool BSplineGroup::load(std::string fname)
             {
                 int cpt_id;
                 ifs >> cpt_id;
-                addControlPoint(spline_id, cpt_id);
+                addControlPointToSpline(spline_id, cpt_id);
             }
         }
     }

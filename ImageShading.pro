@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     Views/GLScene.cpp \
     Curve/BSpline.cpp \
     Curve/BSplineGroup.cpp \
-    Curve/ControlPoint.cpp
+    Curve/ControlPoint.cpp \
+    Curve/Surface.cpp
 
 HEADERS  += mainwindow.h \
     Utilities/ImageUtils.h \
@@ -26,7 +27,8 @@ HEADERS  += mainwindow.h \
     Views/GLScene.h \
     Curve/BSpline.h \
     Curve/BSplineGroup.h \
-    Curve/ControlPoint.h
+    Curve/ControlPoint.h \
+    Curve/Surface.h
 
 FORMS    += mainwindow.ui
 

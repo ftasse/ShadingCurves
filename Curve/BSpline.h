@@ -13,8 +13,15 @@ public:
     BSpline( int degree = 3);
     void updateKnotVectors();
 
+    //Normal at the (index)th control point
+    QPointF inward_normal(int index);
+
     //Utilites
     ControlPoint& pointAt(int index);
+    QPointF derivativeCurvePoint(float _t, unsigned int _der);
+    float derivativeBasisFunction(int _i, int _n, double _t, int _der);
+    float basisFunction(int _i, int _n, double _t);
+
 
     QVector<float>& knotVectors()
     {

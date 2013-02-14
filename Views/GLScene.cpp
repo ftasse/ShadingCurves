@@ -5,11 +5,12 @@
 #include <QKeyEvent>
 #include <QGraphicsView>
 #include <algorithm>
+#include <set>
 
 #include "GLScene.h"
 
 #ifdef _WIN32 || _WIN64
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <GL/glu.h>
 
@@ -18,6 +19,7 @@ static const unsigned int  NAME_STACK_SIZE       = 2;
 static const unsigned int  IMAGE_NODE_ID = 0;
 static const unsigned int  CPT_NODE_ID = 1;
 static const unsigned int  SPLINE_NODE_ID = 2;
+static const unsigned int  SURFACE_NODE_ID = 3;
 
 GLScene::GLScene(QObject *parent) :
     QGraphicsScene(parent)
@@ -37,27 +39,32 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
         if (selectedObjects.size() > 0)
         {
+            std::set<int> cpt_ids;
+            QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
+
             for (int i=0; i<selectedObjects.size(); ++i)
             {
                 uint nodeId = selectedObjects[i].first;
                 uint targetId = selectedObjects[i].second;
                 if (nodeId == CPT_NODE_ID)
                 {
-                    ControlPoint& cpt = m_splineGroup.controlPoint(targetId);
-                    QPointF newP = sceneToImageCoords(event->scenePos());
-                    cpt.setX(newP.x());
-                    cpt.setY(newP.y());
+                    cpt_ids.insert(targetId);
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
-                    QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
                     BSpline& spline = m_splineGroup.spline(targetId);
                     for (int k=0; k<spline.count(); ++k)
                     {
-                        ControlPoint& cpt = spline.pointAt(k);
-                        cpt.setX(cpt.x()+diff.x());
-                        cpt.setY(cpt.y()+diff.y());
+                        cpt_ids.insert(spline.pointAt(k).idx);
                     }
+
                 }
+            }
+
+            for (std::set<int>::iterator it = cpt_ids.begin(); it != cpt_ids.end(); ++it)
+            {
+                ControlPoint& cpt = m_splineGroup.controlPoint(*it);
+                cpt.setX(cpt.x()+diff.x());
+                cpt.setY(cpt.y()+diff.y());
             }
             update();
             return;
@@ -99,7 +106,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             createBSpline();
         }
 
-        if (m_splineGroup.addControlPoint(m_curSplineIdx, cptRef))
+        if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
         {
             update();
         }
@@ -111,6 +118,14 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
+    if (event->key() == Qt::Key_S)
+    {
+        if (m_curSplineIdx >=0 )
+        {
+            m_splineGroup.createSurface(m_curSplineIdx);
+            update();
+        }
+    }
     if (event->key() == Qt::Key_Delete)
     {
         if (selectedObjects.size() > 0)
@@ -128,6 +143,10 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                     if (m_curSplineIdx == (int)targetId) m_curSplineIdx = -1;
                     qDebug("Delete spline %d", targetId);
                     m_splineGroup.removeSpline(targetId);
+                } else if (nodeId == SURFACE_NODE_ID)
+                {
+                    qDebug("Delete surface %d", targetId);
+                    m_splineGroup.removeSurface(targetId);
                 }
             }
             selectedObjects.clear();
@@ -173,6 +192,7 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    glRenderMode(GL_RENDER);
     display();
 
     glGetDoublev(GL_MODELVIEW_MATRIX, m_modelview);
@@ -182,60 +202,47 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
 void GLScene::display()
 {
     glInitNames();
+    glEnable(GL_POINT_SMOOTH);
+    glPointSize(pointSize);
+    glLineWidth(pointSize/5.0);
 
     if (m_curImage.cols > 0)
     {
         glColor3d(1.0, 1.0, 1.0);
-        glPushName(IMAGE_NODE_ID);
-        glPushName(0);
         draw_image(m_curImage);
-        glPopName();
-        glPopName();
     }
 
-    glLineWidth(pointSize/5.0);
+    for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+    {
+        if (m_splineGroup.surface(i).controlPoints().size() == 0)
+            continue;
+
+        Surface& surface = m_splineGroup.surface(i);
+        draw_surface(surface.idx);
+    }
+
     for (int i=0; i<m_splineGroup.num_splines(); ++i)
     {
         if (m_splineGroup.spline(i).count() == 0)
             continue;
 
-        glPushName(SPLINE_NODE_ID);
-        glPushName(i);
-        glColor3d(0.0, 0.0, 1.0);
-        if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i)))
-        {
-            glColor3d(1.0, 0.0, 0.0);
-        }
-
         draw_spline(m_splineGroup.spline(i).idx);
-        glPopName();
-        glPopName();
     }
 
-    glEnable(GL_POINT_SMOOTH);
-    glPointSize(pointSize);
     for (int i=0; i<m_splineGroup.num_controlPoints(); ++i)
     {
         if (m_splineGroup.controlPoint(i).count() == 0)
             continue;
 
-        glPushName(CPT_NODE_ID);
-        glPushName(i);
-        glColor3d(0.0, 0.0, 1.0);
-        if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, i)))
-        {
-            glColor3d(1.0, 0.0, 0.0);
-        }
-
-
         draw_control_point(m_splineGroup.controlPoint(i).idx);
-        glPopName();
-        glPopName();
     }
 }
 
 void GLScene::draw_image(cv::Mat& image)
 {
+        glPushName(IMAGE_NODE_ID);
+        glPushName(0);
+
         glEnable( GL_TEXTURE_2D );
 
         GLuint texId;
@@ -288,26 +295,68 @@ void GLScene::draw_image(cv::Mat& image)
         glPopMatrix();
 
         glDeleteTextures(1, &texId);
+
+        glPopName();
+        glPopName();
 }
 
 void GLScene::draw_control_point(int point_id)
 {
+    glPushName(CPT_NODE_ID);
+    glPushName(point_id);
+
+    glColor3d(0.0, 0.0, 1.0);
+    if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, point_id)))
+    {
+        glColor3d(1.0, 0.0, 0.0);
+    }
+
     ControlPoint& cpt = m_splineGroup.controlPoint(point_id);
     QPointF pos = imageToSceneCoords(cpt);
 
     glBegin(GL_POINTS);
     glVertex3d(pos.x(), pos.y(), 0.5);
     glEnd();
+
+    glPopName();
+    glPopName();
 }
 
 void GLScene::draw_spline(int spline_id)
 {
+    glPushName(SPLINE_NODE_ID);
+    glPushName(spline_id);
+
     BSpline& spline = m_splineGroup.spline(spline_id);
     int order = spline.degree() + 1;
 
     // check for incomplete curve
-      if (spline.count() < order)
+      if (spline.count() <= 1 || spline.count() < order)
         return;
+
+
+      // Display normals
+      glColor3f(0.5, 0.5, 0.0);
+      glBegin(GL_LINES);
+      for (int i = 0; i < spline.count(); ++i)
+      {
+          float range = (spline.knotVectors()[spline.knotVectors().size()-spline.degree()-1] - spline.knotVectors()[spline.degree()]);
+          float t = range*i / (float)(spline.count()-1);
+          QPointF curvPos = spline.derivativeCurvePoint(t, 0);
+          QPointF scenePos = imageToSceneCoords(curvPos);
+          glVertex2f(scenePos.x(), scenePos.y());
+
+          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal(i)*20.0);
+          glVertex2f(normal.x(), normal.y());
+      }
+      glEnd();
+
+
+      glColor3d(0.0, 0.0, 1.0);
+      if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
+      {
+          glColor3d(1.0, 0.0, 0.0);
+      }
 
       int numKnots = spline.knotVectors().size();
       GLfloat *knots = new GLfloat[numKnots];
@@ -346,6 +395,97 @@ void GLScene::draw_spline(int spline_id)
       gluDeleteNurbsRenderer(theNurb);
       delete [] ctlpoints;
       delete [] knots;
+
+      glPopName();
+      glPopName();
+}
+
+void GLScene::draw_surface(int surface_id)
+{
+    glPushName(SURFACE_NODE_ID);
+    glPushName(surface_id);
+
+    glColor3d(0.0, 1.0, 1.0);
+    if (selectedObjects.contains(std::pair<uint, uint>(SURFACE_NODE_ID, surface_id)))
+    {
+        glColor3d(1.0, 1.0, 0.0);
+    }
+
+    Surface& surface = m_splineGroup.surface(surface_id);
+    QPoint uv_order = surface.degree() + QPoint(1, 1);
+
+    // check for incomplete curve
+    if (surface.controlPoints().size() < uv_order.x() || surface.controlPoints()[0].size() < uv_order.y())
+        return;
+
+      QPoint numKnots(surface.u_knotVectors().size(), surface.v_knotVectors().size());
+      GLfloat *u_knots = new GLfloat[numKnots.x()];
+      GLfloat *v_knots = new GLfloat[numKnots.y()];
+      for (int i = 0; i < numKnots.x(); ++i)
+      {
+          u_knots[i] = surface.u_knotVectors()[i];
+      }
+      for (int i = 0; i < numKnots.y(); ++i)
+      {
+          v_knots[i] = surface.v_knotVectors()[i];
+      }
+
+      int num_cpts = surface.controlPoints().size() * surface.controlPoints()[0].size();
+      GLfloat *ctlpoints = new GLfloat[num_cpts * 3];
+      for (int u = 0; u <  surface.controlPoints().size() ; ++u)
+      {
+          for (int v= 0; v <  surface.controlPoints()[u].size(); ++v)
+          {
+                QPoint pos(u, v);
+                int h = surface.controlPoints()[u].size();
+                QPointF p = imageToSceneCoords(surface.pointAt(pos));
+                ctlpoints[(u*h + v) * 3 + 0] = (GLfloat)p.x();
+                ctlpoints[(u*h + v) * 3 + 1] = (GLfloat)p.y();
+                ctlpoints[(u*h + v) * 3 + 2] = -0.8f;
+          }
+      }
+
+      GLUnurbsObj *theNurb;
+      theNurb = gluNewNurbsRenderer();
+
+      #ifdef WIN32
+        gluNurbsCallback(theNurb, GLU_ERROR, (void (__stdcall *)(void))(&nurbsError) );
+      #else
+        gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid (*)()) (&nurbsError) );
+      #endif
+
+      gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
+      gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 5.0);
+
+      int renderMode;
+      glGetIntegerv(GL_RENDER_MODE, &renderMode);
+      if (renderMode == GL_RENDER)
+      {
+        gluBeginSurface(theNurb);
+        gluNurbsSurface(theNurb,  numKnots.x(), u_knots, numKnots.y(), v_knots, surface.controlPoints()[0].size()*3, 3, ctlpoints,
+                      uv_order.x(), uv_order.y(), GL_MAP2_VERTEX_3);
+        gluEndSurface(theNurb);
+      }
+
+      gluDeleteNurbsRenderer(theNurb);
+      delete [] ctlpoints;
+      delete [] u_knots;
+      delete [] v_knots;
+
+      glPopName();
+      glPopName();
+
+      for (int k=0; k<surface.controlPoints().size(); ++k)
+      {
+          for (int l=0; l<surface.controlPoints()[k].size(); ++l)
+          {
+              QPoint pos(k, l);
+              if (surface.pointAt(pos).count() == 0)
+              {
+                  draw_control_point(surface.pointAt(pos).idx);
+              }
+          }
+      }
 }
 
 void GLScene::adjustDisplayedImageSize()

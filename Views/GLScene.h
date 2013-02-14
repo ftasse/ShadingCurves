@@ -39,6 +39,7 @@ public:
     void draw_image(cv::Mat &image);
     void draw_control_point(int point_id);
     void draw_spline(int spline_id);
+    void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
     cv::Mat& currentImage()
