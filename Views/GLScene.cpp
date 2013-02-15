@@ -204,7 +204,6 @@ void GLScene::display(bool only_show_splines)
     glInitNames();
     glEnable(GL_POINT_SMOOTH);
     glPointSize(pointSize);
-    glLineWidth(pointSize/5.0);
 
     if (m_curImage.cols > 0)
     {
@@ -222,6 +221,7 @@ void GLScene::display(bool only_show_splines)
         draw_surface(surface.idx);
     }
 
+    glLineWidth(pointSize/5.0);
     for (int i=0; i<m_splineGroup.num_splines(); ++i)
     {
         if (m_splineGroup.spline(i).count() == 0)
@@ -338,13 +338,12 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines)
 
 
       // Display normals
-      glColor3f(0.5, 0.5, 0.0);
+      /*glColor3f(0.5, 0.5, 0.0);
       glBegin(GL_LINES);
       if (!only_show_splines)
       for (int i = 0; i < spline.count(); ++i)
       {
-          float range = (spline.knotVectors()[spline.knotVectors().size()-spline.degree()-1] - spline.knotVectors()[spline.degree()]);
-          float t = range*i / (float)(spline.count()-1);
+          float t = spline.closestParamToPointAt(i);
           QPointF curvPos = spline.derivativeCurvePoint(t, 0);
           QPointF scenePos = imageToSceneCoords(curvPos);
           glVertex2f(scenePos.x(), scenePos.y());
@@ -353,7 +352,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines)
           glVertex2f(normal.x(), normal.y());
       }
       glEnd();
-
+      */
 
       glColor3d(0.0, 0.0, 1.0);
       if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
@@ -475,9 +474,44 @@ void GLScene::draw_surface(int surface_id)
       delete [] u_knots;
       delete [] v_knots;
 
+      //Display Control Polygon
+      glColor3f(0.65,0.65,0.65);
+      glLineWidth(2.0);
+      for (int k=0; k<surface.controlPoints().size(); ++k)
+      {
+          glBegin(GL_LINE_STRIP);
+          for (int l=0; l<surface.controlPoints()[k].size(); ++l)
+          {
+              QPoint pos(k, l);
+              QPointF scenePos = imageToSceneCoords(surface.pointAt(pos));
+              glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+          }
+          glEnd();
+      }
+      if (!m_splineGroup.spline(surface.connected_spline_id).is_closed())
+      {
+        glBegin(GL_LINE_STRIP);
+        for (int k=0; k<surface.controlPoints().size(); ++k)
+        {
+            QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, 0)));
+            glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+        }
+        glEnd();
+
+        glBegin(GL_LINE_STRIP);
+        for (int k=0; k<surface.controlPoints().size(); ++k)
+        {
+            QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, surface.controlPoints()[k].size()-1)));
+            glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+        }
+        glEnd();
+      }
+      glLineWidth(1.0);
+
       glPopName();
       glPopName();
 
+      //Display control points that are not connected to any bspline
       for (int k=0; k<surface.controlPoints().size(); ++k)
       {
           for (int l=0; l<surface.controlPoints()[k].size(); ++l)
@@ -489,6 +523,8 @@ void GLScene::draw_surface(int surface_id)
               }
           }
       }
+
+
 }
 
 void GLScene::adjustDisplayedImageSize()
@@ -643,7 +679,7 @@ cv::Mat GLScene::curvesImage()
     display(true);
 
     cv::Mat img;
-    img.create(imSize.width(), imSize.height(), CV_8UC3);
+    img.create(imSize.height(), imSize.width(), CV_8UC3);
 
     //use fast 4-byte alignment (default anyway) if possible
     glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);
@@ -665,6 +701,7 @@ cv::Mat GLScene::curvesImage()
     #endif
     QPointF topLeft(width()/2 - imSize.width()/2, height()/2 - imSize.height()/2);
     glReadPixels(topLeft.x(), topLeft.y(), imSize.width(), imSize.height(), inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+    cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
 
     return img;

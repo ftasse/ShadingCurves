@@ -120,19 +120,27 @@ void GraphicsView::createDistanceTransformDEBUG()
     dbw = new DebugWindow();
 
     GLScene *my_scene = (GLScene *) scene();
+    cv::Mat curvesIm = my_scene->curvesImage();
 
     cv::Mat curvesGrayIm;
-    cv::Mat curvesIm = my_scene->curvesImage();
-    cv::cvtColor(curvesIm, curvesGrayIm, CV_BGR2GRAY);
-    cv::cvtColor(curvesGrayIm,curvesIm,  CV_GRAY2BGR);
+    cv::cvtColor(curvesIm, curvesGrayIm, CV_RGB2GRAY);
+    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
 
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
 
-    //QImage image(dt.ptr(), dt.cols, dt.rows,dt.step, QImage::Format_RGB888);
-    QImage image(curvesIm.ptr(), curvesIm.cols, curvesIm.rows, curvesIm.step, QImage::Format_RGB888);
-    image.rgbSwapped();
-    dbw->setImage(image);
+    cv::Mat dt_normalized;
+    cv::normalize(dt, dt_normalized, 0.0, 255.0, cv::NORM_MINMAX);
+    dt_normalized.convertTo(dt_normalized, CV_8UC1);
+    cv::cvtColor(dt_normalized, dt_normalized, CV_GRAY2RGB);
 
+    //Uncomment this to display image in an opencv windiw
+    //cv::imshow("Distance transform", dt_normalized);
+
+    QImage image(dt_normalized.data, dt_normalized.cols, dt_normalized.rows,
+                 dt_normalized.step, QImage::Format_RGB888);
+
+    dbw->setWindowTitle("Distance Transform");
+    dbw->setImage(image);
     dbw->show();
 }

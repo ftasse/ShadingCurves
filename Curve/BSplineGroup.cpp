@@ -110,6 +110,16 @@ void BSplineGroup::removeSpline(int spline_id)
         }
     }
 
+
+    for (int i=0; i<m_surfaces.size(); ++i)
+    {
+        Surface& surf = surface(i);
+        if (surf.connected_spline_id == spline_id)
+        {
+            removeSurface(surf.idx);
+        }
+    }
+
     bspline.connected_cpts.clear();
     bspline.updateKnotVectors();
 }

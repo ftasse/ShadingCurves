@@ -7,7 +7,6 @@ DebugWindow::DebugWindow(QWidget *parent) :
     ui(new Ui::DebugWindow)
 {
     ui->setupUi(this);
-
     ui->graphicsView->setScene(new QGraphicsScene());
 }
 
@@ -18,6 +17,6 @@ DebugWindow::~DebugWindow()
 
 void DebugWindow::setImage(QImage image)
 {
-    QGraphicsPixmapItem *imageItem = ui->graphicsView->scene()->addPixmap(QPixmap().fromImage(image));
+    QGraphicsPixmapItem *imageItem = ui->graphicsView->scene()->addPixmap(QPixmap().fromImage(image, Qt::AutoColor));
     setGeometry(20,20,image.width()+20,image.height()+30);
 }

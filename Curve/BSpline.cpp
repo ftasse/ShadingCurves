@@ -2,6 +2,29 @@
 #include "BSplineGroup.h"
 #include <cmath>
 
+float distance_sqr(QPointF a, QPointF b)
+{
+    QPointF vec = a-b;
+    return vec.x()*vec.x()+vec.y()*vec.y();
+}
+
+float distance(QPointF a, QPointF b)
+{
+    return sqrt(distance_sqr(a, b));
+}
+
+QPointF nearestPoint(QPointF pt, QPointF a, QPointF b, float &t)
+{
+    QPointF ap = pt - a;
+    QPointF ab = b - a;
+    float ab2 = ab.x()*ab.x() + ab.y()*ab.y();
+    float ap_ab = ap.x()*ab.x() + ap.y()*ab.y();
+    t = ap_ab / ab2;
+    if (t < 0.0f) t = 0.0f;
+    else if (t > 1.0f) t = 1.0f;
+    return a + ab * t;
+}
+
 BSpline::BSpline(int degree):
     idx(-1), m_spec_degree(degree), m_degree(degree)
 {
@@ -97,25 +120,61 @@ float  BSpline::derivativeBasisFunction(int _i, int _n, double _t, int _der)
     return (fac1*Nin1 - fac2*Nin2);
 }
 
+float BSpline::closestParamToPointAt(int index)
+{
+    float lower = knotVectors()[degree()];
+    float upper = knotVectors()[knotVectors().size()-degree()-1];
+    QPointF pt = pointAt(index);
+
+    //Todo Flora: Remove this return statement
+    //when we want to use the nearest control point instead (so far, this is quite slow)
+    return index*(upper-lower)/(count()-1);
+
+    //Todo Flora: This is slow. use a more sophisticated algorithm
+    float t = 0.0;
+    float dist = 1e8;
+    int res = 20;
+    for (int i=1; i<res; ++i)
+    {
+        float t1 = i*(upper-lower)/(res-1);
+        float t2 = (i-1)*(upper-lower)/(res-1);
+        float s;
+        QPointF nearest =  nearestPoint(pt, curvePoint(t1), curvePoint(t2), s);
+        float d_tmp = distance(pt, nearest);
+        if (d_tmp < dist)
+        {
+            dist = d_tmp;
+            t = t1*(1.0-s) + t2*s;
+        }
+    }
+
+    return t;
+}
+
 QPointF BSpline::inward_normal(int index)
 {
-    float range = (knotVectors()[knotVectors().size()-degree()-1] - knotVectors()[degree()]);
-    float t = range*index / (float)(count()-1);
-    QPointF tangent = derivativeCurvePoint(t, 1);
+    float t = closestParamToPointAt(index);
+    QPointF tangent;
 
+    //Use control line segments derivative
+    if (index > 0 && index < count()-1) tangent = pointAt(index+1) - pointAt(index-1);
+    else if (index == 0)    tangent = pointAt(index+1) - pointAt(index);
+    else    tangent = pointAt(index) - pointAt(index-1);
+
+    /*//Use spline derivatives
+    tangent = derivativeCurvePoint(t, 1);
     if (index == count()-1)
     {
         if (connected_cpts[index] == connected_cpts[0])
             tangent = derivativeCurvePoint(0.0, 1);
         else
             tangent = pointAt(index) - pointAt(index-1);
-    }
+    }*/
 
     float norm = sqrt(tangent.x()*tangent.x() + tangent.y()*tangent.y());
     if (norm > 1e-5)
         tangent /= norm;
     QPointF normal(-tangent.y(), tangent.x());
-    //qDebug("%d: %.2f (%.2f %.2f) %.2f ", index, t, tangent.x(), tangent.y(), norm);
 
     return normal;
 }

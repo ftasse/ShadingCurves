@@ -18,10 +18,15 @@ public:
 
     //Utilites
     ControlPoint& pointAt(int index);
+    float closestParamToPointAt(int index);
     QPointF derivativeCurvePoint(float _t, unsigned int _der);
     float derivativeBasisFunction(int _i, int _n, double _t, int _der);
     float basisFunction(int _i, int _n, double _t);
 
+    QPointF curvePoint(float _t)
+    {
+        return derivativeCurvePoint(_t, 0);
+    }
 
     QVector<float>& knotVectors()
     {
@@ -31,6 +36,11 @@ public:
     unsigned int& degree()
     {
         return m_degree;
+    }
+
+    bool is_closed()
+    {
+        return connected_cpts.front() == connected_cpts.back();
     }
 
     int count()
