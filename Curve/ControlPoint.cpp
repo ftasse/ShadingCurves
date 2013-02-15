@@ -3,12 +3,12 @@
 #include "../Curve/BSplineGroup.h"
 
 ControlPoint::ControlPoint():
-    QPointF(), idx(-1)
+    QPointF(), idx(-1),mz(0)
 {
 }
 
 ControlPoint::ControlPoint(QPointF val):
-    QPointF(val), idx(-1)
+    QPointF(val), idx(-1),mz(0)
 {
 
 }

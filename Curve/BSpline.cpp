@@ -153,7 +153,7 @@ float BSpline::closestParamToPointAt(int index)
 
 QPointF BSpline::inward_normal(int index)
 {
-    float t = closestParamToPointAt(index);
+//    float t = closestParamToPointAt(index);
     QPointF tangent;
 
     //Use control line segments derivative

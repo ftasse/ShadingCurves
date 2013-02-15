@@ -122,7 +122,16 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     {
         if (m_curSplineIdx >=0 )
         {
-            m_splineGroup.createSurface(m_curSplineIdx);
+            // HENRIK, include distrance transform image
+            cv::Mat curvesIm = curvesImage();
+            cv::Mat curvesGrayIm;
+            cv::cvtColor(curvesIm, curvesGrayIm, CV_RGB2GRAY);
+            cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
+
+            cv::Mat dt;
+            cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
+
+            m_splineGroup.createSurface(m_curSplineIdx,dt);
             update();
         }
     }

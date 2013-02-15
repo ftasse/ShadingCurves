@@ -33,7 +33,8 @@ int BSplineGroup::addSurface()
     return num_surfaces() - 1;
 }
 
-int BSplineGroup::createSurface(int spline_id, float width)
+// HENRIK changes: add distance transform image to the parameters
+int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
 {
     int surface_id = addSurface();
     Surface& surf = surface(surface_id);
@@ -43,6 +44,7 @@ int BSplineGroup::createSurface(int spline_id, float width)
     surf.controlPoints().append(bspline.connected_cpts);
     QVector<int> translated_cpts_ids;
 
+    // loop through all control points for the given spline curve
     for (int k=0; k<bspline.count(); ++k)
     {
         if (k == bspline.count()-1 && bspline.connected_cpts[k] == bspline.connected_cpts[0]) //if closed curve
@@ -50,7 +52,19 @@ int BSplineGroup::createSurface(int spline_id, float width)
             translated_cpts_ids.push_back(translated_cpts_ids[0]);
         } else
         {
+            // HENRIK: move in the distance transform image
+            int counter = 1;
             QPointF normal = bspline.inward_normal(k);
+  /*          QPointF current = bspline.pointAt(k) + normal;
+            double maxD;
+            cv::Point maxL;
+            cv::Mat mask = cv::Mat::zeros(dt.size,CV_8UC1);
+            mask = */
+ //           cv::minMaxLoc(dt,NULL,&maxD,NULL,&maxL,)
+
+//            cv::Mat neighbour = dt(cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)); // is this correct in terms of dt's coordinate system ((x,y)->(row,column))?
+ //           cv::max(neighbour)
+
             QPointF new_cpt = bspline.pointAt(k) + normal*width;
             int cpt_id = addControlPoint(new_cpt);
             translated_cpts_ids.push_back(cpt_id);

@@ -5,6 +5,7 @@
 #include "../Curve/ControlPoint.h"
 #include "../Curve/BSpline.h"
 #include "../Curve/Surface.h"
+#include "../Utilities/ImageUtils.h"
 
 class BSplineGroup
 {
@@ -17,7 +18,7 @@ public:
 
     bool addControlPointToSpline(int spline_id, int cpt_id);
 
-    int createSurface(int spline_id, float width = 50.0);
+    int createSurface(int spline_id, cv::Mat dt, float width = 50.0);
 
     void removeControlPoint(int cpt_id);
     void removeSpline(int spline_id);

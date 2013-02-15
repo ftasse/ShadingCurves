@@ -21,12 +21,24 @@ public:
         return connected_splines.size();
     }
 
+    float z()
+    {
+        return mz;
+    }
+
+    void setZ(float z)
+    {
+        mz = z;
+    }
+
 public:
     BSplineGroup *m_splineGroup;
     QVector<int> connected_splines;
     int idx;
 
 private:
+    float mz;
+
 };
 
 #endif // CONTROLPOINT_H
