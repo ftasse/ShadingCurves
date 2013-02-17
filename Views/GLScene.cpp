@@ -133,7 +133,9 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_R)
     {
-        region_coloring();
+        //Reset blank image
+        m_curImage = cv::Scalar(255,255,255);
+        update();
     } else if (event->key() == Qt::Key_S)
     {
         if (m_curSplineIdx >=0 )
