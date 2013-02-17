@@ -42,12 +42,13 @@ public:
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
+    cv::Mat curvesImage(bool only_closed_curves = false);
+    void region_coloring(QPoint seed = QPoint(0,0), QColor color = Qt::gray);
+
     cv::Mat& currentImage()
     {
         return m_curImage;
     }
-
-    cv::Mat curvesImage();
 
     SketchMode& sketchmode()
     {
@@ -78,6 +79,7 @@ public:
     BSplineGroup m_splineGroup;
     float pointSize;
     bool showControlMesh;
+    bool showControlPoints;
 
     QSizeF imSize;
 };

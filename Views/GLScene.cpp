@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 #include <QGraphicsView>
+#include <QColorDialog>
 #include <algorithm>
 #include <set>
 
@@ -28,6 +29,7 @@ GLScene::GLScene(QObject *parent) :
     m_sketchmode = IDLE_MODE;
     pointSize = 10.0;
     showControlMesh = true;
+    showControlPoints = true;
 }
 
 GLScene:: ~GLScene()
@@ -113,13 +115,26 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         }
     } else
     {
-        QGraphicsScene::mouseDoubleClickEvent(event);
+        uint nodeId, targetId;
+        if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
+        {
+            QPoint seed = sceneToImageCoords(event->scenePos().toPoint()).toPoint();
+            QColor color = QColorDialog::getColor(Qt::black, (QWidget*)this->activeWindow());
+            if(color.isValid())
+            {
+                region_coloring(seed, color);
+            }
+        } else
+            QGraphicsScene::mouseDoubleClickEvent(event);
     }
 }
 
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_S)
+    if (event->key() == Qt::Key_R)
+    {
+        region_coloring();
+    } else if (event->key() == Qt::Key_S)
     {
         if (m_curSplineIdx >=0 )
         {
@@ -324,6 +339,10 @@ void GLScene::draw_image(cv::Mat& image)
 
 void GLScene::draw_control_point(int point_id)
 {
+    ControlPoint& cpt = m_splineGroup.controlPoint(point_id);
+
+    if (!showControlPoints || !cpt.isVisible)
+        return;
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
@@ -333,9 +352,7 @@ void GLScene::draw_control_point(int point_id)
         glColor3d(1.0, 0.0, 0.0);
     }
 
-    ControlPoint& cpt = m_splineGroup.controlPoint(point_id);
     QPointF pos = imageToSceneCoords(cpt);
-
     glBegin(GL_POINTS);
     glVertex3d(pos.x(), pos.y(), 0.5);
     glEnd();
@@ -678,9 +695,9 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
     return pointIdx;
 }
 
-cv::Mat GLScene::curvesImage()
+cv::Mat GLScene::curvesImage(bool only_closed_curves)
 {
-    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
@@ -691,7 +708,17 @@ cv::Mat GLScene::curvesImage()
     glLoadIdentity();
 
     glRenderMode(GL_RENDER);
-    display(true);
+    glLineWidth(1.0);
+    for (int i=0; i<m_splineGroup.num_splines(); ++i)
+    {
+        if (m_splineGroup.spline(i).count() == 0)
+            continue;
+
+        if (only_closed_curves && !(m_splineGroup.spline(i).is_closed()))
+            continue;
+
+        draw_spline(m_splineGroup.spline(i).idx, true);
+    }
 
     cv::Mat img;
     img.create(imSize.height(), imSize.width(), CV_8UC3);
@@ -722,6 +749,26 @@ cv::Mat GLScene::curvesImage()
     return img;
 }
 
+
+void GLScene::region_coloring(QPoint seed, QColor color)
+{
+    cv::Mat curv_img = curvesImage(true);
+    cv::cvtColor(curv_img, curv_img, CV_RGB2GRAY);
+    cv::resize(curv_img, curv_img, cv::Size(m_curImage.cols, m_curImage.rows));
+    cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
+    //cv::imshow("Closed Curves", curv_img);
+
+    cv::Mat mask(m_curImage.cols+2, m_curImage.rows+2, curv_img.type(), cv::Scalar(0));
+    cv::Mat mask_vals = mask(cv::Rect(0, 0, m_curImage.cols, m_curImage.rows));
+    curv_img.copyTo(mask_vals);
+    //cv::imshow("Mask", mask);
+
+    cv::Mat result = m_curImage.clone() ;//m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
+    cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),cv::Scalar(color.blue(), color.green(), color.red()));
+
+    m_curImage = result.clone();
+    update();
+}
 
 bool GLScene::openImage(std::string fname)
 {

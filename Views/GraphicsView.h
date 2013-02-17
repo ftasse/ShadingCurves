@@ -26,6 +26,7 @@ public slots:
 
     void changeControlPointSize(int pointSize);
     void showControlMesh(bool status);
+    void showControlPoints(bool status);
     void createDistanceTransformDEBUG();
 
 private:

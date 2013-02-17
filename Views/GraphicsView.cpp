@@ -34,6 +34,13 @@ void GraphicsView::showControlMesh(bool status)
     my_scene->update();
 }
 
+void GraphicsView::showControlPoints(bool status)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->showControlPoints = status;
+    my_scene->update();
+}
+
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();

@@ -35,6 +35,7 @@ public:
     BSplineGroup *m_splineGroup;
     QVector<int> connected_splines;
     int idx;
+    bool isVisible;
 
 private:
     float mz;
