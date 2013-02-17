@@ -77,6 +77,7 @@ private:
 public:
     BSplineGroup m_splineGroup;
     float pointSize;
+    bool showControlMesh;
 
     QSizeF imSize;
 };

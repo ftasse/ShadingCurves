@@ -14,6 +14,7 @@ public:
     void updateKnotVectors();
 
     //Normal at the (index)th control point
+    QPointF inward_normal_inaccurate(int index);    //This is fast but inaccurate. will not work in areas with high curvature
     QPointF inward_normal(int index);
 
     //Utilites

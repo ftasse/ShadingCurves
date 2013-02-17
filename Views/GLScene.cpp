@@ -27,6 +27,7 @@ GLScene::GLScene(QObject *parent) :
     m_curSplineIdx = -1;
     m_sketchmode = IDLE_MODE;
     pointSize = 10.0;
+    showControlMesh = true;
 }
 
 GLScene:: ~GLScene()
@@ -122,6 +123,16 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     {
         if (m_curSplineIdx >=0 )
         {
+            // FLORA, delete any previous surface attached to this spline
+            for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+            {
+                Surface& surface = m_splineGroup.surface(i);
+                if (surface.connected_spline_id == m_curSplineIdx)
+                {
+                    m_splineGroup.removeSurface(surface.idx);
+                }
+            }
+
             // HENRIK, include distrance transform image
             cv::Mat curvesIm = curvesImage();
             cv::Mat curvesGrayIm;
@@ -484,38 +495,33 @@ void GLScene::draw_surface(int surface_id)
       delete [] v_knots;
 
       //Display Control Polygon
-      glColor3f(0.65,0.65,0.65);
-      glLineWidth(2.0);
-      for (int k=0; k<surface.controlPoints().size(); ++k)
+      if (showControlMesh)
       {
-          glBegin(GL_LINE_STRIP);
-          for (int l=0; l<surface.controlPoints()[k].size(); ++l)
-          {
-              QPoint pos(k, l);
-              QPointF scenePos = imageToSceneCoords(surface.pointAt(pos));
-              glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
-          }
-          glEnd();
-      }
-      if (!m_splineGroup.spline(surface.connected_spline_id).is_closed())
-      {
-        glBegin(GL_LINE_STRIP);
+        glColor3f(0.65,0.65,0.65);
+        glLineWidth(2.0);
         for (int k=0; k<surface.controlPoints().size(); ++k)
         {
-            QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, 0)));
-            glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+            glBegin(GL_LINE_STRIP);
+            for (int l=0; l<surface.controlPoints()[k].size(); ++l)
+            {
+                QPoint pos(k, l);
+                QPointF scenePos = imageToSceneCoords(surface.pointAt(pos));
+                glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+            }
+            glEnd();
         }
-        glEnd();
-
-        glBegin(GL_LINE_STRIP);
-        for (int k=0; k<surface.controlPoints().size(); ++k)
+        for (int l=0; l<surface.controlPoints()[0].size(); ++l)
         {
-            QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, surface.controlPoints()[k].size()-1)));
-            glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+            glBegin(GL_LINE_STRIP);
+            for (int k=0; k<surface.controlPoints().size(); ++k)
+            {
+                QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, l)));
+                glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+            }
+            glEnd();
         }
-        glEnd();
+        glLineWidth(1.0);
       }
-      glLineWidth(1.0);
 
       glPopName();
       glPopName();

@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>312</height>
+            <height>297</height>
            </rect>
           </property>
           <attribute name="label">
@@ -83,7 +83,7 @@
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>120</y>
+             <y>160</y>
              <width>160</width>
              <height>29</height>
             </rect>
@@ -102,7 +102,7 @@
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>100</y>
+             <y>140</y>
              <width>66</width>
              <height>17</height>
             </rect>
@@ -124,6 +124,22 @@
             <string>Add control points</string>
            </property>
           </widget>
+          <widget class="QCheckBox" name="showControlMeshBox">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>100</y>
+             <width>161</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Show Control Mesh</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
          <widget class="QWidget" name="shading_toolbox">
           <property name="geometry">
@@ -131,7 +147,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>312</height>
+            <height>297</height>
            </rect>
           </property>
           <attribute name="label">
@@ -151,7 +167,7 @@
      <x>0</x>
      <y>0</y>
      <width>840</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

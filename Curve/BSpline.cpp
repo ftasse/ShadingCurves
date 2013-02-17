@@ -126,10 +126,6 @@ float BSpline::closestParamToPointAt(int index)
     float upper = knotVectors()[knotVectors().size()-degree()-1];
     QPointF pt = pointAt(index);
 
-    //Todo Flora: Remove this return statement
-    //when we want to use the nearest control point instead (so far, this is quite slow)
-    return index*(upper-lower)/(count()-1);
-
     //Todo Flora: This is slow. use a more sophisticated algorithm
     float t = 0.0;
     float dist = 1e8;
@@ -151,9 +147,8 @@ float BSpline::closestParamToPointAt(int index)
     return t;
 }
 
-QPointF BSpline::inward_normal(int index)
+QPointF BSpline::inward_normal_inaccurate(int index)
 {
-//    float t = closestParamToPointAt(index);
     QPointF tangent;
 
     //Use control line segments derivative
@@ -161,20 +156,30 @@ QPointF BSpline::inward_normal(int index)
     else if (index == 0)    tangent = pointAt(index+1) - pointAt(index);
     else    tangent = pointAt(index) - pointAt(index-1);
 
-    /*//Use spline derivatives
-    tangent = derivativeCurvePoint(t, 1);
-    if (index == count()-1)
-    {
-        if (connected_cpts[index] == connected_cpts[0])
-            tangent = derivativeCurvePoint(0.0, 1);
-        else
-            tangent = pointAt(index) - pointAt(index-1);
-    }*/
-
     float norm = sqrt(tangent.x()*tangent.x() + tangent.y()*tangent.y());
     if (norm > 1e-5)
         tangent /= norm;
     QPointF normal(-tangent.y(), tangent.x());
 
     return normal;
+}
+
+QPointF BSpline::inward_normal(int index)
+{
+    float t = closestParamToPointAt(index);
+    //Use spline derivatives
+    QPointF tangent = derivativeCurvePoint(t, 1);
+    if (index == count()-1)
+    {
+        if (connected_cpts[index] == connected_cpts[0])
+            tangent = derivativeCurvePoint(0.0, 1);
+        else
+            tangent = pointAt(index) - pointAt(index-1);
+    }
+
+    float norm = sqrt(tangent.x()*tangent.x() + tangent.y()*tangent.y());
+    if (norm > 1e-5)
+        tangent /= norm;
+
+    return QPointF(-tangent.y(), tangent.x());
 }

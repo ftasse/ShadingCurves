@@ -25,6 +25,7 @@ public slots:
     void saveCurves();
 
     void changeControlPointSize(int pointSize);
+    void showControlMesh(bool status);
     void createDistanceTransformDEBUG();
 
 private:

@@ -27,6 +27,13 @@ void GraphicsView::changeControlPointSize(int pointSize)
     my_scene->update();
 }
 
+void GraphicsView::showControlMesh(bool status)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->showControlMesh = status;
+    my_scene->update();
+}
+
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
