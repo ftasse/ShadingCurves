@@ -27,6 +27,7 @@ public:
     //IO
     bool load(std::string fname);
     void save(std::string fname);
+    void saveOFF(std::string fname);
 
     //Utilities
     QList<Surface>& surfaces()
@@ -73,6 +74,9 @@ public:
     {
         return m_cpts.size();
     }
+
+    // HENRIK: find the closest highest value in neighbourhood
+    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL);
 
 private:
     QList<Surface> m_surfaces;

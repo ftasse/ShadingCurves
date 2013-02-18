@@ -815,6 +815,12 @@ void GLScene::saveCurves(std::string fname)
     m_splineGroup.save(fname);
 }
 
+// HENRIK, save CPs to OFF
+void GLScene::saveOff(std::string fname)
+{
+    m_splineGroup.saveOFF(fname);
+}
+
 void nurbsError(uint errorCode)
 {
    const GLubyte *estring;

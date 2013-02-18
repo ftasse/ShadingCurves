@@ -128,6 +128,23 @@ void GraphicsView::saveCurves()
     }
 }
 
+void GraphicsView::saveOff()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Save to OFF"),
+                                    "",
+                                    tr("OFF files (*.off)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+        my_scene->saveOff(fileName.toStdString());
+    }
+}
+
 // ******** DEBUG FUNCTIONS ********
 void GraphicsView::createDistanceTransformDEBUG()
 {

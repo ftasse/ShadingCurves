@@ -195,6 +195,7 @@
     <addaction name="separator"/>
     <addaction name="actionOpen_Curves"/>
     <addaction name="actionSave_Curves"/>
+    <addaction name="actionSave_OFF"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -249,6 +250,11 @@
   <action name="actionDistance_transform">
    <property name="text">
     <string>Distance transform</string>
+   </property>
+  </action>
+  <action name="actionSave_OFF">
+   <property name="text">
+    <string>Save OFF</string>
    </property>
   </action>
  </widget>

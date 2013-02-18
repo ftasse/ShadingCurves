@@ -25,6 +25,7 @@ public:
     void saveImage(std::string fname);
     bool openCurves(std::string fname);
     void saveCurves(std::string fname);
+    void saveOff(std::string fname);
 
     //Sketching functions
     void createBSpline();

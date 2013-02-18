@@ -24,6 +24,9 @@ public slots:
     void loadCurves();
     void saveCurves();
 
+    // HENRIK: add write to off-file support
+    void saveOff();
+
     void changeControlPointSize(int pointSize);
     void showControlMesh(bool status);
     void showControlPoints(bool status);
