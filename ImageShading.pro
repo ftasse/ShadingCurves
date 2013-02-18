@@ -49,3 +49,4 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 
+#blah
