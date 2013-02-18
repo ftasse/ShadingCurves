@@ -209,9 +209,16 @@
     </property>
     <addaction name="actionDistance_transform"/>
    </widget>
+   <widget class="QMenu" name="menu3D">
+    <property name="title">
+     <string>3D</string>
+    </property>
+    <addaction name="actionView_surface_in_3D"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuDebug"/>
+   <addaction name="menu3D"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -255,6 +262,11 @@
   <action name="actionSave_OFF">
    <property name="text">
     <string>Save OFF</string>
+   </property>
+  </action>
+  <action name="actionView_surface_in_3D">
+   <property name="text">
+    <string>View surface in 3D</string>
    </property>
   </action>
  </widget>
