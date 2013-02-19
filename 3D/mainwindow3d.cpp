@@ -1071,8 +1071,6 @@ void MainWindow3D::connectAll()
 			glwidget1, 			  SLOT(setShowCurvMMesh(bool)));
 	connect(ctrlWidget1->radioMeshCurvG, 	SIGNAL(toggled(bool)),
 			glwidget1, 			  SLOT(setShowCurvGMesh(bool)));
-	connect(ctrlWidget1->radioMeshCurvTG, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowCurvTGMesh(bool)));
     connect(ctrlWidget1->radioMeshHeight, 	SIGNAL(toggled(bool)),
             glwidget1, 			  SLOT(setShowHeightMesh(bool)));
 	connect(ctrlWidget1->radioMeshIP, 	SIGNAL(toggled(bool)),
@@ -1092,8 +1090,6 @@ void MainWindow3D::connectAll()
 			glwidget2, 			  SLOT(setShowCurvMMesh(bool)));
 	connect(ctrlWidget2->radioMeshCurvG, 	SIGNAL(toggled(bool)),
 			glwidget2, 			  SLOT(setShowCurvGMesh(bool)));
-	connect(ctrlWidget2->radioMeshCurvTG, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowCurvTGMesh(bool)));
     connect(ctrlWidget2->radioMeshHeight, 	SIGNAL(toggled(bool)),
             glwidget2, 			  SLOT(setShowHeightMesh(bool)));
 	connect(ctrlWidget2->radioMeshIP, 	SIGNAL(toggled(bool)),
