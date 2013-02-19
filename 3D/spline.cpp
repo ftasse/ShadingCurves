@@ -3,6 +3,9 @@
 #include "spline.h"
 #include <cmath>
 
+// HENRIK, add string class
+#include <string>
+
 using namespace std;
 
 SplineC::SplineC(void)
@@ -191,14 +194,15 @@ void SplineC::refine(void)
 
     // shorten knot vector at each end
     my_tau.clear();
-    for (i = floor(my_deg/2) ; i < my_refTau.size() - floor(my_deg/2) ; i++)
+    // HENRIK edit: convert my_deg to float
+    for (i = floor(float(my_deg)/2) ; i < my_refTau.size() - floor(float(my_deg)/2) ; i++)
     {
         my_tau.push_back(my_refTau[i]);
     }
     my_refTau.clear();
     // shorten control net at each end
     my_plg.clear();
-    for (i = floor(my_deg/2) ; i < my_refPlg.size() - floor(my_deg/2) ; i++)
+    for (i = floor(float(my_deg)/2) ; i < my_refPlg.size() - floor(float(my_deg)/2) ; i++)
     {
         my_plg.push_back(my_refPlg[i]);
     }

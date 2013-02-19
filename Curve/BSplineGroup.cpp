@@ -1,11 +1,14 @@
 #include <fstream>
 #include <QDebug>
 #include <QLineF>
+#include <assert.h>
+#include <stdio.h>
 
 #include "BSplineGroup.h"
 
 BSplineGroup::BSplineGroup()
 {
+    EPSILON = .0001f;
 }
 
 int BSplineGroup::addControlPoint(QPointF value)
@@ -65,20 +68,28 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
             QPointF tmp = bspline.pointAt(k) + normal*5;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt;
+            QList<QPoint> visited;
 
             while(true) {
                 float oldD = currentD;
                 QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
-                                    ,&currentD,normalL);
+                                    ,&currentD,normalL,visited);
+  //              qDebug() << current.x() << " " << current.y();
+  //              qDebug() << m.x() << " " << m.y();
                 // check lines
                 QLineF currentL(bspline.pointAt(k),m);
                 float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-                if(oldD==currentD || currentD >= width || angle > angleT) {
+ //               if(!visited.isEmpty())
+ //                   qDebug() << visited.last().x() << " " << m.x() << "" << visited.last().y() << " " << m.y() << " " << visited.count();
+                if(abs(oldD-currentD)<EPSILON || currentD >= width) { // || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
+                    qDebug() << "++++++++++++++++++++++++";
                     break;
-                } else
+                } else {
+                    visited.append(current);
                     current = m;
+                }
             }
 
             int cpt_id = addControlPoint(new_cpt);
@@ -248,25 +259,30 @@ void BSplineGroup::saveOFF(std::string fname)
 
 // HENRIK: find max value in I, in neighbourhood N
 // Question: how does (x,y) relate to I.a(y,x) (in terms of indexing)?
-QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL)
+QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
 {
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();
-    float m = 0;
+    float m = *oldD;
     QList<QPoint> cand; // candidates
     for(int x=sx;x<=N.width;x++)
         for(int y=sy;y<=N.height;y++) {
             if(x<0 || x>=S.width || y<0 || y>=S.height)
-                    continue;
+                continue;
             float d = I.at<float>(y,x);
-            if(abs(d-m)<0.1)
+            bool visCheck = visited.contains(QPoint(x,y));
+            if(abs(d-m)<EPSILON && !visCheck) // TODO: solve this
                 cand.append(QPoint(x,y));
-            if(d>m) {
+            else if(d>m) {
                 m=d;
-                cand.empty();
+                cand.clear();
                 cand.append(QPoint(x,y));
             }
+            qDebug() << d << " " << m << " " << x << " " << y;
+            bool tmp = d-m>EPSILON;
+            qDebug() << tmp << " " << visCheck;
+            assert(!(d-m>EPSILON && visCheck));
         }
 
     // loop through the candidates
@@ -280,7 +296,10 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL)
             winner = *it;
         }
     }
-
+    qDebug() << "Winner: " << winner.x() << " " << winner.y();
+    qDebug() << "------------";
     *oldD = m;
     return winner;
+
+ //   return cand.first();
 }

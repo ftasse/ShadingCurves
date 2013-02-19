@@ -26,7 +26,7 @@ GLviewsubd::GLviewsubd(QWidget *parent, QGLWidget *shareWidget) : GLviewport(par
     feature_lines_enabled = true;
     line_enabled = false;
 	IP_mesh_enabled = false;
-	triang_enabled = false;
+    triang_enabled = false;
 	triang2_enabled = false;
 	ctrl_enabled = true;
     old_enabled = false;
@@ -375,8 +375,9 @@ void GLviewsubd::mousePressEvent(QMouseEvent *event)
 		{
 			poi = worldToScreen(mesh->my_vertices[i].my_point);
 			x = poi.getX();
-			y = poi.getY();
-			dst = sqrt((mouseX - x) * (mouseX - x) + (mouseY - y) * (mouseY - y));
+            y = poi.getY();
+            // HENRIK edit: convert to float
+            dst = sqrt(float((mouseX - x) * (mouseX - x) + (mouseY - y) * (mouseY - y)));
 			if (dst < minD)
 			{
 				minD = dst;

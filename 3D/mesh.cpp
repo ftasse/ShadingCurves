@@ -11,7 +11,11 @@
 //#include <stdio.h>
 
 #include <time.h>
+
+#ifdef __linux__
 #include <sys/time.h>
+#endif
+
 #include <iostream>
 #include <string.h>
 
@@ -534,7 +538,7 @@ void Mesh::compCurv(void)
 						side21, side22, side23, m2, angle2,
                         sum, sumM, sumG, vor, minM, maxM, minG, maxG, mm, ang, angle;
 
-	PointPrec PI = 4 * atan(1);
+    PointPrec PI = 4 * atan(1.0f);
 
 //cout << "Computing Mean curvature... " << endl;
 
@@ -804,7 +808,7 @@ void Mesh::compCurvG(void)
     Point_3D			poi1, poi2, poi3;
     PointPrec			side1, side2, side3, m, angle, sum, minG, maxG;
 
-    PointPrec PI = 4 * atan(1);
+    PointPrec PI = 4 * atan(1.0f);
 
 //cout << "Computing Gaussian curvature... " << endl;
 
@@ -1627,9 +1631,13 @@ void Mesh::times (const char *which) {
 
     wall = last_wall;
     cpu = last_cpu;
+
+    // HENRIK: gettimeofday does not exist on windows
+    #ifdef __linux__
     if (gettimeofday(&tv,NULL) != 0 ||
             (stamp = clock()) == (clock_t)-1)
         cout << "Time failed" << endl;
+    #endif
     last_wall = tv.tv_sec+1.0e-6*tv.tv_usec;
     last_cpu = stamp/(double)CLOCKS_PER_SEC;
     if (strlen(which) > 0) {
