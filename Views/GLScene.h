@@ -79,6 +79,7 @@ private:
 public:
     BSplineGroup m_splineGroup;
     float pointSize;
+    float surfaceWidth;
     bool showControlMesh;
     bool showControlPoints;
 

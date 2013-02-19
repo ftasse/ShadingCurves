@@ -29,6 +29,7 @@ public slots:
     void saveOff();
 
     void changeControlPointSize(int pointSize);
+    void changeSurfaceWidth(int surfaceWidth);
     void showControlMesh(bool status);
     void showControlPoints(bool status);
     void createDistanceTransformDEBUG();

@@ -28,6 +28,7 @@ GLScene::GLScene(QObject *parent) :
     m_curSplineIdx = -1;
     m_sketchmode = IDLE_MODE;
     pointSize = 10.0;
+    surfaceWidth = 50.0;
     showControlMesh = true;
     showControlPoints = true;
 }
@@ -159,7 +160,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
             cv::Mat dt;
             cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
 
-            m_splineGroup.createSurface(m_curSplineIdx,dt);
+            m_splineGroup.createSurface(m_curSplineIdx,dt, surfaceWidth);
             update();
         }
     }

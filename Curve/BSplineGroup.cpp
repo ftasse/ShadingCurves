@@ -62,7 +62,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
             float currentD = 0;
             QPointF normal = bspline.inward_normal(k);
             QLineF normalL(bspline.pointAt(k),bspline.pointAt(k) + normal*width);
-            QPointF tmp = bspline.pointAt(k) + normal*5;
+            QPointF tmp = bspline.pointAt(k) + normal*width;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt;
 
