@@ -76,12 +76,14 @@ public:
     }
 
     // HENRIK: find the closest highest value in neighbourhood
-    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL);
+    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited);
 
 private:
     QList<Surface> m_surfaces;
     QList<BSpline> m_splines;
     QList<ControlPoint> m_cpts;
+
+    float EPSILON;
 };
 
 #endif // BSPLINEGROUP_H
