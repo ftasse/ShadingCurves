@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include "../Views/DebugWindow.h"
+#include "../3D/mainwindow3d.h"
 
 class GraphicsView : public QGraphicsView
 {
@@ -31,10 +32,11 @@ public slots:
     void showControlMesh(bool status);
     void showControlPoints(bool status);
     void createDistanceTransformDEBUG();
+    void show3Dwidget();
 
 private:
-    DebugWindow *dbw;
-    
+    DebugWindow     *dbw;
+    MainWindow3D    *glw;
 };
 
 #endif // GRAPHICSVIEW_H

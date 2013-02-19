@@ -175,3 +175,13 @@ void GraphicsView::createDistanceTransformDEBUG()
     dbw->setImage(image);
     dbw->show();
 }
+
+void GraphicsView::show3Dwidget()
+{
+    glw = new MainWindow3D();
+
+    // transfer mesh
+
+    glw->setWindowTitle("3D View");
+    glw->show();
+}

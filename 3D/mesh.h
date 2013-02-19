@@ -26,10 +26,6 @@ public:
 	unsigned int 	my_index,
 					my_valency;
 
-	unsigned int 	my_i, // for mesh to rays conversion
-					my_j,
-					my_k;
-
     bool			isOnBoundary,
                     isFeature,
                     isStable;
@@ -54,7 +50,7 @@ public:
 class MeshCorner
 {
 public:
-    MeshCorner() { my_alreadyIn = false; };
+    MeshCorner() { ; };
    ~MeshCorner() { ; };
 
     unsigned int	 my_index;
@@ -69,7 +65,6 @@ public:
     Point_3D		 my_Epoi,
                      my_edgeContr; // for Int. C-C
 
-    bool			my_alreadyIn;
     unsigned int	my_newEindex; //index of the new edge-vertex
 
     unsigned int    my_posi, my_posj, my_posa, my_posb;

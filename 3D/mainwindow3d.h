@@ -21,10 +21,8 @@ class MainWindow3D : public QMainWindow
 	Q_OBJECT
 
 public:
-    MainWindow3D(int ac, char **av, int width, int height);
+    MainWindow3D();
     ~MainWindow3D();
-	int argc;
-	char **argv;
 
 signals:
 	void resetSX1(int);

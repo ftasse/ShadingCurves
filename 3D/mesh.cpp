@@ -30,7 +30,6 @@ void MeshVertex::coutV(void)
 	}
     cout << endl;
     cout << "x, y, z: " << my_point;
-    cout << "k, i, j: " << my_k << " " << my_i << " " << my_j << endl;
     cout << "CurvMfl: " << my_curvM << ", CurvGfl: " << my_curvG << endl;
     cout << "CurvMsm: " << my_curvMsmooth << ", CurvGsm: " << my_curvGsmooth << endl;
 }
@@ -391,7 +390,6 @@ void Mesh::build(void)
             corner.my_vIndex = facet->my_vertIndices[j];
             corner.my_vertex = &(my_vertices[corner.my_vIndex]);
             corner.my_facet = facet;
-            corner.my_alreadyIn = false;
             corner.my_nIndex = facet->my_vertIndices[(j + 1) % facet->my_valency];
             facet->my_corners.push_back(corner);
         }

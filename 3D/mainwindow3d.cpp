@@ -11,11 +11,8 @@
 
 using namespace std;
 
-MainWindow3D::MainWindow3D(int ac, char **av, int width, int height)
+MainWindow3D::MainWindow3D()
 {
-	argc = ac;
-	argv = av;
-
 	widget = new QWidget;
     setCentralWidget(widget);
 
@@ -42,7 +39,7 @@ MainWindow3D::MainWindow3D(int ac, char **av, int width, int height)
 
     setWindowTitle(tr("Mesh Visualisation"));
 	setMinimumSize(350, 250);
-    resize(width/3, 3*height/4);
+//    resize(width/3, 3*height/4);
 
 	NotFullScr = true;
 
@@ -316,7 +313,7 @@ void MainWindow3D::open1()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "../../models",
+                                                "./Data",
                                                 tr("(*.off *.ply)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -335,7 +332,7 @@ void MainWindow3D::openLine1()
 
     lineFileName = QFileDialog::getOpenFileName(this,
                                                 tr("Open File"),
-                                                "../../models",
+                                                "./Data",
                                                 tr("(*.crv)"));
     if (!lineFileName.isEmpty())
     {
@@ -354,7 +351,7 @@ void MainWindow3D::openBatch1()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "../../models",
+                                                "./Data",
 												tr("(*.bat)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -373,7 +370,7 @@ void MainWindow3D::open2()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "../../models",
+                                                "./Data",
                                                 tr("(*.off *.ply)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -392,7 +389,7 @@ void MainWindow3D::openBatch2()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "../../models",
+                                                "./Data",
                                                 tr("(*.bat)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -411,7 +408,7 @@ void MainWindow3D::save1()
 	QString		inp;
 	bool		isPly;
 
-	inp = "./input/";
+    inp = "./Data";
 
 	if (glwidget1->indexMesh < 0)
 	{
@@ -461,7 +458,7 @@ void MainWindow3D::save2()
 	QString		inp;
 	bool		isPly;
 
-	inp = "./input/";
+    inp = "./Data";
 
 	if (glwidget2->indexMesh < 0)
 	{
@@ -511,7 +508,7 @@ void MainWindow3D::saveLim1()
 	QString		inp;
 	bool		isPly;
 
-	inp = "./input/";
+    inp = "./Data";
 
 	if (glwidget1->indexMesh < 0)
 	{
@@ -561,7 +558,7 @@ void MainWindow3D::saveLim2()
     QString		inp;
     bool		isPly;
 
-    inp = "./input/";
+    inp = "./Data";
 
     if (glwidget2->indexMesh < 0)
     {

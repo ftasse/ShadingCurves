@@ -23,7 +23,6 @@ private:
 
 public slots:
     void center();
-
 };
 
 #endif // MAINWINDOW_H
