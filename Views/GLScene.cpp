@@ -13,7 +13,7 @@
 #ifdef _WIN32 || _WIN64
 #include <windows.h>
 #endif
-#include <GL/glew.h>
+#include "glew/GL/glew.h"
 #include <GL/glu.h>
 
 static const unsigned int  SELECTION_BUFFER_SIZE = 10000;

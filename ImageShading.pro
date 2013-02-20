@@ -62,8 +62,10 @@ FORMS    += mainwindow.ui \
 
 win32 {
 QMAKE_LFLAGS += -static-libgcc -static-libstdc++
-}
+DEFINES += WIN32 _WIN32
+DEFINES += USING_GLEW
 DEFINES += GLEW_STATIC
+}
 
 INCLUDEPATH += $$PWD
 win32:INCLUDEPATH += C:/opencv/build/include

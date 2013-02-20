@@ -65,26 +65,24 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
             float currentD = 0;
             QPointF normal = bspline.inward_normal(k);
             QLineF normalL(bspline.pointAt(k),bspline.pointAt(k) + normal*width);
-            QPointF tmp = bspline.pointAt(k) + normal*width;
+            QPointF tmp = bspline.pointAt(k) + normal*5;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt;
             QList<QPoint> visited;
 
             while(true) {
                 float oldD = currentD;
-                QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
+                QPoint m = localMax(dt,cv::Rect(current.x()-2,current.y()-2,current.x()+2,current.y()+2)
                                     ,&currentD,normalL,visited);
-  //              qDebug() << current.x() << " " << current.y();
+ //               qDebug() << oldD << " " << currentD;
   //              qDebug() << m.x() << " " << m.y();
                 // check lines
                 QLineF currentL(bspline.pointAt(k),m);
                 float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
- //               if(!visited.isEmpty())
- //                   qDebug() << visited.last().x() << " " << m.x() << "" << visited.last().y() << " " << m.y() << " " << visited.count();
-                if(abs(oldD-currentD)<EPSILON || currentD >= width) { // || angle > angleT) {
+                if(abs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
-                    qDebug() << "++++++++++++++++++++++++";
+   //                 qDebug() << "++++++++++++++++++++++++";
                     break;
                 } else {
                     visited.append(current);
@@ -283,9 +281,9 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
                 cand.clear();
                 cand.append(QPoint(x,y));
             }
-            qDebug() << d << " " << m << " " << x << " " << y;
-            bool tmp = d-m>EPSILON;
-            qDebug() << tmp << " " << visCheck;
+ //           qDebug() << d << " " << m << " " << x << " " << y;
+ //           bool tmp = d-m>EPSILON;
+ //           qDebug() << tmp << " " << visCheck;
             assert(!(d-m>EPSILON && visCheck));
         }
 
@@ -300,8 +298,8 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
             winner = *it;
         }
     }
-    qDebug() << "Winner: " << winner.x() << " " << winner.y();
-    qDebug() << "------------";
+//    qDebug() << "Winner: " << winner.x() << " " << winner.y();
+//    qDebug() << "------------";
     *oldD = m;
     return winner;
 
