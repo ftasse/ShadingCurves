@@ -39,12 +39,12 @@ public:
     void display(bool only_show_splines = false);
     void draw_image(cv::Mat &image);
     void draw_control_point(int point_id);
-    void draw_spline(int spline_id, bool only_show_splines = false);
+    void draw_spline(int spline_id, bool only_show_splines = false, bool transform = true);
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
     cv::Mat curvesImage(bool only_closed_curves = false);
-    void region_coloring(QPoint seed = QPoint(0,0), QColor color = Qt::gray);
+    void update_region_coloring();
 
     cv::Mat& currentImage()
     {
@@ -75,6 +75,8 @@ private:
     double  m_modelview [16];
     double  m_projection [16];
     QList<std::pair<uint, uint> > selectedObjects;
+
+    std::vector< std::pair<QPoint, QColor> > colorMapping;
 
 public:
     BSplineGroup m_splineGroup;

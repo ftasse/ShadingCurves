@@ -178,6 +178,10 @@ bool BSplineGroup::load(std::string fname)
     if (!ifs.is_open())
         return false;
 
+    m_cpts.clear();
+    m_splines.clear();
+    m_surfaces.clear();
+
     int n_cpts, n_splines;
     std::string text;
     ifs >> n_cpts >> text;

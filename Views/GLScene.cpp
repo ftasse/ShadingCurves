@@ -13,6 +13,7 @@
 #ifdef _WIN32 || _WIN64
 #include <windows.h>
 #endif
+#include <GL/glew.h>
 #include <GL/glu.h>
 
 static const unsigned int  SELECTION_BUFFER_SIZE = 10000;
@@ -123,7 +124,8 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             QColor color = QColorDialog::getColor(Qt::black, (QWidget*)this->activeWindow());
             if(color.isValid())
             {
-                region_coloring(seed, color);
+                colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+                update_region_coloring();
             }
         } else
             QGraphicsScene::mouseDoubleClickEvent(event);
@@ -132,10 +134,17 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_R)
+    if (event->key() == Qt::Key_W)
     {
         //Reset blank image
         m_curImage = cv::Scalar(255,255,255);
+        colorMapping.clear();
+        update();
+
+    } else if (event->key() == Qt::Key_R)
+    {
+        m_curImage = cv::Scalar(255,255,255);
+        update_region_coloring();
         update();
     } else if (event->key() == Qt::Key_S)
     {
@@ -219,6 +228,18 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
                          "graphics view");
                 return;*/
             }
+
+    static bool initialized = false;
+    if (!initialized)
+    {
+        GLenum err = glewInit();
+        if (GLEW_OK != err)
+        {
+            /* Problem: glewInit failed, something is seriously wrong. */
+            qWarning("GLEW Error: %s\n", glewGetErrorString(err));
+        }
+        initialized = true;
+    }
 
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -318,7 +339,7 @@ void GLScene::draw_image(cv::Mat& image)
         //glBindTexture(GL_TEXTURE_2D, texture[index]);
         glPushMatrix();
         glLoadIdentity();
-        glTranslated(width()/2 - tex_width/2, height()/2 - tex_height/2, -0.5f);
+        glTranslated(width()/2.0 - tex_width/2.0, height()/2.0 - tex_height/2.0, -0.5f);
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 1.0f);
         glVertex2f(0.0f, tex_height);
@@ -364,7 +385,7 @@ void GLScene::draw_control_point(int point_id)
     glPopName();
 }
 
-void GLScene::draw_spline(int spline_id, bool only_show_splines)
+void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 {
     glPushName(SPLINE_NODE_ID);
     glPushName(spline_id);
@@ -410,7 +431,8 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines)
       GLfloat *ctlpoints = new GLfloat[spline.count() * 3];
       for (int i = 0; i < spline.count(); ++i)
       {
-        QPointF p = imageToSceneCoords(spline.pointAt(i));
+        QPointF p = spline.pointAt(i);
+        if (transform) p = imageToSceneCoords(p);
         ctlpoints[i * 3 + 0] = (GLfloat)p.x();
         ctlpoints[i * 3 + 1] = (GLfloat)p.y();
         ctlpoints[i * 3 + 2] = 0.0f;
@@ -578,8 +600,8 @@ void GLScene::adjustDisplayedImageSize()
 
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 {
-    QPointF topLeft(width()/2 - imSize.width()/2, height()/2 - imSize.height()/2);
-    QPointF scaling(imSize.width()/m_curImage.cols, imSize.height()/m_curImage.rows);
+    QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
     QPointF imgPos = scenePos - topLeft;
     imgPos.setX(imgPos.x()/scaling.x());
     imgPos.setY(imgPos.y()/scaling.y());
@@ -588,8 +610,8 @@ QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 
 QPointF GLScene::imageToSceneCoords(QPointF imgPos)
 {
-    QPointF topLeft(width()/2 - imSize.width()/2, height()/2 - imSize.height()/2);
-    QPointF scaling(imSize.width()/m_curImage.cols, imSize.height()/m_curImage.rows);
+    QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
     QPointF scenePos = imgPos;
     scenePos.setX(scenePos.x()*scaling.x());
     scenePos.setY(scenePos.y()*scaling.y());
@@ -700,39 +722,47 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
 
 cv::Mat GLScene::curvesImage(bool only_closed_curves)
 {
+    GLuint imageWidth = m_curImage.cols,
+           imageHeight = m_curImage.rows;
+
+    //Setup for offscreen drawing if fbos are supported
+    GLuint framebuffer, renderbuffer;
+    GLenum status;
+    glGenFramebuffersEXT(1, &framebuffer);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+    glGenRenderbuffersEXT(1, &renderbuffer);
+    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                     GL_RENDERBUFFER_EXT, renderbuffer);
+    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+        qDebug("Could not draw offscreen");
+
+    //Drawing
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, width(), height(), 0, -1.0, 1.0);
-
+    glViewport(0, 0, imageWidth, imageHeight);
+    glOrtho(0, imageWidth, imageHeight, 0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
     glRenderMode(GL_RENDER);
     glLineWidth(1.0);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+
     for (int i=0; i<m_splineGroup.num_splines(); ++i)
     {
-        if (m_splineGroup.spline(i).count() == 0)
-            continue;
-
-        if (only_closed_curves && !(m_splineGroup.spline(i).is_closed()))
-            continue;
-
-        draw_spline(m_splineGroup.spline(i).idx, true);
+        if (m_splineGroup.spline(i).count() == 0)   continue;
+        if (only_closed_curves && !(m_splineGroup.spline(i).is_closed()))   continue;
+        draw_spline(m_splineGroup.spline(i).idx, true, false);
     }
 
     cv::Mat img;
-    img.create(imSize.height(), imSize.width(), CV_8UC3);
-
-    //use fast 4-byte alignment (default anyway) if possible
-    glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);
-
-    //set length of one complete row in destination data (doesn't need to equal img.cols)
-    glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
-
-
+    img.create(imageHeight, imageWidth, CV_8UC3);
     GLenum inputColourFormat;
     #ifdef GL_BGR
         inputColourFormat = GL_BGR;
@@ -744,20 +774,23 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
             inputColourFormat = GL_BGR;
         #endif
     #endif
-    QPointF topLeft(width()/2 - imSize.width()/2, height()/2 - imSize.height()/2);
-    glReadPixels(topLeft.x(), topLeft.y(), imSize.width(), imSize.height(), inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+    glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+
+    //Clean up offscreen drawing
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glDeleteRenderbuffersEXT(1, &renderbuffer);
+
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
-
+    cv::cvtColor(img, img, CV_RGB2GRAY);    cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
     return img;
 }
 
 
-void GLScene::region_coloring(QPoint seed, QColor color)
+void GLScene::update_region_coloring()
 {
-    cv::Mat curv_img = curvesImage(true);
-    cv::cvtColor(curv_img, curv_img, CV_RGB2GRAY);
-    cv::resize(curv_img, curv_img, cv::Size(m_curImage.cols, m_curImage.rows));
+    cv::Mat curv_img = curvesImage(true);   cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
     //cv::imshow("Closed Curves", curv_img);
 
@@ -766,8 +799,61 @@ void GLScene::region_coloring(QPoint seed, QColor color)
     curv_img.copyTo(mask_vals);
     //cv::imshow("Mask", mask);
 
-    cv::Mat result = m_curImage.clone() ;//m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
-    cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),cv::Scalar(color.blue(), color.green(), color.red()));
+    cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
+
+    //Use cv::floodfill (this should be faster)
+    /*for (int i=0; i<colorMapping.size(); ++i)
+    {
+        QPoint seed = colorMapping[i].first;
+        QColor color = colorMapping[i].second;
+        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),cv::Scalar(color.blue(), color.green(), color.red()));
+    }*/
+
+    //Alternatively, use cv::drawContours
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::RNG rng(12345);
+    cv::findContours( mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+
+    //Randomly set colors
+    if (colorMapping.size() == 0)
+    {
+        int idx = 0;
+        for( ; idx >= 0; idx = hierarchy[idx][0] )
+        {
+            cv::Scalar color( rand()&255, rand()&255, rand()&255 );
+            cv::drawContours( result, contours, idx, color, 2, 8, hierarchy, 0, cv::Point() );
+            cv::drawContours( result, contours, idx, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
+        }
+    }
+
+    std::vector<bool> marked(contours.size()+1, false);
+    for (int i=colorMapping.size()-1; i>=0; --i)
+    {
+        QPoint seed = colorMapping[i].first;
+        QColor qcolor = colorMapping[i].second;
+        cv::Scalar color = cv::Scalar(qcolor.blue(), qcolor.green(), qcolor.red());
+
+        uint k = 0;
+        for( ; k< contours.size(); k++ )
+        {
+            if (cv::pointPolygonTest(contours[k], cv::Point2f(seed.x(), seed.y()), false) > 1e-5)
+            {
+                if (!marked[k])
+                {
+                    cv::drawContours( result, contours, k, color, 2, 8, hierarchy, 0, cv::Point() );
+                    cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
+                    marked[k] = true;
+                }
+                break;
+            }
+        }
+        if (k == contours.size() && !marked[k])   //Point lies in the background
+        {
+            cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color);
+            marked[k] = true;
+        }
+    }
 
     m_curImage = result.clone();
     update();

@@ -158,10 +158,7 @@ void GraphicsView::createDistanceTransformDEBUG()
     dbw = new DebugWindow();
 
     GLScene *my_scene = (GLScene *) scene();
-    cv::Mat curvesIm = my_scene->curvesImage();
-
-    cv::Mat curvesGrayIm;
-    cv::cvtColor(curvesIm, curvesGrayIm, CV_RGB2GRAY);
+    cv::Mat curvesGrayIm = my_scene->curvesImage();
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
 
     cv::Mat dt;

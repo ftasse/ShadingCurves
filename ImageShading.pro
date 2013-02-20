@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     3D/mainwindow3d.cpp \
     3D/mesh.cpp \
     3D/point_3d.cpp \
-    3D/spline.cpp
+    3D/spline.cpp \
+    Views/glew/glew.c
 
 HEADERS  += mainwindow.h \
     Utilities/ImageUtils.h \
@@ -50,7 +51,11 @@ HEADERS  += mainwindow.h \
     3D/point_3d.h \
     3D/spline.h \
     3D/tostring.h \
-    3D/types.h
+    3D/types.h \
+    Views/glew/glew.h \
+    Views/glew/GL/wglew.h \
+    Views/glew/GL/glxew.h \
+    Views/glew/GL/glew.h
 
 FORMS    += mainwindow.ui \
     Views/DebugWindow.ui
@@ -58,6 +63,7 @@ FORMS    += mainwindow.ui \
 win32 {
 QMAKE_LFLAGS += -static-libgcc -static-libstdc++
 }
+DEFINES += GLEW_STATIC
 
 INCLUDEPATH += $$PWD
 win32:INCLUDEPATH += C:/opencv/build/include
