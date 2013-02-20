@@ -161,9 +161,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
             }
 
             // HENRIK, include distrance transform image
-            cv::Mat curvesIm = curvesImage();
-            cv::Mat curvesGrayIm;
-            cv::cvtColor(curvesIm, curvesGrayIm, CV_RGB2GRAY);
+            cv::Mat curvesGrayIm = curvesImage();
             cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
 
             cv::Mat dt;
@@ -812,13 +810,13 @@ void GLScene::update_region_coloring()
     //Alternatively, use cv::drawContours
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
-    cv::RNG rng(12345);
     cv::findContours( mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
     //Randomly set colors
-    if (colorMapping.size() == 0)
+    if (colorMapping.size() == 0 && contours.size() > 0)
     {
         int idx = 0;
+        cv::RNG rng(12345);
         for( ; idx >= 0; idx = hierarchy[idx][0] )
         {
             cv::Scalar color( rand()&255, rand()&255, rand()&255 );
