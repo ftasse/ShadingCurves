@@ -11,11 +11,26 @@ BSplineGroup::BSplineGroup()
     EPSILON = .0001f;
 }
 
-int BSplineGroup::addControlPoint(QPointF value)
+int BSplineGroup::addControlPoint(QPointF value, float z)
 {
+    for (int i=0; i<num_controlPoints(); ++i)
+    {
+        float dx =  controlPoint(i).x() - value.x();
+        float dy =  controlPoint(i).y() - value.y();
+        float dz =  controlPoint(i).z() - z;
+        float dist = sqrt(dx*dx + dy*dy + dz*dz);
+        if (abs(dz) < EPSILON && dist < 5.0)
+        {
+            return i;
+        } else if (abs(dz) > EPSILON && dist < EPSILON)
+        {
+            return i;
+        }
+    }
     ControlPoint cpt(value);
     cpt.m_splineGroup = this;
     cpt.idx = num_controlPoints();
+    cpt.setZ(z);
     m_cpts.push_back(cpt);
     return m_cpts.size() - 1;
 }
@@ -73,8 +88,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
         } else
         {
             QPointF new_cpt = bspline.pointAt(k);
-            int cpt_id = addControlPoint(new_cpt);
-            controlPoint(cpt_id).setZ(z);
+            int cpt_id = addControlPoint(new_cpt, z);
             perpendicular_cpts_ids.push_back(cpt_id);
         }
     }

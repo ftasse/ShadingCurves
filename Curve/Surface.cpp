@@ -113,12 +113,22 @@ bool Surface::writeOFF(std::ostream &ofs)
     {
         for (int l=0; l<controlPoints()[0].size()-1; ++l)
         {
-            ofs << "4" << " "
-                << vertex_indices_uv[std::pair<int, int>(0,l)] << " "
-                << vertex_indices_uv[std::pair<int, int>(0,l+1)] << " "
-                << vertex_indices_uv[std::pair<int, int>(k,l+1)] << " "
-                << vertex_indices_uv[std::pair<int, int>(k,l)]
-                << std::endl;
+            std::vector<int> indices;
+
+            indices.push_back(vertex_indices_uv[std::pair<int, int>(0,l)]);
+            if (vertex_indices_uv[std::pair<int, int>(0,l+1)] != indices.back())
+                indices.push_back(vertex_indices_uv[std::pair<int, int>(0,l+1)]);
+
+            if (vertex_indices_uv[std::pair<int, int>(k,l+1)] != indices.back())
+                indices.push_back(vertex_indices_uv[std::pair<int, int>(k,l+1)]);
+
+            if (vertex_indices_uv[std::pair<int, int>(k,l)] != indices.back())
+                indices.push_back(vertex_indices_uv[std::pair<int, int>(k,l)]);
+
+            ofs << indices.size() << " ";
+            for (int m=0; m<indices.size(); ++m)
+                ofs << indices[m] << " ";
+            ofs << std::endl;
         }
     }
 }

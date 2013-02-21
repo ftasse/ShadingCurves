@@ -562,8 +562,11 @@ void GLScene::draw_surface(int surface_id)
                 zvalues.push_back(surface.pointAt(QPoint(0,l+1)).z());
                 points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l+1))));
                 zvalues.push_back(surface.pointAt(QPoint(k,l+1)).z());
-                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l))));
-                zvalues.push_back(surface.pointAt(QPoint(k,l)).z());
+                if (surface.pointAt(QPoint(k,l+1)) != surface.pointAt(QPoint(k,l))) //if this is not a junction point
+                {
+                    points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l))));
+                    zvalues.push_back(surface.pointAt(QPoint(k,l)).z());
+                }
                 for (uint m=0; m<points.size(); ++m)
                     glVertex3f(points[m].x(), points[m].y(), zvalues[m]);
 
@@ -579,7 +582,7 @@ void GLScene::draw_surface(int surface_id)
       glPopName();
 
       //Display control points that are not connected to any bspline
-      /*for (int k=0; k<surface.controlPoints().size(); ++k)
+      for (int k=0; k<surface.controlPoints().size(); ++k)
       {
           for (int l=0; l<surface.controlPoints()[k].size(); ++l)
           {
@@ -589,7 +592,7 @@ void GLScene::draw_surface(int surface_id)
                   draw_control_point(surface.pointAt(pos).idx);
               }
           }
-      }*/
+      }
 
 
 }

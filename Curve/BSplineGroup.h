@@ -12,7 +12,7 @@ class BSplineGroup
 public:
     BSplineGroup();
 
-    int addControlPoint(QPointF value);
+    int addControlPoint(QPointF value, float z=0.0);
     int addBSpline();
     int addSurface();
 
