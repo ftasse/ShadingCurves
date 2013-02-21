@@ -582,7 +582,7 @@ void GLScene::draw_surface(int surface_id)
       glPopName();
 
       //Display control points that are not connected to any bspline
-      for (int k=0; k<surface.controlPoints().size(); ++k)
+      /*for (int k=0; k<surface.controlPoints().size(); ++k)
       {
           for (int l=0; l<surface.controlPoints()[k].size(); ++l)
           {
@@ -592,7 +592,7 @@ void GLScene::draw_surface(int surface_id)
                   draw_control_point(surface.pointAt(pos).idx);
               }
           }
-      }
+      }*/
 
 
 }
