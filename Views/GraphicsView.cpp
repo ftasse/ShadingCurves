@@ -191,6 +191,10 @@ void GraphicsView::show3Dwidget()
     const char *fname = "tmp_surface.off";
     std::ofstream ofs(fname);
     GLScene *my_scene = (GLScene *) scene();
+
+//    cv::Mat image = my_scene->currentImage();
+//    int w = image->cols;
+//    int h = image.rows;
     if (my_scene->writeCurrentSurface(ofs))
     {
         ofs.close();
