@@ -78,11 +78,12 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 cpt.setX(cpt.x()+diff.x());
                 cpt.setY(cpt.y()+diff.y());
             }
+            modified_spline_ids.clear();
             for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
             {
                 int spline_id = m_splineGroup.surface(k).connected_spline_id;
                 if (std::find(spline_ids.begin(), spline_ids.end(), spline_id) != spline_ids.end())
-                    computeSurface(spline_id);
+                    modified_spline_ids.push_back(spline_id);
             }
             update();
             return;
@@ -90,6 +91,22 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     QGraphicsScene::mouseMoveEvent(event);
+}
+
+void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (modified_spline_ids.size() > 0)
+    {
+        for (int i=0; i<modified_spline_ids.size(); ++i)
+        {
+            computeSurface(modified_spline_ids[i]);
+        }
+        update();
+        modified_spline_ids.clear();
+    } else
+    {
+        QGraphicsScene::mouseReleaseEvent(event);
+    }
 }
 
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)

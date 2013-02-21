@@ -78,6 +78,7 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 signals:
@@ -94,6 +95,7 @@ private:
     QList<std::pair<uint, uint> > selectedObjects;
 
     std::vector< std::pair<QPoint, QColor> > colorMapping;
+    QVector<int> modified_spline_ids;
 
 public:
     BSplineGroup m_splineGroup;
