@@ -109,6 +109,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 
     //Write faces
+    bool flip_face = true;
     for (int k=1; k<controlPoints().size(); ++k)
     {
         for (int l=0; l<controlPoints()[0].size()-1; ++l)
@@ -122,13 +123,26 @@ bool Surface::writeOFF(std::ostream &ofs)
             if (vertex_indices_uv[std::pair<int, int>(k,l+1)] != indices.back())
                 indices.push_back(vertex_indices_uv[std::pair<int, int>(k,l+1)]);
 
-            if (vertex_indices_uv[std::pair<int, int>(k,l)] != indices.back())
+            if (vertex_indices_uv[std::pair<int, int>(k,l)] != indices.back() && vertex_indices_uv[std::pair<int, int>(k,l)] != indices.front())
                 indices.push_back(vertex_indices_uv[std::pair<int, int>(k,l)]);
+
+            /*cv::Vec3d v0(m_splineGroup->controlPoint(indices[0]).x(),m_splineGroup->controlPoint(indices[0]).y(),m_splineGroup->controlPoint(indices[0]).z());
+            cv::Vec3d v1(m_splineGroup->controlPoint(indices[1]).x(),m_splineGroup->controlPoint(indices[1]).y(),m_splineGroup->controlPoint(indices[1]).z());
+            cv::Vec3d v2(m_splineGroup->controlPoint(indices[2]).x(),m_splineGroup->controlPoint(indices[2]).y(),m_splineGroup->controlPoint(indices[2]).z());
+            cv::Vec3d normal = (v0-v1).cross(v0-v2);
+            normal = normal*(1/cv::norm(normal));*/
+
+            if (flip_face)
+            {
+                std::reverse(indices.begin(), indices.end());
+            }
 
             ofs << indices.size() << " ";
             for (int m=0; m<indices.size(); ++m)
                 ofs << indices[m] << " ";
             ofs << std::endl;
         }
+
+        flip_face = !flip_face;
     }
 }
