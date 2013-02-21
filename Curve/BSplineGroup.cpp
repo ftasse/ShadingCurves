@@ -41,6 +41,17 @@ int BSplineGroup::addSurface()
 // HENRIK changes: add distance transform image to the parameters
 int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
 {
+    // FLORA, delete any previous surface attached to this spline
+    for (int i=0; i<num_surfaces(); ++i)
+    {
+        Surface& surf = surface(i);
+        if (surf.connected_spline_id == spline_id)
+        {
+            removeSurface(surf.idx);
+        }
+    }
+    garbage_collection();
+
     // HENRIK: TODO: add option for z values
     int z = 30;
     float angleT = 45.0f;
@@ -52,6 +63,21 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
     surf.connected_spline_id = spline_id;
     surf.controlPoints().append(bspline.connected_cpts);
     QVector<int> translated_cpts_ids;
+    QVector<int> perpendicular_cpts_ids;
+
+    for (int k=0; k<bspline.count(); ++k)
+    {
+        if (k == bspline.count()-1 && bspline.connected_cpts[k] == bspline.connected_cpts[0]) //if closed curve
+        {
+            perpendicular_cpts_ids.push_back(perpendicular_cpts_ids[0]);
+        } else
+        {
+            QPointF new_cpt = bspline.pointAt(k);
+            int cpt_id = addControlPoint(new_cpt);
+            controlPoint(cpt_id).setZ(z);
+            perpendicular_cpts_ids.push_back(cpt_id);
+        }
+    }
 
     // loop through all control points for the given spline curve
     for (int k=0; k<bspline.count(); ++k)
@@ -95,6 +121,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
         }
     }
 
+    surf.controlPoints().append(perpendicular_cpts_ids);
     surf.controlPoints().append(translated_cpts_ids);
 
     surf.updateKnotVectors();
@@ -169,6 +196,112 @@ void BSplineGroup::removeSurface(int surface_id)
     surf.updateKnotVectors();
 }
 
+void BSplineGroup::garbage_collection()
+{
+    std::map<int, int> new_cpt_indices;
+    std::map<int, int> new_spline_indices;
+    std::map<int, int> new_surface_indices;
+
+    std::vector<int> remove_cpt_ids, remove_spline_ids, remove_surface_ids;
+    std::vector<bool> is_surface_point(num_controlPoints(), false);
+
+    for (int i=0; i<num_surfaces(); ++i)
+    {
+        if (surface(i).connected_cpts.size() == 0)
+        {
+            remove_surface_ids.push_back(i-remove_surface_ids.size());
+        } else
+        {
+            for (int k=0; k<surface(i).controlPoints().size(); ++k)
+            {
+                for (int l=0; l<surface(i).controlPoints()[k].size(); ++l)
+                {
+                    is_surface_point[surface(i).controlPoints()[k][l]] = true;
+                }
+            }
+        }
+    }
+
+    for (int i=0; i< num_splines(); ++i)
+    {
+        if (spline(i).connected_cpts.size() == 0)
+        {
+            remove_spline_ids.push_back(i-remove_spline_ids.size());
+        } else
+        {
+        }
+    }
+
+    for (int i=0; i< num_controlPoints(); ++i)
+    {
+        if (controlPoint(i).connected_splines.size() == 0 && !is_surface_point[i])
+        {
+            remove_cpt_ids.push_back(i-remove_cpt_ids.size());
+        } else
+        {
+        }
+    }
+
+    for (uint i=0; i< remove_surface_ids.size(); ++i)
+    {
+        m_surfaces.removeAt(remove_surface_ids[i]);
+    }
+    for (uint i=0; i< remove_spline_ids.size(); ++i)
+    {
+        m_splines.removeAt(remove_spline_ids[i]);
+    }
+    for (uint i=0; i< remove_cpt_ids.size(); ++i)
+    {
+        m_cpts.removeAt(remove_cpt_ids[i]);
+    }
+
+    for (int i = 0; i< num_controlPoints(); ++i)
+    {
+        new_cpt_indices[controlPoint(i).idx] = i;
+        controlPoint(i).idx = i;
+    }
+    for (int i = 0; i< num_splines(); ++i)
+    {
+        new_spline_indices[spline(i).idx] = i;
+        spline(i).idx = i;
+    }
+    for (int i = 0; i< num_surfaces(); ++i)
+    {
+        new_surface_indices[surface(i).idx] = i;
+        surface(i).idx = i;
+    }
+
+    for (int i = 0; i< num_controlPoints(); ++i)
+    {
+        ControlPoint& cpt = controlPoint(i);
+        for (int k=0; k<cpt.connected_splines.size(); ++k)
+        {
+            cpt.connected_splines[k] = new_spline_indices[cpt.connected_splines[k]];
+        }
+    }
+    for (int i = 0; i< num_splines(); ++i)
+    {
+        BSpline& bspline = spline(i);
+        for (int k=0; k<bspline.connected_cpts.size(); ++k)
+        {
+            bspline.connected_cpts[k] = new_cpt_indices[bspline.connected_cpts[k]];
+        }
+    }
+    for (int i=0; i<num_surfaces(); ++i)
+    {
+        Surface& surf = surface(i);
+        surf.connected_spline_id = new_spline_indices[surf.connected_spline_id];
+        for (int k=0; k<surf.controlPoints().size(); ++k)
+        {
+                for (int l=0; l<surf.controlPoints()[k].size(); ++l)
+                {
+                    surf.controlPoints()[k][l] = new_cpt_indices[surf.controlPoints()[k][l]];;
+                }
+        }
+    }
+
+}
+
 
 bool BSplineGroup::load(std::string fname)
 {
@@ -213,6 +346,8 @@ bool BSplineGroup::load(std::string fname)
 
 void BSplineGroup::save(std::string fname)
 {
+    garbage_collection();
+
     std::ofstream ofs(fname.c_str());
     ofs << num_controlPoints() <<" points" << std::endl;
     for (int i=0; i<num_controlPoints(); ++i)
@@ -237,6 +372,8 @@ void BSplineGroup::save(std::string fname)
 // HENRIK: save CPs to OFF (TODO)
 void BSplineGroup::saveOFF(std::string fname)
 {
+    garbage_collection();
+
     std::ofstream ofs(fname.c_str());
     ofs << num_controlPoints() <<" points" << std::endl;
     for (int i=0; i<num_controlPoints(); ++i)

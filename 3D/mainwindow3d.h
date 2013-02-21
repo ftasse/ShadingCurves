@@ -32,8 +32,10 @@ signals:
 	void resetSY2(int);
 	void resetSZ2(int);
 
-private slots:
+public slots:
     void load1(const char *fileName);
+
+private slots:
     void load2(const char *fileName);
     void loadLine1(const char *fileName);
 	void loadBatch1(const char *fileName);

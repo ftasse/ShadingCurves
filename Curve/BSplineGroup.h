@@ -24,6 +24,8 @@ public:
     void removeSpline(int spline_id);
     void removeSurface(int surface_id);
 
+    void garbage_collection();
+
     //IO
     bool load(std::string fname);
     void save(std::string fname);

@@ -29,6 +29,7 @@ public:
 
     //Sketching functions
     void createBSpline();
+    int computeSurface(int spline_id);
     int registerPointAtScenePos(QPointF scenePos);
     QPointF sceneToImageCoords(QPointF scenePos);
     QPointF imageToSceneCoords(QPointF imgPos);
@@ -42,6 +43,22 @@ public:
     void draw_spline(int spline_id, bool only_show_splines = false, bool transform = true);
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
+
+    bool writeCurrentSurface(std::ostream &ofs)
+    {
+        if (m_curSplineIdx != -1)
+        {
+            for (int i=0; i< m_splineGroup.num_surfaces(); ++i)
+            {
+                if (m_splineGroup.surface(i).connected_spline_id == m_curSplineIdx)
+                {
+                    m_splineGroup.surface(i).writeOFF(ofs);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     cv::Mat curvesImage(bool only_closed_curves = false);
     void update_region_coloring();

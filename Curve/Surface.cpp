@@ -51,3 +51,74 @@ ControlPoint& Surface::pointAt(QPoint pos)
     int cpt_idx = connected_cpts[pos.x()][pos.y()];
     return m_splineGroup->controlPoint(cpt_idx);
 }
+
+bool Surface::writeOFF(std::ostream &ofs)
+{
+    ofs << "OFF" << std::endl;
+    if (controlPoints().size() == 0)
+    {
+        ofs << 0 << " " << 0 << " " << 0 << std::endl;
+        qWarning("Warning: This surface is empty!");
+        return false;
+    }
+
+    std::vector<int> vertex_indices;
+    std::map<std::pair<int, int>, int > vertex_indices_uv;
+
+    for (int k=0; k<controlPoints().size(); ++k)
+    {
+        for (int l=0; l<controlPoints()[k].size(); ++l)
+        {
+            std::pair<int, int> key(k,l);
+            int cpt_id = connected_cpts[k][l];
+            std::vector<int>::iterator it = std::find(vertex_indices.begin(), vertex_indices.end(), cpt_id);
+            if (it == vertex_indices.end())
+            {
+                vertex_indices.push_back(cpt_id);
+                vertex_indices_uv[key] = vertex_indices.size()-1;
+            } else
+                vertex_indices_uv[key] = std::distance(vertex_indices.begin(), it);
+        }
+    }
+
+    BSpline& spline = m_splineGroup->spline(connected_spline_id);
+
+    int face_count = (controlPoints().size()-1)*(controlPoints()[0].size() - 1);
+    int edge_count = 0;
+
+    if (spline.is_closed())
+    {
+        edge_count = (controlPoints().size()-1)*((controlPoints()[0].size()-1)*2) +
+                     (controlPoints()[0].size()-1);
+    } else
+    {
+        edge_count = (controlPoints().size()-1)*((controlPoints()[0].size() - 1) + (controlPoints()[0].size())) +
+                     (controlPoints()[0].size() - 1);
+    }
+
+
+    ofs << vertex_indices.size() << " " << face_count << " " << edge_count << std::endl;
+
+    //Write vertices
+    for (int i=0; i<vertex_indices.size(); ++i)
+    {
+        int cpt_id = vertex_indices[i];
+        ControlPoint& cpt = m_splineGroup->controlPoint(cpt_id);
+
+        ofs << cpt.x() << " " << cpt.y() << " " << cpt.z() << std::endl;
+    }
+
+    //Write faces
+    for (int k=1; k<controlPoints().size(); ++k)
+    {
+        for (int l=0; l<controlPoints()[0].size()-1; ++l)
+        {
+            ofs << "4" << " "
+                << vertex_indices_uv[std::pair<int, int>(0,l)] << " "
+                << vertex_indices_uv[std::pair<int, int>(0,l+1)] << " "
+                << vertex_indices_uv[std::pair<int, int>(k,l+1)] << " "
+                << vertex_indices_uv[std::pair<int, int>(k,l)]
+                << std::endl;
+        }
+    }
+}

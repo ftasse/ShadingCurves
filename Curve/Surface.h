@@ -33,6 +33,8 @@ public:
         return m_knotVectors_v;
     }
 
+    bool writeOFF(std::ostream &ofs);
+
 public:
     BSplineGroup *m_splineGroup;
     int connected_spline_id;

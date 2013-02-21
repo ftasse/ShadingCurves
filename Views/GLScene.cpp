@@ -6,11 +6,12 @@
 #include <QGraphicsView>
 #include <QColorDialog>
 #include <algorithm>
+#include <iostream>
 #include <set>
 
 #include "GLScene.h"
 
-#ifdef _WIN32 || _WIN64
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include "glew/GL/glew.h"
@@ -45,6 +46,7 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (selectedObjects.size() > 0)
         {
             std::set<int> cpt_ids;
+            std::set<int> spline_ids;
             QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
 
             for (int i=0; i<selectedObjects.size(); ++i)
@@ -54,6 +56,11 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 if (nodeId == CPT_NODE_ID)
                 {
                     cpt_ids.insert(targetId);
+                    ControlPoint& cpt = m_splineGroup.controlPoint(targetId);
+                    for (int k=0; k<cpt.count(); ++k)
+                    {
+                        spline_ids.insert(cpt.connected_splines[k]);
+                    }
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
                     BSpline& spline = m_splineGroup.spline(targetId);
@@ -61,7 +68,7 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     {
                         cpt_ids.insert(spline.pointAt(k).idx);
                     }
-
+                    spline_ids.insert(targetId);
                 }
             }
 
@@ -70,6 +77,12 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 ControlPoint& cpt = m_splineGroup.controlPoint(*it);
                 cpt.setX(cpt.x()+diff.x());
                 cpt.setY(cpt.y()+diff.y());
+            }
+            for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+            {
+                int spline_id = m_splineGroup.surface(k).connected_spline_id;
+                if (std::find(spline_ids.begin(), spline_ids.end(), spline_id) != spline_ids.end())
+                    computeSurface(spline_id);
             }
             update();
             return;
@@ -150,25 +163,18 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     {
         if (m_curSplineIdx >=0 )
         {
-            // FLORA, delete any previous surface attached to this spline
-            for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
-            {
-                Surface& surface = m_splineGroup.surface(i);
-                if (surface.connected_spline_id == m_curSplineIdx)
-                {
-                    m_splineGroup.removeSurface(surface.idx);
-                }
-            }
+            int surf_id = computeSurface(m_curSplineIdx);
 
-            // HENRIK, include distrance transform image
-            cv::Mat curvesGrayIm = curvesImage();
-            cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
-
-            cv::Mat dt;
-            cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
-
-            m_splineGroup.createSurface(m_curSplineIdx,dt, surfaceWidth);
+            //Update view
+            m_curSplineIdx = m_splineGroup.surface(surf_id).connected_spline_id;
+            selectedObjects.clear();
+            selectedObjects.push_back(std::pair<uint, uint>(SPLINE_NODE_ID, m_curSplineIdx));
             update();
+
+            //Print out surface in OFF format
+            //m_splineGroup.surface(surf_id).writeOFF(std::cout);
+            //std::cout << std::flush;
+
         }
     }
     if (event->key() == Qt::Key_Delete)
@@ -195,6 +201,8 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
             }
             selectedObjects.clear();
+            m_curSplineIdx = -1;
+            m_splineGroup.garbage_collection();
             update();
         }
     } else if (m_sketchmode == ADD_CURVE_MODE)
@@ -244,7 +252,7 @@ void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, width(), height(), 0, -1.0, 1.0);
+    glOrtho(0, width(), height(), 0, -1000.0, 1000.0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -538,36 +546,40 @@ void GLScene::draw_surface(int surface_id)
       if (showControlMesh)
       {
         glColor3f(0.65,0.65,0.65);
+        glPushMatrix();
+        glTranslatef(0.0,0.0,-500.0f);
         glLineWidth(2.0);
-        for (int k=0; k<surface.controlPoints().size(); ++k)
+        for (int k=1; k<surface.controlPoints().size(); ++k)
         {
             glBegin(GL_LINE_STRIP);
-            for (int l=0; l<surface.controlPoints()[k].size(); ++l)
+            for (int l=0; l<surface.controlPoints()[k].size()-1; ++l)
             {
-                QPoint pos(k, l);
-                QPointF scenePos = imageToSceneCoords(surface.pointAt(pos));
-                glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
+                std::vector<QPointF> points;
+                std::vector<float> zvalues;
+                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(0,l))));
+                zvalues.push_back(surface.pointAt(QPoint(0,l)).z());
+                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(0,l+1))));
+                zvalues.push_back(surface.pointAt(QPoint(0,l+1)).z());
+                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l+1))));
+                zvalues.push_back(surface.pointAt(QPoint(k,l+1)).z());
+                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l))));
+                zvalues.push_back(surface.pointAt(QPoint(k,l)).z());
+                for (uint m=0; m<points.size(); ++m)
+                    glVertex3f(points[m].x(), points[m].y(), zvalues[m]);
+
+                glVertex3f(points[0].x(), points[0].y(), zvalues[0]);
             }
             glEnd();
         }
-        for (int l=0; l<surface.controlPoints()[0].size(); ++l)
-        {
-            glBegin(GL_LINE_STRIP);
-            for (int k=0; k<surface.controlPoints().size(); ++k)
-            {
-                QPointF scenePos = imageToSceneCoords(surface.pointAt(QPoint(k, l)));
-                glVertex3f(scenePos.x(), scenePos.y(), -0.8f);
-            }
-            glEnd();
-        }
-        glLineWidth(1.0);
       }
+      glLineWidth(1.0);
+      glPopMatrix();
 
       glPopName();
       glPopName();
 
       //Display control points that are not connected to any bspline
-      for (int k=0; k<surface.controlPoints().size(); ++k)
+      /*for (int k=0; k<surface.controlPoints().size(); ++k)
       {
           for (int l=0; l<surface.controlPoints()[k].size(); ++l)
           {
@@ -577,7 +589,7 @@ void GLScene::draw_surface(int surface_id)
                   draw_control_point(surface.pointAt(pos).idx);
               }
           }
-      }
+      }*/
 
 
 }
@@ -696,6 +708,17 @@ void GLScene::createBSpline()
     update();
 }
 
+int GLScene::computeSurface(int spline_id)
+{
+    // HENRIK, include distrance transform image
+    cv::Mat curvesGrayIm = curvesImage();
+    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
+
+    cv::Mat dt;
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
+
+    return m_splineGroup.createSurface(spline_id,dt, surfaceWidth);
+}
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
@@ -743,7 +766,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glViewport(0, 0, imageWidth, imageHeight);
-    glOrtho(0, imageWidth, imageHeight, 0, -1.0, 1.0);
+    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
