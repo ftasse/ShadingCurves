@@ -823,7 +823,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
-    cv::cvtColor(img, img, CV_RGB2GRAY);    cv::imwrite("curv_img_bef.png", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);
+    cv::imwrite("curv_img_bef.png", img);
     cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
     return img;
 }

@@ -11,13 +11,13 @@
 
 using namespace std;
 
-MainWindow3D::MainWindow3D()
+MainWindow3D::MainWindow3D(GLuint iW, GLuint iH)
 {
 	widget = new QWidget;
     setCentralWidget(widget);
 
-	glwidget1  = new GLviewsubd();
-	glwidget2  = new GLviewsubd();
+    glwidget1  = new GLviewsubd(iW, iH);
+    glwidget2  = new GLviewsubd(iW, iH);
 	glBar1	   = new GLbar();
 	glBar2	   = new GLbar();
 
@@ -1211,4 +1211,9 @@ void MainWindow3D::connectAll()
             this, 		  SLOT(load1(const char*)));
     connect(glwidget2, 	SIGNAL(openFile(const char *)),
             this, 		  SLOT(load2(const char*)));
+
+    connect(ctrlWidget1->buffer2imgButton, 	SIGNAL(clicked()),
+            glwidget1, 		  SLOT(buffer2img()));
+    connect(ctrlWidget2->buffer2imgButton, 	SIGNAL(clicked()),
+            glwidget2, 		  SLOT(buffer2img()));
 }

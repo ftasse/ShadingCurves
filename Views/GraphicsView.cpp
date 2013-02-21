@@ -183,14 +183,14 @@ void GraphicsView::createDistanceTransformDEBUG()
 
 void GraphicsView::show3Dwidget()
 {
-    glw = new MainWindow3D();
+    GLScene *my_scene = (GLScene *) scene();
+    glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth());
     glw->setWindowTitle("3D View");
     glw->show();
 
     // transfer mesh
     const char *fname = "tmp_surface.off";
     std::ofstream ofs(fname);
-    GLScene *my_scene = (GLScene *) scene();
     if (my_scene->writeCurrentSurface(ofs))
     {
         ofs.close();

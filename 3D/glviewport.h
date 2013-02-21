@@ -24,6 +24,7 @@ public:
 	QSize sizeHint() const;
     GLuint			textID[6];
 
+
     bool        joinTheDarkSide;
 
 public slots:
@@ -42,7 +43,6 @@ public slots:
 
 	virtual void buildAll			(void) = 0;
 
-    void initializeGL(void);
     void resetColours(void);
 
 signals:

@@ -26,7 +26,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     checkOnCtrl = new QCheckBox(tr("MultiRes."));
 	checkOnCtrl->setChecked(true);
     checkTransf = new QCheckBox(tr("Transform"));
-    checkTransf->setChecked(true);
+    checkTransf->setChecked(false);
 
     checkClear = new QCheckBox(tr("Clear"));
 	checkClear->setChecked(true);
@@ -374,6 +374,9 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //    restLayout->setContentsMargins(0,0,0,0);
 //    restWidget->setContentsMargins(0,0,0,0);
 //    restWidget->setLayout(restLayout);
+
+    buffer2imgButton = new QPushButton("Buffer2img", this);
+    toolBara->addWidget(buffer2imgButton);
 
 /////////////////////////////////////////
 
