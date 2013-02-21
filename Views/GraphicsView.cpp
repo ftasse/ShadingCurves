@@ -191,6 +191,7 @@ void GraphicsView::show3Dwidget()
     // transfer mesh
     const char *fname = "tmp_surface.off";
     std::ofstream ofs(fname);
+
     if (my_scene->writeCurrentSurface(ofs))
     {
         ofs.close();

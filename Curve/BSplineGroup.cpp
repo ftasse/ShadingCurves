@@ -69,7 +69,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
 
     // HENRIK: TODO: add option for z values
     int z = 30;
-    float angleT = 45.0f;
+    float angleT = 35.0f;
 
     int surface_id = addSurface();
     Surface& surf = surface(surface_id);
