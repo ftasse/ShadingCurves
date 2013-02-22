@@ -77,7 +77,7 @@ void Mesh::DeleteData()
 //    cout << "Mesh data deleted!" << endl;
 }
 
-void Mesh::load(const char *fileName)
+void Mesh::load(const char *fileName, unsigned int iH)
 {
 	unsigned int	i, j, vn, n;
 	PointPrec		x, y, z;
@@ -164,8 +164,10 @@ void Mesh::load(const char *fileName)
 			file >> x >> y >> z;
             getline(file, tmp);
 			vertex.my_point.setX(x);
-			vertex.my_point.setY(y);
+//            vertex.my_point.setY(y);
+            vertex.my_point.setY(iH-y);
             vertex.my_point.setZ(z);
+
             if (z != 0)
             {
                 vertex.isStable = true;
@@ -333,7 +335,6 @@ void Mesh::transf(void)
 
     my_minz = minz;
     my_maxz = maxz;
-
 
 	cout << "cen: " << my_centre;
     cout << "scale: " << my_scale << endl;

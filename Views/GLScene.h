@@ -44,6 +44,9 @@ public:
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
+    unsigned int getImageHeight() {return m_curImage.cols;};
+    unsigned int getImageWidth()  {return m_curImage.rows;};
+
     bool writeCurrentSurface(std::ostream &ofs)
     {
         if (m_curSplineIdx != -1)

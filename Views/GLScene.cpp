@@ -79,12 +79,11 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 cpt.setY(cpt.y()+diff.y());
             }
             modified_spline_ids.clear();
-            for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+            for (std::set<int>::iterator it = spline_ids.begin(); it != spline_ids.end(); ++it)
             {
-                int spline_id = m_splineGroup.surface(k).connected_spline_id;
-                if (std::find(spline_ids.begin(), spline_ids.end(), spline_id) != spline_ids.end())
-                    modified_spline_ids.push_back(spline_id);
+                modified_spline_ids.push_back(*it);
             }
+
             update();
             return;
         }
@@ -99,7 +98,14 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
         for (int i=0; i<modified_spline_ids.size(); ++i)
         {
-            computeSurface(modified_spline_ids[i]);
+            m_splineGroup.spline(modified_spline_ids[i]).recompute();
+        }
+
+        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+        {
+            int spline_id = m_splineGroup.surface(k).connected_spline_id;
+            if (std::find(modified_spline_ids.begin(), modified_spline_ids.end(), spline_id) != modified_spline_ids.end())
+                computeSurface(spline_id);
         }
         update();
         modified_spline_ids.clear();
@@ -141,7 +147,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             createBSpline();
         }
 
-        if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
+        if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef, true))
         {
             update();
         }
@@ -204,8 +210,9 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 uint targetId = selectedObjects[i].second;
                 if (nodeId == CPT_NODE_ID)
                 {
-                    qDebug("Delete cpt %d", targetId);
                     m_splineGroup.removeControlPoint(targetId);
+                    qDebug("Delete cpt %d", targetId);
+
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
                     if (m_curSplineIdx == (int)targetId) m_curSplineIdx = -1;
@@ -217,6 +224,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                     m_splineGroup.removeSurface(targetId);
                 }
             }
+
             selectedObjects.clear();
             m_curSplineIdx = -1;
             m_splineGroup.garbage_collection();
@@ -393,7 +401,16 @@ void GLScene::draw_control_point(int point_id)
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
-    glColor3d(0.0, 0.0, 1.0);
+    if (cpt.isOriginal)
+    {
+        glPointSize(pointSize);
+        glColor3d(0.0, 0.0, 1.0);
+    }
+    else
+    {
+        glPointSize(3.0);
+        glColor3d(0.0, 1.0, 0.0);
+    }
     if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, point_id)))
     {
         glColor3d(1.0, 0.0, 0.0);
@@ -754,7 +771,7 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
         return -1;
     }
 
-    int pointIdx = m_splineGroup.addControlPoint(sceneToImageCoords(scenePos));
+    int pointIdx = m_splineGroup.addControlPoint(sceneToImageCoords(scenePos), 0.0, true);
     selectedObjects.clear();
     selectedObjects.push_back(std::pair<uint, uint>(CPT_NODE_ID, pointIdx));
     update();
@@ -823,7 +840,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
-    cv::cvtColor(img, img, CV_RGB2GRAY);    cv::imwrite("curv_img_bef.png", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);
+    cv::imwrite("curv_img_bef.png", img);
     cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
     return img;
 }

@@ -6,8 +6,8 @@
 #include "glabstract.h"
 
 const double GLabstract::stepBackAmount  = 10.0;
-const double GLabstract::frontClipPlane  = -20;
-const double GLabstract::backClipPlane   = 20;
+const double GLabstract::frontClipPlane  = -1000;
+const double GLabstract::backClipPlane   = 1000;
 
 using namespace std;
 

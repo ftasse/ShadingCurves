@@ -31,7 +31,8 @@ public:
                     *zeroButton,
 					*xpButton, *xmButton, *ypButton, *ymButton, 
                     *zpButton, *zmButton, *zerButton,
-                    *lapSmButton1, *lapSmButton10, *lapSmButton100;
+                    *lapSmButton1, *lapSmButton10, *lapSmButton100,
+                    *buffer2imgButton;
 //    QComboBox 		*dropMenu;
     QComboBox 		*colorMenu, *meshMenu;
    	QSpinBox 		*subdLevelSpinbox;
@@ -43,7 +44,7 @@ public:
                     *radioMeshFlat, *radioMeshSmooth, *radioMeshEdges, *radioMeshCulled,
                     *radioMeshCurvM, *radioMeshCurvG, *radioMeshCurvTG, *radioMeshHeight, *radioMeshIP;
  	
-    QCheckBox 		*checkCtrl,*checkOld, *checkFrame, *checkFull, *checkMesh,
+    QCheckBox 		*checkCtrl, *checkOld, *checkFrame, *checkFull, *checkMesh,
                     *checkOnCtrl,
                     *checkTransf, *checkClear, *checkFeature, *checkLine;
  	

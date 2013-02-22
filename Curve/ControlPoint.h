@@ -36,6 +36,7 @@ public:
     QVector<int> connected_splines;
     int idx;
     bool isVisible;
+    bool isOriginal;
 
 private:
     float mz;

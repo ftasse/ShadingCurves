@@ -3,10 +3,13 @@
 
 ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 {
+    buffer2imgButton = new QPushButton("Buffer2img", this);
+    toolBara->addWidget(buffer2imgButton);
+
     ctrlGroupBox = new QGroupBox(tr(""));
 
     checkCtrl = new QCheckBox(tr("Control Mesh"));
-    checkOld = new QCheckBox(tr("Original Mesh"));
+    checkOld = new QCheckBox(tr("All Meshes"));
     checkFeature = new QCheckBox(tr("Feature Lines"));
     checkLine = new QCheckBox(tr("Line"));
     radioCtrlShaded = new QRadioButton(tr("Shaded"));
@@ -52,8 +55,8 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 
     toolBara->addWidget(checkCtrl);
     toolBara->addWidget(checkFeature);
-//    toolBara->addWidget(checkOld);
-    toolBara->addWidget(checkLine);
+    toolBara->addWidget(checkOld);
+//    toolBara->addWidget(checkLine);
     toolBara->addWidget(checkMesh);
     toolBara->addWidget(radioMeshFlat);
     toolBara->addWidget(radioMeshSmooth);
@@ -67,7 +70,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //	dropMenu = new QComboBox();
 
 	subdLevelSpinbox = new QSpinBox;
-    subdLevelSpinbox->setRange(0, 8);
+    subdLevelSpinbox->setRange(0, 5);
 	subdLevelSpinbox->setSingleStep(1);
 	subdLevelSpinbox->setValue(0);
 //    subdLevelSpinbox->setFixedWidth(50);
@@ -118,17 +121,17 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //    toolBara->addWidget(dropMenu);
     toolBara->addWidget(checkClear);
     toolBara->addWidget(checkTransf);
-    toolBara->addWidget(checkOnCtrl);
+//    toolBara->addWidget(checkOnCtrl);
     toolBara->addWidget(checkFrame);
     toolBara->addWidget(meshMenu);
 
     miscL->setContentsMargins(0,0,0,0);
     miscGroupBox->setContentsMargins(0,0,0,0);
     miscGroupBox->setLayout(miscL);
-    toolBara->addWidget(miscGroupBox);
+//    toolBara->addWidget(miscGroupBox);
     toolBara->addWidget(subdLevelSpinbox);
     toolBara->addWidget(laplGroupBox);
-    toolBara->addWidget(sliderLap);
+//    toolBara->addWidget(sliderLap);
     toolBara->addWidget(colorMenu);
 //    miscL->addStretch(1);
 
@@ -300,7 +303,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     sliderC2l->setContentsMargins(11,0,11,0);
 	sliderC2w->setLayout(sliderC2l);
 
-    toolBara->addWidget(sliderSm);
+//    toolBara->addWidget(sliderSm);
 
     toolBara->addWidget(sliderXw);
 //	slidLayout->addStretch(1);
@@ -367,7 +370,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     toolBara->addWidget(sliderC1w);
     toolBara->addWidget(sliderC2w);
 
-    toolBara->addWidget(checkFull);
+//    toolBara->addWidget(checkFull);
     toolBara->addWidget(barWidget);
     toolBara->addWidget(numWidget);
     toolBara->addWidget(numSWidget);

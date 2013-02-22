@@ -1,8 +1,5 @@
 Flora:
-1. add z to CPs
-2. write to OFF
-3. automatically recompute surfaces (when CP position changes)
+3. automatically recompute surfaces (when surface width is changed)
 4. add check box for inward/outward surfaces
 5. combine control points at T junctions
 10. change from open uniform knot vector to "closed" uniform (Henrik will tell you)
-100. garbage collection

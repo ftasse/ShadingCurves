@@ -1,11 +1,13 @@
-#include <QtGui>
-#include <QtOpenGL>
+#include "../Views/glew/GL/glew.h"
+//#include <QtGui>
+//#include <QtOpenGL>
 #include "glviewsubd.h"
 #include <assert.h>
+//#include <GL/glu.h>
 
 using namespace std;
 
-GLviewsubd::GLviewsubd(QWidget *parent, QGLWidget *shareWidget) : GLviewport(parent, shareWidget)
+GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, QWidget *parent, QGLWidget *shareWidget) : GLviewport(parent, shareWidget)
 {
     setAcceptDrops(true);
 
@@ -56,6 +58,15 @@ GLviewsubd::GLviewsubd(QWidget *parent, QGLWidget *shareWidget) : GLviewport(par
 
     stripeDensityLevel = 3;
     lapSmValue = 10;
+
+    imageWidth = iW;
+    imageHeight = iH;
+
+//    this->setFixedSize(iW, iH);
+
+    numberPaintCalls = 0;
+
+    offScreen = false;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -166,179 +177,391 @@ void GLviewsubd::setIndMesh(int newInd)
 		emit poiChanged();
 		emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
 
-		buildPoi();
-		buildPoiSub();
-		buildCtrl();
-		updateGL();
+//		buildPoi();
+//		buildPoiSub();
+//		buildCtrl();
+//		updateGL();
+
+        focusView();
 	}
 }
 
 void GLviewsubd::buildAll(void)
 {
-//    if (mesh_enabled)
-    {
-        if (flat_mesh_enabled)
-        {
-            buildFlatMesh();
-        }
-        else if (smooth_mesh_enabled)
-        {
-            buildSmoothMesh();
-        }
-        else if (edged_mesh_enabled)
-        {
-            buildEdgedMesh();
-        }
-        else if (culled_mesh_enabled)
-        {
-            buildCulledMesh();
-        }
-        else if (curvG_mesh_enabled)
-        {
-            buildCurvGMesh();
-        }
-        else if (height_mesh_enabled)
-        {
-            buildHeightMesh();
-        }
-        else if (IP_mesh_enabled)
-        {
-            buildIPMesh();
-        }
-    }
+////    if (mesh_enabled)
+//    {
+//        if (flat_mesh_enabled)
+//        {
+//            buildFlatMesh();
+//        }
+//        else if (smooth_mesh_enabled)
+//        {
+//            buildSmoothMesh();
+//        }
+//        else if (edged_mesh_enabled)
+//        {
+//            buildEdgedMesh();
+//        }
+//        else if (culled_mesh_enabled)
+//        {
+//            buildCulledMesh();
+//        }
+//        else if (curvG_mesh_enabled)
+//        {
+//            buildCurvGMesh();
+//        }
+//        else if (height_mesh_enabled)
+//        {
+//            buildHeightMesh();
+//        }
+//        else if (IP_mesh_enabled)
+//        {
+//            buildIPMesh();
+//        }
+//    }
 
-    if (feature_lines_enabled)
-    {
-        buildFeatureLines();
-    }
+//    if (feature_lines_enabled)
+//    {
+//        buildFeatureLines();
+//    }
 
-    if (ctrl_enabled)
-    {
-        buildCtrl();
-        buildPoi();
-        buildPoiSub();
-        buildPoiBound();
-    }
+//    if (ctrl_enabled)
+//    {
+//        buildCtrl();
+//        buildPoi();
+//        buildPoiSub();
+//        buildPoiBound();
+//    }
 
-    if (old_enabled)
-    {
-        buildOld();
-    }
+//    if (old_enabled)
+//    {
+//        buildOld();
+//    }
 
-    if (frame_enabled)
-    {
-        buildFrame();
-    }
+//    if (frame_enabled)
+//    {
+//        buildFrame();
+//    }
 
-    if (line_enabled)
+//    if (line_enabled)
+//    {
+//        buildLine();
+//    }
+}
+
+void GLviewsubd::initializeGL(void)
+{
+    static const int res = 1024;
+    PointPrec		col[3];
+    GLfloat			texture[5][res][3];
+
+//    if (joinTheDarkSide)
+//    {
+//        glClearColor(0, 0, 0, 0);
+//    }
+//    else
+//    {
+//        glClearColor(1, 1, 1, 0);
+//    }
+
+    glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
+
+//    // FOG
+//    fogColor[0] = 0.5;
+//    fogColor[1] = 0.5;
+//    fogColor[2] = 0.5;
+//    fogColor[3] = 1.0;
+//    glClearColor(0.f,0.f,0.f,1.0f);  // Clear To The Color Of The Fog
+//    glFogi(GL_FOG_MODE, GL_EXP);        // Fog Mode: GL_EXP, GL_EXP2, GL_LINEAR
+//    glFogfv(GL_FOG_COLOR, fogColor);    // Set Fog Color
+//    glFogf(GL_FOG_DENSITY, 0.3f);      // How Dense Will The Fog Be
+//    glHint(GL_FOG_HINT, GL_NICEST);  // Fog Hint Value
+////    glFogf(GL_FOG_START, 0.0f);         // Fog Start Depth
+////    glFogf(GL_FOG_END, 1.0f);           // Fog End Depth
+//    glEnable(GL_FOG);                   // Enables GL_FOG
+//    // END FOG
+
+
+
+    glShadeModel(GL_FLAT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_NORMALIZE);
+//    glDepthMask(GL_FALSE);
+//    glEnable(GL_CULL_FACE);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  lightDiffuse1);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
+    glLightfv(GL_LIGHT1, GL_AMBIENT,  lightAmbient);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE,  lightDiffuse1);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, lightSpecular);
+    glEnable (GL_LIGHT1);
+    glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2);
+    glLightfv(GL_LIGHT2, GL_AMBIENT,  lightAmbient);
+    glLightfv(GL_LIGHT2, GL_DIFFUSE,  lightDiffuse1);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, lightSpecular);
+//    glEnable(GL_LIGHT2);
+
+    glLoadIdentity();
+//    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+
+    swapBuffers();
+
+    glGenTextures(6, textID);
+
+    for (int j = 0; j < 5; ++j) // number of colour systems
     {
-        buildLine();
+        for (int i = 0; i < res; ++i)
+        {
+            genColor(j, (float)i / res - 0.5, -0.5, 0.5, col);
+
+            texture[j][i][0] = col[0];
+            texture[j][i][1] = col[1];
+            texture[j][i][2] = col[2];
+        }
+
+        glBindTexture(GL_TEXTURE_1D, textID[j]);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    //	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+        glDisable(GL_TEXTURE_GEN_S);
+
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, res,
+                     0, GL_RGB, GL_FLOAT, texture[j]);
     }
 }
 
 void GLviewsubd::paintGL(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPushMatrix();
-	// Pre-multiply by translation
-	GLdouble currentMatrix[16] = {0};
-	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
-	glLoadIdentity();
-	glTranslated(0.0, 0.0, -stepBackAmount);
-	glMultMatrixd(currentMatrix);
-//    glDisable(GL_STENCIL_TEST);
 
-	if (mesh_enabled)
-	{
-        if (flat_mesh_enabled)
-		{
-//			cout << "Calling flat_mesh_list" << endl;
-            glCallList(flat_mesh_list);
-		}
-        if (smooth_mesh_enabled)
+    if (offScreen)
+    {
+        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
+        numberPaintCalls++;
+
+        int origClr, origView[4];
+
+        makeCurrent();
+
+        //Setup for offscreen drawing if fbos are supported
+        GLuint framebuffer, renderbuffer;
+        GLenum status;
+
+        glGenFramebuffersEXT(1, &framebuffer);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+        glGenRenderbuffersEXT(1, &renderbuffer);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                         GL_RENDERBUFFER_EXT, renderbuffer);
+        status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+        if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+            qDebug("Could not draw offscreen");
+
+        //Drawing
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+
+        glGetIntegerv(GL_VIEWPORT, origView);
+        glViewport(0, 0, imageWidth, imageHeight);
+
+        glOrtho(0, imageWidth, 0, imageHeight, -1000.0, 1000.0);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+        glRenderMode(GL_RENDER);
+    //    glLineWidth(1.0);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //    glEnable(GL_BLEND);
+    //    glEnable(GL_LINE_SMOOTH);
+
+        //draw stuff here
+
+        origClr = clr;
+        clr = 3;
+    //    drawMesh(HEIGHT, meshCurr[0], 0, 0);
+    //    paintGL();
+        buildHeightMesh();
+        glCallList(height_mesh_list);
+
+        clr = origClr;
+
+        cv::Mat img;
+        img.create(imageHeight, imageWidth, CV_8UC3);
+        GLenum inputColourFormat;
+        #ifdef GL_BGR
+            inputColourFormat = GL_BGR;
+        #else
+            #ifdef GL_BGR_EXT
+                inputColourFormat = GL_BGR_EXT;
+            #else
+                #define GL_BGR 0x80E0
+                inputColourFormat = GL_BGR;
+            #endif
+        #endif
+        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+
+        //Clean up offscreen drawing
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glViewport(0, 0, origView[2], origView[3]);
+//        glOrtho(0, origView[2], 0, origView[3], -1000.0, 1000.0);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glDeleteRenderbuffersEXT(1, &renderbuffer);
+        glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
+
+        cv::cvtColor(img, img, CV_BGR2RGB);
+        cv::flip(img, img, 0);
+//        cv::cvtColor(img, img, CV_RGB2GRAY);
+        cv::imwrite("3Dbuffer.png", img);
+    //    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
+    //    cv::imshow("3Dbuffer", img);
+//        return img;
+        offScreen = false;
+        updateGL();
+    }
+    else
+    {
+//        cout << "PaintGL ONscreen called: " << numberPaintCalls << endl;
+//        numberPaintCalls++;
+
+        makeCurrent();
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glPushMatrix();
+        // Pre-multiply by translation
+        GLdouble currentMatrix[16] = {0};
+        glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
+        glLoadIdentity();
+        glTranslated(0.0, 0.0, -stepBackAmount);
+        glMultMatrixd(currentMatrix);
+    //    glDisable(GL_STENCIL_TEST);
+
+        if (mesh_enabled)
         {
-//			cout << "Calling smooth_mesh_list" << endl;
-            glCallList(smooth_mesh_list);
+            if (flat_mesh_enabled)
+            {
+    //			cout << "Calling flat_mesh_list" << endl;
+                buildFlatMesh();
+                glCallList(flat_mesh_list);
+            }
+            if (smooth_mesh_enabled)
+            {
+    //			cout << "Calling smooth_mesh_list" << endl;
+                buildSmoothMesh();
+                glCallList(smooth_mesh_list);
+            }
+            else if (edged_mesh_enabled)
+            {
+                buildEdgedMesh();
+                glCallList(edged_mesh_list);
+    //			cout << "Calling edged_mesh_list" << endl;
+            }
+            else if (culled_mesh_enabled)
+            {
+                buildCulledMesh();
+                glCallList(culled_mesh_list);
+    //			cout << "Calling culled_mesh_list" << endl;
+            }
+//            else if (curvM_mesh_enabled)
+//            {
+//                glCallList(curvM_mesh_list);
+//    //			cout << "Calling curvM_mesh_list" << endl;
+//            }
+            else if (curvG_mesh_enabled)
+            {
+                buildCurvGMesh();
+                glCallList(curvG_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
+            else if (height_mesh_enabled)
+            {
+                buildHeightMesh();
+                glCallList(height_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
+//            else if (curvTG_mesh_enabled)
+//            {
+//                glCallList(curvTG_mesh_list);
+//    //			cout << "Calling curvTG_mesh_list" << endl;
+//            }
+            else if (IP_mesh_enabled)
+            {
+                buildIPMesh();
+                glCallList(IP_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
         }
-		else if (edged_mesh_enabled)
-		{
-			glCallList(edged_mesh_list);
-//			cout << "Calling edged_mesh_list" << endl;
-		}
-		else if (culled_mesh_enabled)
-		{
-			glCallList(culled_mesh_list);
-//			cout << "Calling culled_mesh_list" << endl;
-		}
-		else if (curvM_mesh_enabled)
-		{
-			glCallList(curvM_mesh_list);
-//			cout << "Calling curvM_mesh_list" << endl;
-		}
-		else if (curvG_mesh_enabled)
-		{
-			glCallList(curvG_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-        }
-        else if (height_mesh_enabled)
+
+        if (feature_lines_enabled)
         {
-            glCallList(height_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-		}
-		else if (curvTG_mesh_enabled)
-		{
-			glCallList(curvTG_mesh_list);
-//			cout << "Calling curvTG_mesh_list" << endl;
-		}
-		else if (IP_mesh_enabled)
-		{
-			glCallList(IP_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-		}
-	}
+            buildFeatureLines();
+            glCallList(feature_lines_list);
+        }
 
-    if (feature_lines_enabled)
-    {
-        glCallList(feature_lines_list);
-    }
+        if (ctrl_enabled)
+        {
+            if (edged_ctrl_enabled)
+            {
+    //			glClear(GL_DEPTH_BUFFER_BIT);
+            }
+    //		cout << "Calling ctrl_list" << endl;
 
-	if (ctrl_enabled)
-	{
-		if (edged_ctrl_enabled)
-		{
-//			glClear(GL_DEPTH_BUFFER_BIT);
-		}
-//		cout << "Calling ctrl_list" << endl;
-		glCallList(ctrl_list);
-        glCallList(poiBound_list);
-	}
+            buildCtrl();
+            buildPoiSub();
+//            buildPoiBound();
 
-    if (old_enabled)
-    {
-        glCallList(old_list);
-    }
+            glCallList(ctrl_list);
+            glCallList(poiBound_list);
+        }
 
-    if (line_enabled)
-    {
-        glCallList(line_list);
-    }
+        if (old_enabled)
+        {
+            buildOld();
+            glCallList(old_list);
+        }
 
-    if (ctrl_enabled)
-    {
+        if (line_enabled)
+        {
+            buildLine();
+            glCallList(line_list);
+        }
+
+        if (ctrl_enabled)
+        {
+            glClear(GL_DEPTH_BUFFER_BIT);
+            buildPoi();
+            glCallList(poi_list);
+        }
+
+        if (frame_enabled)
+        {
+    //		glClear(GL_DEPTH_BUFFER_BIT);
+            buildFrame();
+            glCallList(frame_list);
+        }
+
         glClear(GL_DEPTH_BUFFER_BIT);
-        glCallList(poi_list);
+        glCallList(poiSub_list);
+
+        glPopMatrix();
     }
-
-	if (frame_enabled)
-	{
-//		glClear(GL_DEPTH_BUFFER_BIT);
-		glCallList(frame_list);
-	}
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glCallList(poiSub_list);
-
-	glPopMatrix();
 }
 
 void GLviewsubd::mousePressEvent(QMouseEvent *event)
@@ -575,10 +798,14 @@ void GLviewsubd::buildFlatMesh()
     flat_mesh_list = glGenLists (1);
     glNewList (flat_mesh_list, GL_COMPILE);
 		glEnable(GL_LIGHTING);
-		for (j = 0 ; j < meshCurr.size() ; j++)
-		{
-            drawMesh(FLAT, meshCurr[j], j, 0);
-		}
+//		for (j = 0 ; j < meshCurr.size() ; j++)
+//		{
+//            drawMesh(FLAT, meshCurr[j], j, 0);
+//		}
+        if (indexMesh > -1 )
+        {
+            drawMesh(FLAT, meshCurr[indexMesh], indexMesh, 0);
+        }
 	glEndList();
 }
 
@@ -591,10 +818,13 @@ void GLviewsubd::buildSmoothMesh()
     smooth_mesh_list = glGenLists (1);
     glNewList (smooth_mesh_list, GL_COMPILE);
         glEnable(GL_LIGHTING);
-        for (j = 0 ; j < meshCurr.size() ; j++)
+//        for (j = 0 ; j < meshCurr.size() ; j++)
+//        {
+//            drawMesh(SMOOTH, meshCurr[j], j, 0);
+//        }
+        if (indexMesh > -1 )
         {
-            drawMesh(SMOOTH, meshCurr[j], j, 0);
-
+            drawMesh(SMOOTH, meshCurr[indexMesh], indexMesh, 0);
         }
     glEndList();
 }
@@ -609,11 +839,14 @@ void GLviewsubd::buildEdgedMesh()
 	glNewList (edged_mesh_list, GL_COMPILE);
 //        glDisable(GL_LIGHTING);
         glEnable(GL_LIGHTING);
-		for (j = 0 ; j < meshCurr.size() ; j++)
-		{
-            drawMesh(WIREFRAME, meshCurr[j], j, 0);
-            //drawMesh(HEIGHT, meshCurr[j], j, 0);
-		}
+//		for (j = 0 ; j < meshCurr.size() ; j++)
+//		{
+//            drawMesh(WIREFRAME, meshCurr[j], j, 0);
+//		}
+        if (indexMesh > -1 )
+        {
+            drawMesh(WIREFRAME, meshCurr[indexMesh], indexMesh, 0);
+        }
 	glEndList();
 }
 
@@ -626,10 +859,14 @@ void GLviewsubd::buildCulledMesh()
 	culled_mesh_list = glGenLists (1);
 	glNewList (culled_mesh_list, GL_COMPILE);
 		glDisable(GL_LIGHTING);
-		for (j = 0 ; j < meshCurr.size() ; j++)
-		{
-            drawMesh(SOLIDFRAME, meshCurr[j], j, 0);
-		}
+//		for (j = 0 ; j < meshCurr.size() ; j++)
+//		{
+//            drawMesh(SOLIDFRAME, meshCurr[j], j, 0);
+//		}
+        if (indexMesh > -1 )
+        {
+            drawMesh(SOLIDFRAME, meshCurr[indexMesh], indexMesh, 0);
+        }
 	glEndList();
 }
 
@@ -679,10 +916,14 @@ void GLviewsubd::buildCurvGMesh()
 	curvG_mesh_list = glGenLists (1);
 	glNewList (curvG_mesh_list, GL_COMPILE);
 		glEnable(GL_LIGHTING);
-		for (j = 0 ; j < meshCurr.size() ; j++)
-		{
-            drawMesh(GAUSSIAN, meshCurr[j], j, 0);
-		}
+//		for (j = 0 ; j < meshCurr.size() ; j++)
+//		{
+//            drawMesh(GAUSSIAN, meshCurr[j], j, 0);
+//		}
+        if (indexMesh > -1 )
+        {
+            drawMesh(GAUSSIAN, meshCurr[indexMesh], indexMesh, 0);
+        }
 	glEndList();
 }
 
@@ -711,9 +952,13 @@ void GLviewsubd::buildFeatureLines()
     feature_lines_list = glGenLists (1);
     glNewList (feature_lines_list, GL_COMPILE);
         glDisable(GL_LIGHTING);
-        for (j = 0 ; j < meshCurr.size() ; j++)
+//        for (j = 0 ; j < meshCurr.size() ; j++)
+//        {
+//            drawFeatureLines(meshCurr[j]);
+//        }
+        if (indexMesh > -1 )
         {
-            drawFeatureLines(meshCurr[j]);
+            drawFeatureLines(meshCurr[indexMesh]);
         }
     glEndList();
 }
@@ -740,10 +985,14 @@ void GLviewsubd::buildIPMesh()
 	IP_mesh_list = glGenLists (1);
 	glNewList (IP_mesh_list, GL_COMPILE);
 		glEnable(GL_LIGHTING);
-		for (j = 0 ; j < meshCurr.size() ; j++)
-		{
-            drawMesh(ISOPHOTES, meshCurr[j], j, 0);
-		}
+//		for (j = 0 ; j < meshCurr.size() ; j++)
+//		{
+//            drawMesh(ISOPHOTES, meshCurr[j], j, 0);
+//		}
+        if (indexMesh > -1 )
+        {
+            drawMesh(ISOPHOTES, meshCurr[indexMesh], indexMesh, 0);
+        }
 	glEndList();
 }
 
@@ -767,13 +1016,20 @@ void GLviewsubd::buildCtrl()
 //		}
 //		else if (edged_ctrl_enabled)
 //		{
-//			glDisable(GL_LIGHTING);
 
-            glEnable(GL_LIGHTING);
-            for (j = 0 ; j < meshCtrl.size() ; j++)
-			{
-                drawMesh(WIREFRAME, meshCtrl[j], j, 1);
-			}
+//            for (j = 0 ; j < meshCtrl.size() ; j++)
+//			{
+//                drawMesh(WIREFRAME, meshCtrl[j], j, 1);
+//			}
+
+            glDisable(GL_LIGHTING);
+            //glEnable(GL_LIGHTING);
+            if (indexMesh > -1 )
+            {
+                drawMesh(WIREFRAME, meshCtrl[indexMesh], indexMesh, 1);
+            }
+
+
 //		}
 //		else if (culled_ctrl_enabled)
 //		{
@@ -797,11 +1053,11 @@ void GLviewsubd::buildOld()
     glNewList (old_list, GL_COMPILE);
     if (old_enabled)
     {
-//        glDisable(GL_LIGHTING);
-        glEnable(GL_LIGHTING);
+        glDisable(GL_LIGHTING);
+//        glEnable(GL_LIGHTING);
         for (j = 0 ; j < meshCurr.size() ; j++)
         {
-            drawMesh(WIREFRAME, meshOld[j], j, 2); //for meshOld
+            drawMesh(WIREFRAME, meshCtrl[j], j, 2); //for meshOld
         }
     }
     glEndList();
@@ -1282,7 +1538,7 @@ void GLviewsubd::loadFile(const char *fileName)
 	tmp->my_rand = 0;
 	tmp->transform = transf;
 
-    tmp->load(fileName);
+    tmp->load(fileName, imageHeight);
 
 	meshCtrl.push_back(tmp);
     meshCurr = meshCtrl;
@@ -1366,8 +1622,7 @@ void GLviewsubd::changeSmoothing(int change)
 		meshCurr[j]->compCurvSmooth(smoothCoef);
 		meshCurr[j]->computeNormalsSmooth(smoothCoef);
 	}
-	buildAll();
-	updateGL();
+    updateGL();
 }
 
 void GLviewsubd::movePointX(int change)
@@ -1535,9 +1790,7 @@ void GLviewsubd::updateAll()
         meshCurr[j]->computeNormalsFlat();
         meshCurr[j]->computeNormalsSmooth(smoothCoef);
     }
-
-	buildAll();
-	updateGL();
+    updateGL();
 }
 
 void GLviewsubd::setProbeOnCtrl(const bool b)
@@ -1713,4 +1966,40 @@ void GLviewsubd::dropEvent(QDropEvent *event)
     }
 
     event->acceptProposedAction();
+}
+
+void GLviewsubd::buffer2img()
+{
+    offScreen = true;
+    updateGL();
+}
+
+void GLviewsubd::focusView(void)
+{
+    if (indexMesh > -1 && !old_enabled)
+    {
+        makeCurrent();
+        glLoadIdentity();
+        glScalef(0.7 * meshCtrl[indexMesh]->my_scale, 0.7 * meshCtrl[indexMesh]->my_scale, 0.7 * meshCtrl[indexMesh]->my_scale);
+        glTranslatef(-meshCtrl[indexMesh]->my_centre.getX(), -meshCtrl[indexMesh]->my_centre.getY(), -meshCtrl[indexMesh]->my_centre.getZ());
+        scale = 1;
+
+        updateAll();
+    }
+}
+
+void GLviewsubd::setRotZero(void)
+{
+    makeCurrent();
+
+    double max = qMax(imageWidth, imageHeight);
+    double sc = 1.0 / max;
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glScalef(0.7 * sc, 0.7 * sc, 0.7 * sc);
+    glTranslatef(-(double)imageWidth / 2.0, -(double) imageHeight / 2.0, -0);
+    scale = 1;
+
+    updateGL();
 }

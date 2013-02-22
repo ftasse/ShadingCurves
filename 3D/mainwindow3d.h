@@ -21,7 +21,7 @@ class MainWindow3D : public QMainWindow
 	Q_OBJECT
 
 public:
-    MainWindow3D();
+    MainWindow3D(GLuint iW, GLuint iH);
     ~MainWindow3D();
 
 signals:

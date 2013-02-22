@@ -5,13 +5,17 @@
 #include "3D/mesh.h"
 #include "3D/point_3d.h"
 #include "3D/glviewport.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 class GLviewsubd : public GLviewport
 {
 	Q_OBJECT
 
 public:
-	GLviewsubd(QWidget * parent = 0, QGLWidget * shareWidget = 0);
+    GLviewsubd(GLuint iW, GLuint iH, QWidget * parent = 0, QGLWidget * shareWidget = 0);
 	~GLviewsubd();
 
     void   loadFile(const char *fileName);
@@ -39,6 +43,8 @@ public:
     void buildLine(void);
     void regenSurfs();
     void resetSurfs();
+
+    void focusView      (void);
 
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
@@ -119,6 +125,11 @@ public slots:
 	void changeCurvRatio1	(int newRatio);
 	void changeCurvRatio2	(int newRatio);
 
+    void setRotZero		(void);
+
+//    cv::Mat buffer2img();
+    void buffer2img();
+
 signals:
 	void subdivLevelChanged(int newLevel);
 	void rightClicked();
@@ -131,6 +142,7 @@ signals:
 
 protected:
 	void paintGL(void);
+    void initializeGL(void);
 	void mousePressEvent    (QMouseEvent *event);
 
     void drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, unsigned int ctrlType);
@@ -174,9 +186,11 @@ private:
 
 	bool probeOnCtrl;
 	bool transf;
+    bool offScreen;
 
     int stripeDensityLevel;
     int lapSmValue;
+    int numberPaintCalls;
 
     unsigned int flat_mesh_list;
     unsigned int smooth_mesh_list;
@@ -195,6 +209,8 @@ private:
 	unsigned int ctrl_list;
     unsigned int old_list;
     unsigned int line_list;
+
+    GLuint      imageHeight, imageWidth;
 };
 
 #endif

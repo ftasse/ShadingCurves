@@ -11,13 +11,13 @@
 
 using namespace std;
 
-MainWindow3D::MainWindow3D()
+MainWindow3D::MainWindow3D(GLuint iW, GLuint iH)
 {
 	widget = new QWidget;
     setCentralWidget(widget);
 
-	glwidget1  = new GLviewsubd();
-	glwidget2  = new GLviewsubd();
+    glwidget1  = new GLviewsubd(iW, iH);
+    glwidget2  = new GLviewsubd(iW, iH);
 	glBar1	   = new GLbar();
 	glBar2	   = new GLbar();
 
@@ -38,7 +38,7 @@ MainWindow3D::MainWindow3D()
 //	statusBar()->showMessage("Open a file...");
 
     setWindowTitle(tr("Mesh Visualisation"));
-	setMinimumSize(350, 250);
+    setMinimumSize(350, 250);
 //    resize(width/3, 3*height/4);
 
 	NotFullScr = true;
@@ -74,9 +74,9 @@ MainWindow3D::MainWindow3D()
     mainLayout->setContentsMargins(0,0,0,0);
 	widget->setLayout(mainLayout);
 
-    mainWindowPixmap = new QPixmap("../meshVis/icons/mainWindowIcon.png");
-    QIcon mainWindowIcon(*mainWindowPixmap);
-    setWindowIcon(mainWindowIcon);
+//    mainWindowPixmap = new QPixmap("../meshVis/icons/mainWindowIcon.png");
+//    QIcon mainWindowIcon(*mainWindowPixmap);
+//    setWindowIcon(mainWindowIcon);
 
     toolBar1a->setOrientation(Qt::Vertical);
 
@@ -971,10 +971,10 @@ void MainWindow3D::connectAll()
 	connect(glwidget2, SIGNAL(middleClicked()),
 			this, SLOT(fullScr()));
 
-	connect(glwidget1, 	SIGNAL(updateNeeded()),
-			this, 		  SLOT(update1()));
-	connect(glwidget2, 	SIGNAL(updateNeeded()),
-			this, 		  SLOT(update2()));
+//	connect(glwidget1, 	SIGNAL(updateNeeded()),
+//			this, 		  SLOT(update1()));
+//	connect(glwidget2, 	SIGNAL(updateNeeded()),
+//			this, 		  SLOT(update2()));
 
 	connect(glwidget1, 	SIGNAL(callBar(int)),
 			glBar1, 		  SLOT(setBar(int)));
@@ -1123,8 +1123,8 @@ void MainWindow3D::connectAll()
 			glwidget1, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget1, 	  SLOT(changeStripeDensity(int)));
-    connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
-            this, 	  SLOT(setTimeInt1(int)));
+//    connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
+//            this, 	  SLOT(setTimeInt1(int)));
 	connect(ctrlWidget1->sliderCurv1, 	SIGNAL(valueChanged(int)),
 			glwidget1, 	  SLOT(changeCurvRatio1(int)));
 	connect(ctrlWidget1->sliderCurv2, 	SIGNAL(valueChanged(int)),
@@ -1139,8 +1139,8 @@ void MainWindow3D::connectAll()
 			glwidget2, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(changeStripeDensity(int)));
-    connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
-            this, 	  SLOT(setTimeInt2(int)));
+//    connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
+//            this, 	  SLOT(setTimeInt2(int)));
 	connect(ctrlWidget2->sliderCurv1, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(changeCurvRatio1(int)));
 	connect(ctrlWidget2->sliderCurv2, 	SIGNAL(valueChanged(int)),
@@ -1211,4 +1211,9 @@ void MainWindow3D::connectAll()
             this, 		  SLOT(load1(const char*)));
     connect(glwidget2, 	SIGNAL(openFile(const char *)),
             this, 		  SLOT(load2(const char*)));
+
+    connect(ctrlWidget1->buffer2imgButton, 	SIGNAL(clicked()),
+            glwidget1, 		  SLOT(buffer2img()));
+    connect(ctrlWidget2->buffer2imgButton, 	SIGNAL(clicked()),
+            glwidget2, 		  SLOT(buffer2img()));
 }
