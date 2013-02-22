@@ -5,14 +5,16 @@
 #include <stdio.h>
 
 #include "BSplineGroup.h"
+#include "Utilities/SurfaceUtils.h"
 
 BSplineGroup::BSplineGroup()
 {
     EPSILON = .0001f;
 }
 
-int BSplineGroup::addControlPoint(QPointF value, float z)
+int BSplineGroup::addControlPoint(QPointF value, float z, bool original)
 {
+    if (original)
     for (int i=0; i<num_controlPoints(); ++i)
     {
         float dx =  controlPoint(i).x() - value.x();
@@ -31,6 +33,7 @@ int BSplineGroup::addControlPoint(QPointF value, float z)
     cpt.m_splineGroup = this;
     cpt.idx = num_controlPoints();
     cpt.setZ(z);
+    cpt.isOriginal = original;
     m_cpts.push_back(cpt);
     return m_cpts.size() - 1;
 }
@@ -53,7 +56,6 @@ int BSplineGroup::addSurface()
     return num_surfaces() - 1;
 }
 
-// HENRIK changes: add distance transform image to the parameters
 int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
 {
     // FLORA, delete any previous surface attached to this spline
@@ -67,7 +69,6 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
     }
     garbage_collection();
 
-    // HENRIK: TODO: add option for z values
     int z = 30;
     float angleT = 35.0f;
 
@@ -114,15 +115,12 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
                 float oldD = currentD;
                 QPoint m = localMax(dt,cv::Rect(current.x()-2,current.y()-2,current.x()+2,current.y()+2)
                                     ,&currentD,normalL,visited);
- //               qDebug() << oldD << " " << currentD;
-  //              qDebug() << m.x() << " " << m.y();
                 // check lines
                 QLineF currentL(bspline.pointAt(k),m);
                 float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
                 if(abs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
-   //                 qDebug() << "++++++++++++++++++++++++";
                     break;
                 } else {
                     visited.append(current);
@@ -142,11 +140,21 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
     return surface_id;
 }
 
-bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
+bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id, bool original)
 {
-    m_splines[spline_id].connected_cpts.push_back(cpt_id);
+    if (original)
+        m_splines[spline_id].original_cpts.push_back(cpt_id);
+    else
+    {
+        m_splines[spline_id].connected_cpts.push_back(cpt_id);
+    }
+
     m_cpts[cpt_id].connected_splines.push_back(spline_id);
-    m_splines[spline_id].updateKnotVectors();
+
+    if (original)
+    {
+        m_splines[spline_id].recompute();
+    }
     return true;
 }
 
@@ -166,7 +174,18 @@ void BSplineGroup::removeControlPoint(int cpt_id)
                 ++k;
             }
         }
-        spline.updateKnotVectors();
+        for (int k=0; k<spline.original_cpts.size(); )
+        {
+            if (spline.original_cpts[k] == cpt_id)
+            {
+                spline.original_cpts.erase(spline.original_cpts.begin() + k);
+            } else
+            {
+                ++k;
+            }
+        }
+        if (cpt.isOriginal)
+            spline.recompute();
     }
     cpt.connected_splines.clear();
 }
@@ -238,8 +257,9 @@ void BSplineGroup::garbage_collection()
 
     for (int i=0; i< num_splines(); ++i)
     {
-        if (spline(i).connected_cpts.size() == 0)
+        if (spline(i).original_cpts.size() == 0)
         {
+            spline(i).cleanup();
             remove_spline_ids.push_back(i-remove_spline_ids.size());
         } else
         {
@@ -293,14 +313,16 @@ void BSplineGroup::garbage_collection()
             cpt.connected_splines[k] = new_spline_indices[cpt.connected_splines[k]];
         }
     }
+
     for (int i = 0; i< num_splines(); ++i)
     {
         BSpline& bspline = spline(i);
-        for (int k=0; k<bspline.connected_cpts.size(); ++k)
+        for (int k=0; k<bspline.original_cpts.size(); ++k)
         {
-            bspline.connected_cpts[k] = new_cpt_indices[bspline.connected_cpts[k]];
+            bspline.original_cpts[k] = new_cpt_indices[bspline.original_cpts[k]];
         }
     }
+
     for (int i=0; i<num_surfaces(); ++i)
     {
         Surface& surf = surface(i);
@@ -411,7 +433,6 @@ void BSplineGroup::saveOFF(std::string fname)
 
 
 // HENRIK: find max value in I, in neighbourhood N
-// Question: how does (x,y) relate to I.a(y,x) (in terms of indexing)?
 QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
 {
     int sx = N.x;
@@ -425,16 +446,13 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
                 continue;
             float d = I.at<float>(y,x);
             bool visCheck = visited.contains(QPoint(x,y));
-            if(abs(d-m)<EPSILON && !visCheck) // TODO: solve this
+            if(abs(d-m)<EPSILON && !visCheck)
                 cand.append(QPoint(x,y));
             else if(d>m) {
                 m=d;
                 cand.clear();
                 cand.append(QPoint(x,y));
             }
- //           qDebug() << d << " " << m << " " << x << " " << y;
- //           bool tmp = d-m>EPSILON;
- //           qDebug() << tmp << " " << visCheck;
             assert(!(d-m>EPSILON && visCheck));
         }
 
@@ -449,10 +467,6 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
             winner = *it;
         }
     }
-//    qDebug() << "Winner: " << winner.x() << " " << winner.y();
-//    qDebug() << "------------";
     *oldD = m;
     return winner;
-
- //   return cand.first();
 }

@@ -1,5 +1,6 @@
 #include "BSpline.h"
 #include "BSplineGroup.h"
+#include "Utilities/SurfaceUtils.h"
 #include <cmath>
 
 float distance_sqr(QPointF a, QPointF b)
@@ -182,4 +183,41 @@ QPointF BSpline::inward_normal(int index)
         tangent /= norm;
 
     return QPointF(-tangent.y(), tangent.x());
+}
+
+void BSpline::cleanup()
+{
+    if (connected_cpts.size() > 0)
+    {
+        while (connected_cpts.size()>0)
+        {
+            m_splineGroup->removeControlPoint(connected_cpts[0]);
+        }
+    }
+}
+
+void BSpline::recompute()
+{
+    cleanup();
+    m_splineGroup->garbage_collection();
+
+    QVector<QPointF> points;
+    for (int i=0; i< original_cpts.size(); ++i)
+    {
+        points.push_back(m_splineGroup->controlPoint(original_cpts[i]));
+    }
+
+    QVector<QPointF> subDividePts;
+
+    if (points.size() >= 4)
+        subDividePts = subDivide(points);
+
+
+    for (int i=0; i< subDividePts.size(); ++i)
+    {
+        int new_cpt = m_splineGroup->addControlPoint(subDividePts[i]);
+        m_splineGroup->addControlPointToSpline(idx, new_cpt);
+    }
+
+    updateKnotVectors();
 }
