@@ -181,7 +181,8 @@ void GLviewsubd::setIndMesh(int newInd)
 //		buildPoiSub();
 //		buildCtrl();
 //		updateGL();
-        updateAll();
+
+        focusView();
 	}
 }
 
@@ -1025,7 +1026,7 @@ void GLviewsubd::buildCtrl()
             //glEnable(GL_LIGHTING);
             if (indexMesh > -1 )
             {
-                drawMesh(WIREFRAME, meshCurr[indexMesh], indexMesh, 1);
+                drawMesh(WIREFRAME, meshCtrl[indexMesh], indexMesh, 1);
             }
 
 
@@ -1970,5 +1971,35 @@ void GLviewsubd::dropEvent(QDropEvent *event)
 void GLviewsubd::buffer2img()
 {
     offScreen = true;
+    updateGL();
+}
+
+void GLviewsubd::focusView(void)
+{
+    if (indexMesh > -1 && !old_enabled)
+    {
+        makeCurrent();
+        glLoadIdentity();
+        glScalef(0.7 * meshCtrl[indexMesh]->my_scale, 0.7 * meshCtrl[indexMesh]->my_scale, 0.7 * meshCtrl[indexMesh]->my_scale);
+        glTranslatef(-meshCtrl[indexMesh]->my_centre.getX(), -meshCtrl[indexMesh]->my_centre.getY(), -meshCtrl[indexMesh]->my_centre.getZ());
+        scale = 1;
+
+        updateAll();
+    }
+}
+
+void GLviewsubd::setRotZero(void)
+{
+    makeCurrent();
+
+    double max = qMax(imageWidth, imageHeight);
+    double sc = 1.0 / max;
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glScalef(0.7 * sc, 0.7 * sc, 0.7 * sc);
+    glTranslatef(-(double)imageWidth / 2.0, -(double) imageHeight / 2.0, -0);
+    scale = 1;
+
     updateGL();
 }

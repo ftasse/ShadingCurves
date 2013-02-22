@@ -44,6 +44,8 @@ public:
     void regenSurfs();
     void resetSurfs();
 
+    void focusView      (void);
+
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
 
@@ -122,6 +124,8 @@ public slots:
     void changeStripeDensity(int newDensity);
 	void changeCurvRatio1	(int newRatio);
 	void changeCurvRatio2	(int newRatio);
+
+    void setRotZero		(void);
 
 //    cv::Mat buffer2img();
     void buffer2img();

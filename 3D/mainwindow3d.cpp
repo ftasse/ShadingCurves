@@ -971,10 +971,10 @@ void MainWindow3D::connectAll()
 	connect(glwidget2, SIGNAL(middleClicked()),
 			this, SLOT(fullScr()));
 
-	connect(glwidget1, 	SIGNAL(updateNeeded()),
-			this, 		  SLOT(update1()));
-	connect(glwidget2, 	SIGNAL(updateNeeded()),
-			this, 		  SLOT(update2()));
+//	connect(glwidget1, 	SIGNAL(updateNeeded()),
+//			this, 		  SLOT(update1()));
+//	connect(glwidget2, 	SIGNAL(updateNeeded()),
+//			this, 		  SLOT(update2()));
 
 	connect(glwidget1, 	SIGNAL(callBar(int)),
 			glBar1, 		  SLOT(setBar(int)));
@@ -1123,8 +1123,8 @@ void MainWindow3D::connectAll()
 			glwidget1, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget1, 	  SLOT(changeStripeDensity(int)));
-    connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
-            this, 	  SLOT(setTimeInt1(int)));
+//    connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
+//            this, 	  SLOT(setTimeInt1(int)));
 	connect(ctrlWidget1->sliderCurv1, 	SIGNAL(valueChanged(int)),
 			glwidget1, 	  SLOT(changeCurvRatio1(int)));
 	connect(ctrlWidget1->sliderCurv2, 	SIGNAL(valueChanged(int)),
@@ -1139,8 +1139,8 @@ void MainWindow3D::connectAll()
 			glwidget2, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(changeStripeDensity(int)));
-    connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
-            this, 	  SLOT(setTimeInt2(int)));
+//    connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
+//            this, 	  SLOT(setTimeInt2(int)));
 	connect(ctrlWidget2->sliderCurv1, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(changeCurvRatio1(int)));
 	connect(ctrlWidget2->sliderCurv2, 	SIGNAL(valueChanged(int)),

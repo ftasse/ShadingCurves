@@ -342,17 +342,3 @@ void GLviewport::setRotZm(void)
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
-
-void GLviewport::setRotZero()
-{
-	makeCurrent();
-//	glLoadIdentity();
-//	glScalef(0.7,0.7,0.7);
-//	scale = 1;
-    glLoadIdentity();
-    glScalef(0.7 * my_scale, 0.7 * my_scale, 0.7 * my_scale);
-    glTranslatef(-my_centre.getX(), -my_centre.getY(), -my_centre.getZ());
-    scale = 1;
-
-    updateGL();
-}

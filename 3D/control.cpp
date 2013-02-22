@@ -70,7 +70,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //	dropMenu = new QComboBox();
 
 	subdLevelSpinbox = new QSpinBox;
-    subdLevelSpinbox->setRange(0, 8);
+    subdLevelSpinbox->setRange(0, 5);
 	subdLevelSpinbox->setSingleStep(1);
 	subdLevelSpinbox->setValue(0);
 //    subdLevelSpinbox->setFixedWidth(50);

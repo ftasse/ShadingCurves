@@ -39,7 +39,6 @@ public slots:
 	void setRotXm			(void);
 	void setRotYm			(void);
 	void setRotZm			(void);
-    void setRotZero			(void);
 
 	virtual void buildAll			(void) = 0;
 
