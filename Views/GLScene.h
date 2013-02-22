@@ -60,6 +60,16 @@ public:
         return false;
     }
 
+    /*std::vector<std::ostream> OFFSurfaces()
+    {
+        std::vector<std::ostream> surface_streams(m_splineGroup.num_surfaces());
+        for (int i=0; i< m_splineGroup.num_surfaces(); ++i)
+        {
+            m_splineGroup.surface(i).writeOFF(surface_streams[i]);
+        }
+        return surface_streams;
+    }*/
+
     cv::Mat curvesImage(bool only_closed_curves = false);
     void update_region_coloring();
 
