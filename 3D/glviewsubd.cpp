@@ -90,12 +90,12 @@ void GLviewsubd::setSubdivLevel(int newLevel)
     showMessageCF = false;
     showMessageCCint = false;
 
-	if (indexMesh > -1 && meshCurr[0]->my_level != newL)
+    if (meshCurr.size() > 0 && meshCurr[0]->my_level != newL)
 	{
-		oldLevel = meshCurr[indexMesh]->my_level;
+        oldLevel = meshCurr[0]->my_level;
 cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLevel << endl;
 
-        if ((meshCurr[indexMesh]->my_level > newL) || (meshSubd[indexMesh].size() > newL))
+        if ((meshCurr[0]->my_level > newL) || (meshSubd[0].size() > newL))
 		{
 			// just call the right mesh from the vector of meshes
 			for (j = 0 ; j < meshCurr.size() ; j++)
@@ -453,94 +453,102 @@ void GLviewsubd::paintGL(void)
         glMultMatrixd(currentMatrix);
     //    glDisable(GL_STENCIL_TEST);
 
-        if (mesh_enabled)
-        {
-            if (flat_mesh_enabled)
-            {
-    //			cout << "Calling flat_mesh_list" << endl;
-                buildFlatMesh();
-                glCallList(flat_mesh_list);
-            }
-            if (smooth_mesh_enabled)
-            {
-    //			cout << "Calling smooth_mesh_list" << endl;
-                buildSmoothMesh();
-                glCallList(smooth_mesh_list);
-            }
-            else if (edged_mesh_enabled)
-            {
-                buildEdgedMesh();
-                glCallList(edged_mesh_list);
-    //			cout << "Calling edged_mesh_list" << endl;
-            }
-            else if (culled_mesh_enabled)
-            {
-                buildCulledMesh();
-                glCallList(culled_mesh_list);
-    //			cout << "Calling culled_mesh_list" << endl;
-            }
-//            else if (curvM_mesh_enabled)
-//            {
-//                glCallList(curvM_mesh_list);
-//    //			cout << "Calling curvM_mesh_list" << endl;
-//            }
-            else if (curvG_mesh_enabled)
-            {
-                buildCurvGMesh();
-                glCallList(curvG_mesh_list);
-    //			cout << "Calling curvG_mesh_list" << endl;
-            }
-            else if (height_mesh_enabled)
-            {
-                buildHeightMesh();
-                glCallList(height_mesh_list);
-    //			cout << "Calling curvG_mesh_list" << endl;
-            }
-//            else if (curvTG_mesh_enabled)
-//            {
-//                glCallList(curvTG_mesh_list);
-//    //			cout << "Calling curvTG_mesh_list" << endl;
-//            }
-            else if (IP_mesh_enabled)
-            {
-                buildIPMesh();
-                glCallList(IP_mesh_list);
-    //			cout << "Calling curvG_mesh_list" << endl;
-            }
-        }
-
-        if (feature_lines_enabled)
-        {
-            buildFeatureLines();
-            glCallList(feature_lines_list);
-        }
-
-        if (ctrl_enabled)
-        {
-            if (edged_ctrl_enabled)
-            {
-    //			glClear(GL_DEPTH_BUFFER_BIT);
-            }
-    //		cout << "Calling ctrl_list" << endl;
-
-            buildCtrl();
-            buildPoiSub();
-//            buildPoiBound();
-
-            glCallList(ctrl_list);
-            glCallList(poiBound_list);
-        }
-
         if (old_enabled)
         {
             buildOld();
             glCallList(old_list);
+            buildSmoothMesh();
+            glCallList(smooth_mesh_list);
         }
-
-        if (line_enabled)
+        else
         {
-            buildLine();
-            glCallList(line_list);
+            if (mesh_enabled)
+            {
+                if (flat_mesh_enabled)
+                {
+        //			cout << "Calling flat_mesh_list" << endl;
+                    buildFlatMesh();
+                    glCallList(flat_mesh_list);
+                }
+                if (smooth_mesh_enabled)
+                {
+        //			cout << "Calling smooth_mesh_list" << endl;
+                    buildSmoothMesh();
+                    glCallList(smooth_mesh_list);
+                }
+                else if (edged_mesh_enabled)
+                {
+                    buildEdgedMesh();
+                    glCallList(edged_mesh_list);
+        //			cout << "Calling edged_mesh_list" << endl;
+                }
+                else if (culled_mesh_enabled)
+                {
+                    buildCulledMesh();
+                    glCallList(culled_mesh_list);
+        //			cout << "Calling culled_mesh_list" << endl;
+                }
+    //            else if (curvM_mesh_enabled)
+    //            {
+    //                glCallList(curvM_mesh_list);
+    //    //			cout << "Calling curvM_mesh_list" << endl;
+    //            }
+                else if (curvG_mesh_enabled)
+                {
+                    buildCurvGMesh();
+                    glCallList(curvG_mesh_list);
+        //			cout << "Calling curvG_mesh_list" << endl;
+                }
+                else if (height_mesh_enabled)
+                {
+                    buildHeightMesh();
+                    glCallList(height_mesh_list);
+        //			cout << "Calling curvG_mesh_list" << endl;
+                }
+    //            else if (curvTG_mesh_enabled)
+    //            {
+    //                glCallList(curvTG_mesh_list);
+    //    //			cout << "Calling curvTG_mesh_list" << endl;
+    //            }
+                else if (IP_mesh_enabled)
+                {
+                    buildIPMesh();
+                    glCallList(IP_mesh_list);
+        //			cout << "Calling curvG_mesh_list" << endl;
+                }
+            }
+
+            if (feature_lines_enabled)
+            {
+                buildFeatureLines();
+                glCallList(feature_lines_list);
+            }
+
+            if (ctrl_enabled)
+            {
+                if (edged_ctrl_enabled)
+                {
+        //			glClear(GL_DEPTH_BUFFER_BIT);
+                }
+        //		cout << "Calling ctrl_list" << endl;
+
+                buildCtrl();
+                buildPoiSub();
+    //            buildPoiBound();
+
+                glCallList(ctrl_list);
+                glCallList(poiBound_list);
+            }
+
+            if (line_enabled)
+            {
+                buildLine();
+                glCallList(line_list);
+            }
+
+
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glCallList(poiSub_list);
         }
 
         if (ctrl_enabled)
@@ -556,9 +564,6 @@ void GLviewsubd::paintGL(void)
             buildFrame();
             glCallList(frame_list);
         }
-
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glCallList(poiSub_list);
 
         glPopMatrix();
     }
@@ -749,43 +754,53 @@ void GLviewsubd::drawFrame()
 
     glDisable(GL_TEXTURE_1D);
 
-    if (meshCtrl.size() > 0)
+    if (indexMesh > -1)
     {
-        p0 = my_centre;
-        p1 = my_centre;
-        p2 = my_centre;
-        p3 = my_centre;
-        p1.setX(p1.getX()  + 0.5 / meshCtrl[0]->my_scale);
-        p2.setY(p1.getY()  + 0.5 / meshCtrl[0]->my_scale);
-        p3.setZ(p1.getZ()  + 0.5 / meshCtrl[0]->my_scale);
+        p0 = meshCtrl[indexMesh]->my_centre;
+        p1 = p0;
+        p2 = p0;
+        p3 = p0;
+        p1.setX(p1.getX()  + 0.1 / meshCtrl[0]->my_scale);
+        p2.setY(p1.getY()  + 0.1 / meshCtrl[0]->my_scale);
+        p3.setZ(p1.getZ()  + 0.1 / meshCtrl[0]->my_scale);
     }
     else
     {
-        p0 = Point_3D();
-        p1 = Point_3D();
-        p2 = Point_3D();
-        p3 = Point_3D();
+        p0 = Point_3D(0.5 * (double)imageWidth, 0.5 * (double)imageHeight, 0);
+        p1 = p0;
+        p2 = p1;
+        p3 = p2;
 
-        p1.setX(p1.getX() + 1);
-        p2.setY(p1.getY() + 1);
-        p3.setZ(p1.getZ() + 1);
+        p1.setX(p1.getX() + 0.1 * (double)qMin(imageWidth, imageHeight));
+        p2.setY(p1.getY() + 0.1 * (double)qMin(imageWidth, imageHeight));
+        p3.setZ(p1.getZ() + 0.1 * (double)qMin(imageWidth, imageHeight));
     }
 
-    glLineWidth(7);
+    // draw frame
     glBegin(GL_LINES);
-        glColor3fv(col_poi);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_poi);
+    glLineWidth(7);
+        glColor3fv(col_red);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_red);
         glVertex3fv(p0.getCoords());
         glVertex3fv(p1.getCoords());
-        glColor3fv(col_edges);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_edges);
+        glColor3fv(col_green);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_green);
         glVertex3fv(p0.getCoords());
         glVertex3fv(p2.getCoords());
-        glColor3fv(col_feature);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_feature);
+        glColor3fv(col_blue);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_blue);
         glVertex3fv(p0.getCoords());
         glVertex3fv(p3.getCoords());
     glEnd();
+
+    //draw rectangle
+    glBegin(GL_LINE_LOOP);
+        glLineWidth(4);
+        glColor3fv(col_dead);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_dead);
+        glVertex3f(0, 0, 0);
+
+
     glLineWidth(1);
 }
 
@@ -817,15 +832,23 @@ void GLviewsubd::buildSmoothMesh()
     if(smooth_mesh_list)	glDeleteLists(smooth_mesh_list, 1);
     smooth_mesh_list = glGenLists (1);
     glNewList (smooth_mesh_list, GL_COMPILE);
-        glEnable(GL_LIGHTING);
-//        for (j = 0 ; j < meshCurr.size() ; j++)
-//        {
-//            drawMesh(SMOOTH, meshCurr[j], j, 0);
-//        }
+    glEnable(GL_LIGHTING);
+
+    if (old_enabled)
+    {
+        for (j = 0 ; j < meshCurr.size() ; j++)
+        {
+            drawMesh(SMOOTH, meshCurr[j], j, 0);
+        }
+    }
+    else
+    {
         if (indexMesh > -1 )
         {
             drawMesh(SMOOTH, meshCurr[indexMesh], indexMesh, 0);
         }
+    }
+
     glEndList();
 }
 
@@ -1213,7 +1236,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 GLfloat params[4];
                 params[0] = 0.3; params[1] = 0.3; params[2] = 0.4; params[3] = 1;
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, params);
-                params[0] = 0; params[1] = 0; params[2] = 0; params[3] = 0.3;
+                params[0] = 0; params[1] = 0; params[2] = 0; params[3] = 0.4;
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, params);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, params);
             }
@@ -1858,35 +1881,6 @@ void GLviewsubd::setShowIPMesh(const bool b)
         changeStripeDensity(stripeDensityLevel); // TO DO: FIX THIS!!!
         changeStripeDensity(stripeDensityLevel); // why does it need to be called twice?
     }
-}
-
-void GLviewsubd::setShowCtrl(const bool b)
-{
-    ctrl_enabled = b;
-    if (b)
-    {
-        buildCtrl();
-        buildPoiBound();
-    }
-    updateGL();
-}
-
-void GLviewsubd::setShowOld(const bool b)
-{
-    old_enabled = b;
-    if (b)
-    {
-        buildOld();
-    }
-    if (flat_mesh_enabled)
-    {
-        buildFlatMesh();
-    }
-    if (smooth_mesh_enabled)
-    {
-        buildSmoothMesh();
-    }
-    updateGL();
 }
 
 void GLviewsubd::lapSm1(void)

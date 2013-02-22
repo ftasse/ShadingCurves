@@ -86,6 +86,10 @@ protected:
     GLfloat		col_feature[4];
     GLfloat		col_back[4];
 
+    GLfloat     col_red[4];
+    GLfloat     col_green[4];
+    GLfloat     col_blue[4];
+
 
 //    GLfloat     fogColor[4];
 

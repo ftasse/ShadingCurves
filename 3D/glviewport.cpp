@@ -83,6 +83,21 @@ GLviewport::GLviewport(QWidget *parent, QGLWidget *shareWidget) : GLabstract(par
     col_feature[2] = 1;
     col_feature[3] = 0;
 
+    col_red[0] = 1;
+    col_red[1] = 0;
+    col_red[2] = 0;
+    col_red[3] = 0;
+
+    col_green[0] = 0;
+    col_green[1] = 1;
+    col_green[2] = 0;
+    col_green[3] = 0;
+
+    col_blue[0] = 0;
+    col_blue[1] = 0;
+    col_blue[2] = 1;
+    col_blue[3] = 0;
+
     resetColours();
 }
 

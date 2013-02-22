@@ -905,42 +905,54 @@ void MainWindow3D::createMenus()
 
 void MainWindow3D::updateNumVFsub1(void)
 {
-    ctrlWidget1->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
-    ctrlWidget1->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
+    if (glwidget1->meshCurr.size() > 0)
+    {
+        ctrlWidget1->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
+        ctrlWidget1->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
 
-    //for linSub
-    ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
-    ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
+        //for linSub
+        ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
+        ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
+    }
 }
 
 void MainWindow3D::updateNumVFsub2(void)
 {
-    ctrlWidget2->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
-    ctrlWidget2->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
+    if (glwidget2->meshCurr.size() > 0)
+    {
+        ctrlWidget2->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
+        ctrlWidget2->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
 
-    //for linSub
-    ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
-    ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
+        //for linSub
+        ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
+        ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
+    }
 }
 
 void MainWindow3D::updateNumVFsub1(int value)
 {
-    ctrlWidget1->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
-    ctrlWidget1->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
+    if (glwidget1->meshCurr.size() > 0)
+    {
+        ctrlWidget1->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
+        ctrlWidget1->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
 
-    //for linSub
-    ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
-    ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
+        //for linSub
+        ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
+        ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
+    }
 }
 
 void MainWindow3D::updateNumVFsub2(int value)
 {
-    ctrlWidget2->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
-    ctrlWidget2->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
+    if (glwidget2->meshCurr.size() > 0)
+    {
+        ctrlWidget2->numVsub->setText(QString::number(glwidget1->meshCurr[0]->my_numV/1000));
+        ctrlWidget2->numFsub->setText(QString::number(glwidget1->meshCurr[0]->my_numF/1000));
 
-    //for linSub
-    ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
-    ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
+        //for linSub
+        ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
+        ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
+    }
 }
 
 void MainWindow3D::connectAll()
