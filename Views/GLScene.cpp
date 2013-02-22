@@ -9,6 +9,8 @@
 #include <iostream>
 #include <set>
 
+#include "../Utilities/SurfaceUtils.h"
+
 #include "GLScene.h"
 
 #ifdef _WIN32
@@ -505,12 +507,21 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
       if (!only_show_splines)
       {
+          QVector<QPointF> points;
+          for (int i=0; i< spline.original_cpts.size(); ++i)
+          {
+              points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
+          }
+
+          QVector<QPointF> subDividePts;
+          if (points.size() >= 4)
+              subDividePts = subDivide(points, 5);
+
         glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < spline.count(); ++i)
+        for (int i = 0; i < subDividePts.size(); ++i)
         {
-            QPointF p = spline.pointAt(i);
-            if (transform) p = imageToSceneCoords(p);
-            glVertex3f(p.x(), p.y(), 0.0);
+            if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
+            glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
         }
         glEnd();
       }

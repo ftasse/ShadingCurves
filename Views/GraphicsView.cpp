@@ -2,6 +2,7 @@
 #include <QGLWidget>
 #include <QFileDialog>
 #include <fstream>
+#include "../Utilities/SurfaceUtils.h"
 #include "../Views/GraphicsView.h"
 #include "../Views/GLScene.h"
 
@@ -189,16 +190,31 @@ void GraphicsView::show3Dwidget()
     glw->show();
 
     // transfer mesh
-    const char *fname = "tmp_surface.off";
-    std::ofstream ofs(fname);
+    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+    for (int i=0; i<surfaces.size(); ++i)
+    {
+        std::istringstream is(surfaces[i]);
 
-    if (my_scene->writeCurrentSurface(ofs))
-    {
-        ofs.close();
-        glw->load1(fname);
-    }   else
-    {
-        ofs.close();
+        // Note: istringstream inherits from istream, just like ifstream.
+        // In the 3D mesh code, ifstream is used to populate the mesh. istringstream will work the same way.
+        // You can write a loading function on the mesh class that takes a istream. Then you could pass a istringstream or ifstream to that function when needed.
+        // Ex: glw->load(is)
     }
+
+    //Uncomment this when the above transfer method is working
+    std::ofstream batch_ofs("surfaces.txt");
+    batch_ofs << surfaces.size() << std::endl;
+    for (int i=0; i<surfaces.size(); ++i)
+    {
+        std::stringstream ss;
+        ss << "tmp_surface_" << i << ".off";
+        const char *fname = ss.str().c_str();
+        std::ofstream ofs(fname);
+        ofs << surfaces[i];
+        ofs.close();
+
+        batch_ofs << fname << std::endl;
+    }
+    glw->loadBatch1("surfaces.txt");
 
 }

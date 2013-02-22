@@ -63,15 +63,15 @@ public:
         return false;
     }
 
-    /*std::vector<std::ostream> OFFSurfaces()
+    std::vector<std::string> OFFSurfaces()
     {
-        std::vector<std::ostream> surface_streams(m_splineGroup.num_surfaces());
+        std::vector<std::string> surface_strings(m_splineGroup.num_surfaces());
         for (int i=0; i< m_splineGroup.num_surfaces(); ++i)
         {
-            m_splineGroup.surface(i).writeOFF(surface_streams[i]);
+            surface_strings[i] =  m_splineGroup.surface(i).surfaceToOFF();
         }
-        return surface_streams;
-    }*/
+        return surface_strings;
+    }
 
     cv::Mat curvesImage(bool only_closed_curves = false);
     void update_region_coloring();
