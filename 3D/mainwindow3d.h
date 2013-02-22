@@ -24,6 +24,9 @@ public:
     MainWindow3D(GLuint iW, GLuint iH);
     ~MainWindow3D();
 
+    GLviewsubd *glwidget1, *glwidget2;
+    ControlW *ctrlWidget1, *ctrlWidget2;
+
 signals:
 	void resetSX1(int);
 	void resetSY1(int);
@@ -33,13 +36,13 @@ signals:
 	void resetSZ2(int);
 
 public slots:
-    void load1(const char *fileName);
-    void loadBatch1(const char *fileName);
+    void load1(std::istream &is);
+    void load2(std::istream &is);
+    void loadBatch1(std::istream &is);
+    void loadBatch2(std::istream &is);
 
 private slots:
-    void load2(const char *fileName);
     void loadLine1(const char *fileName);
-	void loadBatch2(const char *fileName);
 	void open1();
 	void open2();
     void openLine1();
@@ -77,7 +80,6 @@ private:
 	void connectAll();
 
 	QWidget	 *widget;
-	GLviewsubd *glwidget1, *glwidget2;
 	GLbar *glBar1, *glBar2;
 
 	QHBoxLayout *horLayout;
@@ -99,7 +101,6 @@ private:
 	QAction *fullScreenAct;
     QAction *sub1Act, *tool1aAct, *tool2aAct, *darkAct;
 
-    ControlW *ctrlWidget1, *ctrlWidget2;
     QSplitter	*horWidget;
 
 	QFrame *vline;

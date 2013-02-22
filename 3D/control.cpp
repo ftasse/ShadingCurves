@@ -19,7 +19,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     checkFull = new QCheckBox(tr("Full"));
 
 	checkCtrl->setChecked(true);
-    checkOld->setChecked(false);
+    checkOld->setChecked(true);
     checkFeature->setChecked(true);
 	radioCtrlEdges->setChecked(true);
 	checkFrame->setChecked(false);

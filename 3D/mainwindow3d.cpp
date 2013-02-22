@@ -175,13 +175,13 @@ void MainWindow3D::resetSliders2()
 	emit resetSZ2(0);
 }
 
-void MainWindow3D::load1(const char *fileName)
+void MainWindow3D::load1(std::istream &is)
 {
 	QString			qs, qsn;
 
 	ctrlWidget1->subdLevelSpinbox->setValue(0);
 
-    glwidget1->loadFile(fileName);
+    glwidget1->loadFile(is);
 
     ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
     ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
@@ -207,41 +207,46 @@ void MainWindow3D::loadLine1(const char *fileName)
     glwidget1->loadLine(fileName);
 }
 
-void MainWindow3D::loadBatch1(const char *fileName)
+void MainWindow3D::loadBatch1(std::istream &is)
 {
-	unsigned int	i, num;
-	ifstream 		file (fileName);
-	std::string		str;
-	bool			orig;
+    unsigned int	i, num;
+    std::string		str;
+    bool			orig;
 
-	if(!file.is_open())
-	{
-        cout<< "Failed to find the file:" << fileName << endl;
-	}
-	else
-	{
-		orig = ctrlWidget1->checkClear->checkState();
-		ctrlWidget1->checkClear->setChecked(true);
+    orig = ctrlWidget1->checkClear->checkState();
+    ctrlWidget1->checkClear->setChecked(true);
 
-		file >> num;
-		for (i = 0 ; i < num ; i++)
-		{
-			file >> str;
-            load1(str.c_str());
-			if (i == 0)
-			{
-				ctrlWidget1->checkClear->setChecked(false);
-			}
-		}
-		ctrlWidget1->checkClear->setChecked(orig);
+    is >> num;
+    for (i = 0 ; i < num ; i++)
+    {
+        is >> str;
+        std::ifstream   ifs(str.c_str());
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << str << endl;
+            return;
+        }
+        else
+        {
+            load1(ifs);
+        }
+        if (i == 0)
+        {
+            ctrlWidget1->checkClear->setChecked(false);
+        }
+    }
+    ctrlWidget1->checkClear->setChecked(orig);
+    if (num > 0)
+    {
+        ctrlWidget1->checkClear->setChecked(orig);
         ctrlWidget1->numV->setText(QString::number(glwidget1->meshCtrl[0]->my_numV));
         ctrlWidget1->numF->setText(QString::number(glwidget1->meshCtrl[0]->my_numF));
         ctrlWidget1->numVsub->setText(QString::number(glwidget1->meshCtrl[0]->my_numV/1000));
         ctrlWidget1->numFsub->setText(QString::number(glwidget1->meshCtrl[0]->my_numF/1000));
-	}
+    }
 }
 
-void MainWindow3D::load2(const char *fileName)
+void MainWindow3D::load2(istream &is)
 {
 	QString			qs, qsn;
 
@@ -249,7 +254,7 @@ void MainWindow3D::load2(const char *fileName)
     setMyLayout(2, false);
     ctrlWidget1->checkFull->setChecked(false);
 
-    glwidget2->loadFile(fileName);
+    glwidget2->loadFile(is);
 
     ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
     ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
@@ -271,38 +276,42 @@ void MainWindow3D::load2(const char *fileName)
 
 }
 
-void MainWindow3D::loadBatch2(const char *fileName)
+void MainWindow3D::loadBatch2(std::istream &is)
 {
-	unsigned int	i, num;
-	ifstream 		file (fileName);
-	std::string		str;
-	bool			orig;
+    unsigned int	i, num;
+    std::string		str;
+    bool			orig;
 
-	if(!file.is_open())
-	{
-        cout<< "Failed to find the file:" << fileName << endl;
-	}
-	else
-	{
-		orig = ctrlWidget2->checkClear->checkState();
-		ctrlWidget2->checkClear->setChecked(true);
+    orig = ctrlWidget2->checkClear->checkState();
+    ctrlWidget2->checkClear->setChecked(true);
 
-		file >> num;
-		for (i = 0 ; i < num ; i++)
-		{
-			file >> str;
-            load2(str.c_str());
-			if (i == 0)
-			{
-				ctrlWidget2->checkClear->setChecked(false);
-			}
-		}
-		ctrlWidget2->checkClear->setChecked(orig);
+    is >> num;
+    for (i = 0 ; i < num ; i++)
+    {
+        is >> str;
+        std::ifstream   ifs(str.c_str());
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << str << endl;
+            return;
+        }
+        else
+        {
+            load2(ifs);
+        }
+        if (i == 0)
+        {
+            ctrlWidget2->checkClear->setChecked(false);
+        }
+    }
+    ctrlWidget2->checkClear->setChecked(orig);
+    if (num > 0)
+    {
         ctrlWidget2->numV->setText(QString::number(glwidget2->meshCtrl[0]->my_numV));
         ctrlWidget2->numF->setText(QString::number(glwidget2->meshCtrl[0]->my_numF));
         ctrlWidget2->numVsub->setText(QString::number(glwidget2->meshCtrl[0]->my_numV/1000));
         ctrlWidget2->numFsub->setText(QString::number(glwidget2->meshCtrl[0]->my_numF/1000));
-	}
+    }
 }
 
 void MainWindow3D::open1()
@@ -319,7 +328,15 @@ void MainWindow3D::open1()
 	{
 		bytes = meshFileName.toAscii();
 		file_name = bytes.data();
-        load1(file_name);
+        std::ifstream   ifs(file_name);
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << file_name << endl;
+        }
+        else
+        {
+            load1(ifs);
+        }
 	}
 //	statusBar()->showMessage("File: " + meshFileName);
 }
@@ -357,7 +374,15 @@ void MainWindow3D::openBatch1()
 	{
 		bytes = meshFileName.toAscii();
 		file_name = bytes.data();
-		loadBatch1(file_name);
+        std::ifstream   ifs(file_name);
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << file_name << endl;
+        }
+        else
+        {
+            loadBatch1(ifs);
+        }
 	}
 //	statusBar()->showMessage("File: " + meshFileName);
 }
@@ -374,9 +399,17 @@ void MainWindow3D::open2()
                                                 tr("(*.off *.ply)"));
 	if (!meshFileName.isEmpty())
 	{
-		bytes = meshFileName.toAscii();
-		file_name = bytes.data();
-        load2(file_name);
+        bytes = meshFileName.toAscii();
+        file_name = bytes.data();
+        std::ifstream   ifs(file_name);
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << file_name << endl;
+        }
+        else
+        {
+            load2(ifs);
+        }
 	}
 //	statusBar()->showMessage("File: " + meshFileName);
 }
@@ -392,11 +425,19 @@ void MainWindow3D::openBatch2()
                                                 "./Data",
                                                 tr("(*.bat)"));
 	if (!meshFileName.isEmpty())
-	{
-		bytes = meshFileName.toAscii();
-		file_name = bytes.data();
-		loadBatch2(file_name);
-	}
+    {
+        bytes = meshFileName.toAscii();
+        file_name = bytes.data();
+        std::ifstream   ifs(file_name);
+        if(!ifs.is_open())
+        {
+            cout<< "Failed to find the file:" << file_name << endl;
+        }
+        else
+        {
+            loadBatch2(ifs);
+        }
+    }
 //	statusBar()->showMessage("File: " + meshFileName);
 }
 
@@ -1198,7 +1239,6 @@ void MainWindow3D::connectAll()
 	connect(ctrlWidget2->checkOnCtrl, 	SIGNAL(toggled(bool)),
 			glwidget2, 			  SLOT(setProbeOnCtrl(bool)));
 
-
     connect(ctrlWidget1->lapSmButton1, SIGNAL(clicked()),
             glwidget1, SLOT(lapSm1()));
     connect(ctrlWidget2->lapSmButton1, SIGNAL(clicked()),
@@ -1228,4 +1268,9 @@ void MainWindow3D::connectAll()
             glwidget1, 		  SLOT(buffer2img()));
     connect(ctrlWidget2->buffer2imgButton, 	SIGNAL(clicked()),
             glwidget2, 		  SLOT(buffer2img()));
+
+    connect(glwidget1, 	SIGNAL(subdivToLevel(int)),
+            ctrlWidget1->subdLevelSpinbox,	  SLOT(setValue(int)));
+    connect(glwidget2, 	SIGNAL(subdivToLevel(int)),
+            ctrlWidget2->subdLevelSpinbox,	  SLOT(setValue(int)));
 }

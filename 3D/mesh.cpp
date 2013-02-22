@@ -77,53 +77,45 @@ void Mesh::DeleteData()
 //    cout << "Mesh data deleted!" << endl;
 }
 
-void Mesh::load(const char *fileName, unsigned int iH)
+void Mesh::load(istream &is, unsigned int iH)
 {
 	unsigned int	i, j, vn, n;
 	PointPrec		x, y, z;
     std::string		file_type, tmp;
 	MeshVertex 		vertex;
 	MeshFacet 		facet;
-	ifstream 		file (fileName);
-	MeshCorner		corner;
+    MeshCorner		corner;
 
 //	unsigned int	m, max;
 
 	std::stringstream 	sstm, sstmsave;
 
-	if(!file.is_open())
-	{
-        cout<< "Failed to find the file:" << fileName << endl;
-	}
-	else
-	{
 		my_level = 0;
 
-		file >> file_type;
+        is >> file_type;
 //		DeleteData();
 
         if (file_type == "OFF" || file_type == "off" || file_type == "Off")
         {
-            file >> my_numV >> my_numF >> my_numE;
+            is >> my_numV >> my_numF >> my_numE;
 
-            if (my_numE != 0)
-            {
-                rever = true;
-            }
-            else
-            {
-                rever = false;
-    cout << "Reverse needed..." << endl;
-            }
+//            if (my_numE != 0)
+//            {
+//                rever = true;
+//            }
+//            else
+//            {
+//                rever = false;
+//    cout << "Reverse needed..." << endl;
         }
         else if (file_type == "PLY" || file_type == "ply" || file_type == "Ply")
         {
             do
             {
-                file >> tmp;
+                is >> tmp;
             }
             while (tmp != "format");
-            file >> tmp;
+            is >> tmp;
             if (tmp != "ascii")
             {
                 cout << "Cannot read binary files!!!" << endl;
@@ -132,23 +124,23 @@ void Mesh::load(const char *fileName, unsigned int iH)
 
             do
             {
-                file >> tmp;
+                is >> tmp;
             }
             while (tmp != "vertex");
 
-            file >> my_numV;
+            is >> my_numV;
 
             do
             {
-                file >> tmp;
+                is >> tmp;
             }
             while (tmp != "face");
 
-            file >> my_numF;
+            is >> my_numF;
 
             do
             {
-                file >> tmp;
+                is >> tmp;
             }
             while (tmp != "end_header");
         }
@@ -161,8 +153,8 @@ void Mesh::load(const char *fileName, unsigned int iH)
 		// read vertex coordinates
 		for (i = 0 ; i < my_numV ; i++)
 		{
-			file >> x >> y >> z;
-            getline(file, tmp);
+            is >> x >> y >> z;
+            getline(is, tmp);
 			vertex.my_point.setX(x);
 //            vertex.my_point.setY(y);
             vertex.my_point.setY(iH-y);
@@ -188,7 +180,7 @@ void Mesh::load(const char *fileName, unsigned int iH)
 		{
 			facet.my_index = i;
 			facet.my_vertIndices.clear();
-			file >> n;
+            is >> n;
 			facet.my_valency = n;
             if (n != 4)
             {
@@ -196,7 +188,7 @@ void Mesh::load(const char *fileName, unsigned int iH)
             }
 			for (j = 0 ; j < n ; j++)
 			{
-				file >> vn;
+                is >> vn;
 				facet.my_vertIndices.push_back(vn);
 				my_vertices[vn].my_faceIndices.push_back(i);
 			}
@@ -221,17 +213,15 @@ void Mesh::load(const char *fileName, unsigned int iH)
 //            }
 //        }
 
-		my_s = fileName;
-		my_save = fileName;
+        my_s = " ";
+        my_save = " ";
 
 //        transf();
         build();
 
 		cout << "Mesh loaded! V: " << my_numV << " F: " << my_numF
              << " 2E: " << my_numE << endl;
-	} //end of else
 
-	file.close();
 }
 
 void Mesh::save(const char *fileName, bool isPly)

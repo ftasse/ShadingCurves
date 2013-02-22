@@ -18,7 +18,7 @@ public:
     GLviewsubd(GLuint iW, GLuint iH, QWidget * parent = 0, QGLWidget * shareWidget = 0);
 	~GLviewsubd();
 
-    void   loadFile(const char *fileName);
+    void   loadFile(std::istream &is);
     void   loadLine(const char *fileName);
 	void   saveFile(const char *fileName, bool isPly);
 	void   saveFileLim(const char *fileName, bool isPly);
@@ -148,6 +148,7 @@ signals:
 	void indexChanged(int);
 	void updateNeeded();
     void openFile       (const char *);
+    void subdivToLevel(int level);
 
 protected:
 	void paintGL(void);

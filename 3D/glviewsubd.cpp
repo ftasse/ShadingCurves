@@ -31,7 +31,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, QWidget *parent, QGLWidget *shareWi
     triang_enabled = false;
 	triang2_enabled = false;
 	ctrl_enabled = true;
-    old_enabled = false;
+    old_enabled = true;
 	shaded_ctrl_enabled = false;
 	edged_ctrl_enabled = true;
 	culled_ctrl_enabled = false;
@@ -430,8 +430,7 @@ void GLviewsubd::paintGL(void)
 //        cv::cvtColor(img, img, CV_RGB2GRAY);
         cv::imwrite("3Dbuffer.png", img);
     //    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
-    //    cv::imshow("3Dbuffer", img);
-//        return img;
+        cv::imshow("3Dbuffer", img);
         offScreen = false;
         updateGL();
     }
@@ -777,8 +776,8 @@ void GLviewsubd::drawFrame()
     }
 
     // draw frame
-    glBegin(GL_LINES);
     glLineWidth(7);
+    glBegin(GL_LINES);
         glColor3fv(col_red);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_red);
         glVertex3fv(p0.getCoords());
@@ -794,13 +793,15 @@ void GLviewsubd::drawFrame()
     glEnd();
 
     //draw rectangle
+    glLineWidth(4);
     glBegin(GL_LINE_LOOP);
-        glLineWidth(4);
         glColor3fv(col_dead);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_dead);
         glVertex3f(0, 0, 0);
-
-
+        glVertex3f(imageWidth, 0 ,0);
+        glVertex3f(imageWidth, imageHeight, 0);
+        glVertex3f(0, imageHeight, 0);
+    glEnd();
     glLineWidth(1);
 }
 
@@ -1520,7 +1521,7 @@ void GLviewsubd::resetSurfs()
     }
 }
 
-void GLviewsubd::loadFile(const char *fileName)
+void GLviewsubd::loadFile(std::istream &is)
 {
     unsigned int i, j;
 	std::vector< Mesh* > vec;
@@ -1561,7 +1562,7 @@ void GLviewsubd::loadFile(const char *fileName)
 	tmp->my_rand = 0;
 	tmp->transform = transf;
 
-    tmp->load(fileName, imageHeight);
+    tmp->load(is, imageHeight);
 
 	meshCtrl.push_back(tmp);
     meshCurr = meshCtrl;
@@ -1965,6 +1966,9 @@ void GLviewsubd::dropEvent(QDropEvent *event)
 void GLviewsubd::buffer2img()
 {
     offScreen = true;
+
+    emit subdivToLevel(4);
+
     updateGL();
 }
 

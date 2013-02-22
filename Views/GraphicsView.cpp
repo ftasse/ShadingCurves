@@ -184,10 +184,13 @@ void GraphicsView::createDistanceTransformDEBUG()
 
 void GraphicsView::show3Dwidget()
 {
+    bool orig;
     GLScene *my_scene = (GLScene *) scene();
     glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth());
     glw->setWindowTitle("3D View");
-    glw->show();
+
+    orig = glw->ctrlWidget1->checkClear->checkState();
+    glw->ctrlWidget1->checkClear->setChecked(true);
 
     // transfer mesh
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
@@ -197,24 +200,42 @@ void GraphicsView::show3Dwidget()
 
         // Note: istringstream inherits from istream, just like ifstream.
         // In the 3D mesh code, ifstream is used to populate the mesh. istringstream will work the same way.
-        // You can write a loading function on the mesh class that takes a istream. Then you could pass a istringstream or ifstream to that function when needed.
+        // You can write a loading function on the mesh class that takes a istream.
+        // Then you could pass a istringstream or ifstream to that function when needed.
         // Ex: glw->load(is)
+
+        glw->load1(is);
+        if (i == 0)
+        {
+            glw->ctrlWidget1->checkClear->setChecked(false);
+        }
     }
 
-    //Uncomment this when the above transfer method is working
-    std::ofstream batch_ofs("surfaces.txt");
-    batch_ofs << surfaces.size() << std::endl;
-    for (int i=0; i<surfaces.size(); ++i)
+    glw->ctrlWidget1->checkClear->setChecked(orig);
+    if (surfaces.size() > 0)
     {
-        std::stringstream ss;
-        ss << "tmp_surface_" << i << ".off";
-        const char *fname = ss.str().c_str();
-        std::ofstream ofs(fname);
-        ofs << surfaces[i];
-        ofs.close();
-
-        batch_ofs << fname << std::endl;
+        glw->ctrlWidget1->numV->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV));
+        glw->ctrlWidget1->numF->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF));
+        glw->ctrlWidget1->numVsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV/1000));
+        glw->ctrlWidget1->numFsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF/1000));
     }
-    glw->loadBatch1("surfaces.txt");
 
+//    //Comment this when the above transfer method is working
+//    std::ofstream batch_ofs("surfaces.txt");
+//    batch_ofs << surfaces.size() << std::endl;
+//    for (int i=0; i<surfaces.size(); ++i)
+//    {
+//        std::stringstream ss;
+//        ss << "tmp_surface_" << i << ".off";
+//        const char *fname = ss.str().c_str();
+//        std::ofstream ofs(fname);
+//        ofs << surfaces[i];
+//        ofs.close();
+
+//        batch_ofs << fname << std::endl;
+//    }
+//    glw->loadBatch1("surfaces.txt");
+
+    glw->glwidget1->setRotZero();
+    glw->show();
 }

@@ -118,7 +118,7 @@ public:
     Mesh() {}
    ~Mesh() { DeleteData(); }
 	void DeleteData	(void);
-    void load		(const char *fileName, unsigned int iH);
+    void load		(std::istream &is, unsigned int iH);
 	void save		(const char *fileName, bool isPly);
 	void transf		(void);
 	void build		(void);
