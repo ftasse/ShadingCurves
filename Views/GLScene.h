@@ -86,6 +86,17 @@ public:
         return m_sketchmode;
     }
     
+    void setImage(cv::Mat im)
+    {
+        m_curImage = im;
+        update();
+    }
+
+    cv::Mat getImage()
+    {
+        return m_curImage;
+    }
+
 protected:
     void drawForeground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);

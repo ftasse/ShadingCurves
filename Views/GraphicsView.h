@@ -34,10 +34,12 @@ public slots:
     void showControlPoints(bool status);
     void createDistanceTransformDEBUG();
     void show3Dwidget();
+    void applyShading();
 
 private:
     DebugWindow     *dbw;
     MainWindow3D    *glw;
+    GLviewsubd      *glvs;
 };
 
 #endif // GRAPHICSVIEW_H

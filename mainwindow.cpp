@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDistance_transform, SIGNAL(triggered()), ui->graphicsView, SLOT(createDistanceTransformDEBUG()));
 
     connect(ui->actionView_surface_in_3D, SIGNAL(triggered()), ui->graphicsView, SLOT(show3Dwidget()));
+
+    connect(ui->getShadingButton, SIGNAL(pressed()), ui->graphicsView, SLOT(applyShading()));
 }
 
 MainWindow::~MainWindow()

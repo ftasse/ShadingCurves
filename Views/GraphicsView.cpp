@@ -194,15 +194,9 @@ void GraphicsView::show3Dwidget()
 
     // transfer mesh
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
-    for (int i=0; i<surfaces.size(); ++i)
+    for (unsigned int i=0; i<surfaces.size(); ++i)
     {
         std::istringstream is(surfaces[i]);
-
-        // Note: istringstream inherits from istream, just like ifstream.
-        // In the 3D mesh code, ifstream is used to populate the mesh. istringstream will work the same way.
-        // You can write a loading function on the mesh class that takes a istream.
-        // Then you could pass a istringstream or ifstream to that function when needed.
-        // Ex: glw->load(is)
 
         glw->load1(is);
         if (i == 0)
@@ -238,4 +232,67 @@ void GraphicsView::show3Dwidget()
 
     glw->glwidget1->setRotZero();
     glw->show();
+}
+
+void GraphicsView::applyShading()
+{
+    cv::Mat img, imgOrig, imgNew;
+
+    GLScene *my_scene = (GLScene *) scene();
+    glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth());
+    glvs->offScreen = true;
+    glvs->offMainWindow = true;
+    glvs->clear = false;
+
+    // transfer mesh
+    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+    for (unsigned int i=0; i<surfaces.size(); ++i)
+    {
+        std::istringstream is(surfaces[i]);
+
+        glvs->loadFile(is);
+    }
+
+    glvs->setSubdivLevel(4);
+    img = glvs->img;  // This img (after some normalisation)
+                      // should be used as luminance difference
+    cv::imshow("LumDif Image", img);
+
+    if (img.cols > 0)
+    {
+        // grab original image
+        my_scene->getImage().copyTo(imgOrig);
+
+        cv::imshow("Original Image", imgOrig);
+
+        //convert to Lab space
+        cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
+        cv::cvtColor(img, img, CV_BGR2Lab);
+
+        imgNew = cv::Mat::zeros(imgOrig.size(), imgOrig.type());
+
+        // apply luminance adjustment
+        for( int y = 0; y < imgOrig.rows; y++ )
+        {
+            for( int x = 0; x < imgOrig.cols; x++ )
+            {
+//                imgNew.at<cv::Vec3b>(y,x)[0] = 0;
+
+                imgNew.at<cv::Vec3b>(y,x)[0] =
+                    img.at<cv::Vec3b>(y,x)[0];
+
+//                imgNew.at<cv::Vec3b>(y,x)[0] =
+//                    imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0];
+            }
+        }
+
+        //convert back to BGR
+        cv::cvtColor(imgNew, imgNew, CV_Lab2BGR);
+
+        cv::imshow("Resulting Image", imgNew);
+
+//        my_scene->setImage(imgNew);
+    }
+
+    delete glvs;
 }

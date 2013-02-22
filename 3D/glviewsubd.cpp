@@ -67,6 +67,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, QWidget *parent, QGLWidget *shareWi
     numberPaintCalls = 0;
 
     offScreen = false;
+    offMainWindow = false;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -125,26 +126,6 @@ cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLeve
         cout << "subdivide End " << endl;
 	}
 	updateAll();
-
-    if (showMessageCCint)
-    {
-//        cout << "Cannot use CCint subdivision on this model!" << endl;
-        QMessageBox msgBox;
-        msgBox.setText("Cannot use CCint subdivision on this model\n"
-                        "(boundary)!\n"
-                        "Use Catmull-Clark instead.");
-        msgBox.exec();
-    }
-
-    if (showMessageCF)
-    {
-//        cout << "Cannot use Conformal subdivision on this model!" << endl;
-        QMessageBox msgBox;
-        msgBox.setText("Cannot use Conformal subdivision on this model\n"
-                        "(more than one EV)!\n"
-                        "Use Catmull-Clark instead.");
-        msgBox.exec();
-    }
 }
 
 void GLviewsubd::setClr(int newColor)
@@ -266,23 +247,6 @@ void GLviewsubd::initializeGL(void)
 
     glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
 
-//    // FOG
-//    fogColor[0] = 0.5;
-//    fogColor[1] = 0.5;
-//    fogColor[2] = 0.5;
-//    fogColor[3] = 1.0;
-//    glClearColor(0.f,0.f,0.f,1.0f);  // Clear To The Color Of The Fog
-//    glFogi(GL_FOG_MODE, GL_EXP);        // Fog Mode: GL_EXP, GL_EXP2, GL_LINEAR
-//    glFogfv(GL_FOG_COLOR, fogColor);    // Set Fog Color
-//    glFogf(GL_FOG_DENSITY, 0.3f);      // How Dense Will The Fog Be
-//    glHint(GL_FOG_HINT, GL_NICEST);  // Fog Hint Value
-////    glFogf(GL_FOG_START, 0.0f);         // Fog Start Depth
-////    glFogf(GL_FOG_END, 1.0f);           // Fog End Depth
-//    glEnable(GL_FOG);                   // Enables GL_FOG
-//    // END FOG
-
-
-
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
@@ -346,8 +310,8 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
-        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
         numberPaintCalls++;
+        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
 
         int origClr, origView[4];
 
@@ -369,7 +333,7 @@ void GLviewsubd::paintGL(void)
             qDebug("Could not draw offscreen");
 
         //Drawing
-        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClearColor(0.5, 0.5, 0.5, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
@@ -389,17 +353,12 @@ void GLviewsubd::paintGL(void)
     //    glEnable(GL_LINE_SMOOTH);
 
         //draw stuff here
-
         origClr = clr;
         clr = 3;
-    //    drawMesh(HEIGHT, meshCurr[0], 0, 0);
-    //    paintGL();
         buildHeightMesh();
         glCallList(height_mesh_list);
-
         clr = origClr;
 
-        cv::Mat img;
         img.create(imageHeight, imageWidth, CV_8UC3);
         GLenum inputColourFormat;
         #ifdef GL_BGR
@@ -420,7 +379,6 @@ void GLviewsubd::paintGL(void)
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
         glViewport(0, 0, origView[2], origView[3]);
-//        glOrtho(0, origView[2], 0, origView[3], -1000.0, 1000.0);
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         glDeleteRenderbuffersEXT(1, &renderbuffer);
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
@@ -428,11 +386,14 @@ void GLviewsubd::paintGL(void)
         cv::cvtColor(img, img, CV_BGR2RGB);
         cv::flip(img, img, 0);
 //        cv::cvtColor(img, img, CV_RGB2GRAY);
-        cv::imwrite("3Dbuffer.png", img);
+//        cv::imwrite("3Dbuffer.png", img);
     //    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
-        cv::imshow("3Dbuffer", img);
+//        cv::imshow("3Dbuffer", img);
         offScreen = false;
-        updateGL();
+        if (!offMainWindow)
+        {
+            updateGL();
+        }
     }
     else
     {
@@ -1600,7 +1561,10 @@ void GLviewsubd::loadFile(std::istream &is)
         scale = 1;
     }
 
-    updateAll();
+    if (!offScreen)
+    {
+        updateAll();
+    }
 }
 
 void GLviewsubd::loadLine(const char *fileName)

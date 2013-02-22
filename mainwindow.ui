@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -204,6 +204,19 @@
           <attribute name="label">
            <string>Shading</string>
           </attribute>
+          <widget class="QPushButton" name="getShadingButton">
+           <property name="geometry">
+            <rect>
+             <x>40</x>
+             <y>10</y>
+             <width>121</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Don't push me</string>
+           </property>
+          </widget>
          </widget>
         </widget>
        </item>

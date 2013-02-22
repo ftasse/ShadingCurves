@@ -70,6 +70,9 @@ public:
 
 	int curvRatio1, curvRatio2;
 
+    bool offScreen, offMainWindow;
+    cv::Mat img;
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);
@@ -196,7 +199,6 @@ private:
 
 	bool probeOnCtrl;
 	bool transf;
-    bool offScreen;
 
     int stripeDensityLevel;
     int lapSmValue;
