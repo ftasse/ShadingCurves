@@ -123,7 +123,8 @@ public slots:
 	void changeCurvRatio1	(int newRatio);
 	void changeCurvRatio2	(int newRatio);
 
-    cv::Mat buffer2img      ();
+//    cv::Mat buffer2img();
+    void buffer2img();
 
 signals:
 	void subdivLevelChanged(int newLevel);
@@ -181,9 +182,11 @@ private:
 
 	bool probeOnCtrl;
 	bool transf;
+    bool offScreen;
 
     int stripeDensityLevel;
     int lapSmValue;
+    int numberPaintCalls;
 
     unsigned int flat_mesh_list;
     unsigned int smooth_mesh_list;

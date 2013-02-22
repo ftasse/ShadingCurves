@@ -38,7 +38,7 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH)
 //	statusBar()->showMessage("Open a file...");
 
     setWindowTitle(tr("Mesh Visualisation"));
-	setMinimumSize(350, 250);
+    setMinimumSize(350, 250);
 //    resize(width/3, 3*height/4);
 
 	NotFullScr = true;
@@ -74,9 +74,9 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH)
     mainLayout->setContentsMargins(0,0,0,0);
 	widget->setLayout(mainLayout);
 
-    mainWindowPixmap = new QPixmap("../meshVis/icons/mainWindowIcon.png");
-    QIcon mainWindowIcon(*mainWindowPixmap);
-    setWindowIcon(mainWindowIcon);
+//    mainWindowPixmap = new QPixmap("../meshVis/icons/mainWindowIcon.png");
+//    QIcon mainWindowIcon(*mainWindowPixmap);
+//    setWindowIcon(mainWindowIcon);
 
     toolBar1a->setOrientation(Qt::Vertical);
 

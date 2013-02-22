@@ -37,7 +37,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, QWidget *parent, QGLWidget *shareWi
 	culled_ctrl_enabled = false;
 	frame_enabled = false;
 	probeOnCtrl = true;
-    transf = false;
+    transf = true;
 	clear = true;
 
     subType = CC;
@@ -62,7 +62,11 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, QWidget *parent, QGLWidget *shareWi
     imageWidth = iW;
     imageHeight = iH;
 
-    this->setFixedSize(iW, iH);
+//    this->setFixedSize(iW, iH);
+
+    numberPaintCalls = 0;
+
+    offScreen = false;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -300,8 +304,7 @@ void GLviewsubd::initializeGL(void)
 //    glEnable(GL_LIGHT2);
 
     glLoadIdentity();
-    glViewport(0, 0, imageWidth, imageHeight);
-    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+//    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
 
     swapBuffers();
 
@@ -338,107 +341,208 @@ void GLviewsubd::initializeGL(void)
 
 void GLviewsubd::paintGL(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glPushMatrix();
-	// Pre-multiply by translation
-	GLdouble currentMatrix[16] = {0};
-	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
-	glLoadIdentity();
-	glTranslated(0.0, 0.0, -stepBackAmount);
-	glMultMatrixd(currentMatrix);
-//    glDisable(GL_STENCIL_TEST);
 
-	if (mesh_enabled)
-	{
-        if (flat_mesh_enabled)
-		{
-//			cout << "Calling flat_mesh_list" << endl;
-            glCallList(flat_mesh_list);
-		}
-        if (smooth_mesh_enabled)
+    if (offScreen)
+    {
+        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
+        numberPaintCalls++;
+
+        int origClr, origView[4];
+
+        makeCurrent();
+
+        //Setup for offscreen drawing if fbos are supported
+        GLuint framebuffer, renderbuffer;
+        GLenum status;
+
+        glGenFramebuffersEXT(1, &framebuffer);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+        glGenRenderbuffersEXT(1, &renderbuffer);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                         GL_RENDERBUFFER_EXT, renderbuffer);
+        status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+        if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+            qDebug("Could not draw offscreen");
+
+        //Drawing
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+
+        glGetIntegerv(GL_VIEWPORT, origView);
+        glViewport(0, 0, imageWidth, imageHeight);
+
+        glOrtho(0, imageWidth, 0, imageHeight, -1000.0, 1000.0);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+        glRenderMode(GL_RENDER);
+    //    glLineWidth(1.0);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //    glEnable(GL_BLEND);
+    //    glEnable(GL_LINE_SMOOTH);
+
+        //draw stuff here
+
+        origClr = clr;
+        clr = 3;
+    //    drawMesh(HEIGHT, meshCurr[0], 0, 0);
+    //    paintGL();
+        buildHeightMesh();
+        glCallList(height_mesh_list);
+
+        clr = origClr;
+
+        cv::Mat img;
+        img.create(imageHeight, imageWidth, CV_8UC3);
+        GLenum inputColourFormat;
+        #ifdef GL_BGR
+            inputColourFormat = GL_BGR;
+        #else
+            #ifdef GL_BGR_EXT
+                inputColourFormat = GL_BGR_EXT;
+            #else
+                #define GL_BGR 0x80E0
+                inputColourFormat = GL_BGR;
+            #endif
+        #endif
+        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+
+        //Clean up offscreen drawing
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glViewport(0, 0, origView[2], origView[3]);
+//        glOrtho(0, origView[2], 0, origView[3], -1000.0, 1000.0);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glDeleteRenderbuffersEXT(1, &renderbuffer);
+        glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
+
+        cv::cvtColor(img, img, CV_BGR2RGB);
+        cv::flip(img, img, 0);
+//        cv::cvtColor(img, img, CV_RGB2GRAY);
+        cv::imwrite("3Dbuffer.png", img);
+    //    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
+    //    cv::imshow("3Dbuffer", img);
+//        return img;
+        offScreen = false;
+        updateGL();
+    }
+    else
+    {
+        cout << "PaintGL ONscreen called: " << numberPaintCalls << endl;
+        numberPaintCalls++;
+
+        makeCurrent();
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glPushMatrix();
+        // Pre-multiply by translation
+        GLdouble currentMatrix[16] = {0};
+        glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
+        glLoadIdentity();
+        glTranslated(0.0, 0.0, -stepBackAmount);
+        glMultMatrixd(currentMatrix);
+    //    glDisable(GL_STENCIL_TEST);
+
+        if (mesh_enabled)
         {
-//			cout << "Calling smooth_mesh_list" << endl;
-            glCallList(smooth_mesh_list);
+            if (flat_mesh_enabled)
+            {
+    //			cout << "Calling flat_mesh_list" << endl;
+                glCallList(flat_mesh_list);
+            }
+            if (smooth_mesh_enabled)
+            {
+    //			cout << "Calling smooth_mesh_list" << endl;
+                glCallList(smooth_mesh_list);
+            }
+            else if (edged_mesh_enabled)
+            {
+                glCallList(edged_mesh_list);
+    //			cout << "Calling edged_mesh_list" << endl;
+            }
+            else if (culled_mesh_enabled)
+            {
+                glCallList(culled_mesh_list);
+    //			cout << "Calling culled_mesh_list" << endl;
+            }
+            else if (curvM_mesh_enabled)
+            {
+                glCallList(curvM_mesh_list);
+    //			cout << "Calling curvM_mesh_list" << endl;
+            }
+            else if (curvG_mesh_enabled)
+            {
+                glCallList(curvG_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
+            else if (height_mesh_enabled)
+            {
+                glCallList(height_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
+            else if (curvTG_mesh_enabled)
+            {
+                glCallList(curvTG_mesh_list);
+    //			cout << "Calling curvTG_mesh_list" << endl;
+            }
+            else if (IP_mesh_enabled)
+            {
+                glCallList(IP_mesh_list);
+    //			cout << "Calling curvG_mesh_list" << endl;
+            }
         }
-		else if (edged_mesh_enabled)
-		{
-			glCallList(edged_mesh_list);
-//			cout << "Calling edged_mesh_list" << endl;
-		}
-		else if (culled_mesh_enabled)
-		{
-			glCallList(culled_mesh_list);
-//			cout << "Calling culled_mesh_list" << endl;
-		}
-		else if (curvM_mesh_enabled)
-		{
-			glCallList(curvM_mesh_list);
-//			cout << "Calling curvM_mesh_list" << endl;
-		}
-		else if (curvG_mesh_enabled)
-		{
-			glCallList(curvG_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-        }
-        else if (height_mesh_enabled)
+
+        if (feature_lines_enabled)
         {
-            glCallList(height_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-		}
-		else if (curvTG_mesh_enabled)
-		{
-			glCallList(curvTG_mesh_list);
-//			cout << "Calling curvTG_mesh_list" << endl;
-		}
-		else if (IP_mesh_enabled)
-		{
-			glCallList(IP_mesh_list);
-//			cout << "Calling curvG_mesh_list" << endl;
-		}
-	}
+            glCallList(feature_lines_list);
+        }
 
-    if (feature_lines_enabled)
-    {
-        glCallList(feature_lines_list);
-    }
+        if (ctrl_enabled)
+        {
+            if (edged_ctrl_enabled)
+            {
+    //			glClear(GL_DEPTH_BUFFER_BIT);
+            }
+    //		cout << "Calling ctrl_list" << endl;
+            glCallList(ctrl_list);
+            glCallList(poiBound_list);
+        }
 
-	if (ctrl_enabled)
-	{
-		if (edged_ctrl_enabled)
-		{
-//			glClear(GL_DEPTH_BUFFER_BIT);
-		}
-//		cout << "Calling ctrl_list" << endl;
-		glCallList(ctrl_list);
-        glCallList(poiBound_list);
-	}
+        if (old_enabled)
+        {
+            glCallList(old_list);
+        }
 
-    if (old_enabled)
-    {
-        glCallList(old_list);
-    }
+        if (line_enabled)
+        {
+            glCallList(line_list);
+        }
 
-    if (line_enabled)
-    {
-        glCallList(line_list);
-    }
+        if (ctrl_enabled)
+        {
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glCallList(poi_list);
+        }
 
-    if (ctrl_enabled)
-    {
+        if (frame_enabled)
+        {
+    //		glClear(GL_DEPTH_BUFFER_BIT);
+            glCallList(frame_list);
+        }
+
         glClear(GL_DEPTH_BUFFER_BIT);
-        glCallList(poi_list);
+        glCallList(poiSub_list);
+
+        glPopMatrix();
     }
-
-	if (frame_enabled)
-	{
-//		glClear(GL_DEPTH_BUFFER_BIT);
-		glCallList(frame_list);
-	}
-
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glCallList(poiSub_list);
-
-	glPopMatrix();
 }
 
 void GLviewsubd::mousePressEvent(QMouseEvent *event)
@@ -1815,70 +1919,8 @@ void GLviewsubd::dropEvent(QDropEvent *event)
     event->acceptProposedAction();
 }
 
-cv::Mat GLviewsubd::buffer2img()
+void GLviewsubd::buffer2img()
 {
-    int origClr;
-
-    //Setup for offscreen drawing if fbos are supported
-    GLuint framebuffer, renderbuffer;
-    GLenum status;
-//    initializeGL();
-    glGenFramebuffersEXT(1, &framebuffer);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
-    glGenRenderbuffersEXT(1, &renderbuffer);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                     GL_RENDERBUFFER_EXT, renderbuffer);
-    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-        qDebug("Could not draw offscreen");
-
-    //Drawing
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glViewport(0, 0, imageWidth, imageHeight);
-    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glRenderMode(GL_RENDER);
-    glLineWidth(1.0);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-
-    //draw stuff here
-    origClr = clr;
-    setClr(3);
-    drawMesh(HEIGHT, meshCurr[0], 0, 0);
-//    paintGL();
-    setClr(origClr);
-
-    cv::Mat img;
-    img.create(imageHeight, imageWidth, CV_8UC3);
-    GLenum inputColourFormat;
-    #ifdef GL_BGR
-        inputColourFormat = GL_BGR;
-    #else
-        #ifdef GL_BGR_EXT
-            inputColourFormat = GL_BGR_EXT;
-        #else
-            #define GL_BGR 0x80E0
-            inputColourFormat = GL_BGR;
-        #endif
-    #endif
-    glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
-
-    //Clean up offscreen drawing
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glDeleteRenderbuffersEXT(1, &renderbuffer);
-
-    cv::cvtColor(img, img, CV_BGR2RGB);
-    cv::flip(img, img, 0);
-    cv::cvtColor(img, img, CV_RGB2GRAY);
-    cv::imwrite("3Dbuffer.png", img);
-    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
-    return img;
+    offScreen = true;
+    updateGL();
 }
