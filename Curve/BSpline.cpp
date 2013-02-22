@@ -199,7 +199,6 @@ void BSpline::cleanup()
 void BSpline::recompute()
 {
     cleanup();
-    m_splineGroup->garbage_collection();
 
     QVector<QPointF> points;
     for (int i=0; i< original_cpts.size(); ++i)

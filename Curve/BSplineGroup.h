@@ -86,6 +86,7 @@ private:
     QList<ControlPoint> m_cpts;
 
     float EPSILON;
+    bool runningGarbageCollection;
 };
 
 #endif // BSPLINEGROUP_H

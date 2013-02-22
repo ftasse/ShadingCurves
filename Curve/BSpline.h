@@ -43,7 +43,7 @@ public:
 
     bool is_closed()
     {
-        return connected_cpts.front() == connected_cpts.back();
+        return original_cpts.front() == original_cpts.back();
     }
 
     int count()

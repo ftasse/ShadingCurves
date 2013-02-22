@@ -3,6 +3,7 @@
 #include <QLineF>
 #include <assert.h>
 #include <stdio.h>
+#include <set>
 
 #include "BSplineGroup.h"
 #include "Utilities/SurfaceUtils.h"
@@ -10,13 +11,15 @@
 BSplineGroup::BSplineGroup()
 {
     EPSILON = .0001f;
+    runningGarbageCollection = false;
 }
 
 int BSplineGroup::addControlPoint(QPointF value, float z, bool original)
 {
-    if (original)
     for (int i=0; i<num_controlPoints(); ++i)
     {
+        if (!original && controlPoint(i).isOriginal)
+            continue;
         float dx =  controlPoint(i).x() - value.x();
         float dy =  controlPoint(i).y() - value.y();
         float dz =  controlPoint(i).z() - z;
@@ -231,6 +234,10 @@ void BSplineGroup::removeSurface(int surface_id)
 
 void BSplineGroup::garbage_collection()
 {
+    if (runningGarbageCollection)
+        return;
+    else
+        runningGarbageCollection = true;
     std::map<int, int> new_cpt_indices;
     std::map<int, int> new_spline_indices;
     std::map<int, int> new_surface_indices;
@@ -257,9 +264,9 @@ void BSplineGroup::garbage_collection()
 
     for (int i=0; i< num_splines(); ++i)
     {
+        spline(i).cleanup();
         if (spline(i).original_cpts.size() == 0)
         {
-            spline(i).cleanup();
             remove_spline_ids.push_back(i-remove_spline_ids.size());
         } else
         {
@@ -321,6 +328,11 @@ void BSplineGroup::garbage_collection()
         {
             bspline.original_cpts[k] = new_cpt_indices[bspline.original_cpts[k]];
         }
+
+        if (bspline.original_cpts.size() > 0)
+        {
+            bspline.recompute();
+        }
     }
 
     for (int i=0; i<num_surfaces(); ++i)
@@ -336,6 +348,7 @@ void BSplineGroup::garbage_collection()
         }
     }
 
+    runningGarbageCollection = false;
 }
 
 
@@ -357,7 +370,7 @@ bool BSplineGroup::load(std::string fname)
     {
         float _x, _y;
         ifs >> _x >> _y;
-        addControlPoint(QPointF(_x, _y));
+        addControlPoint(QPointF(_x, _y), 0.0, true);
     }
 
     ifs >> n_splines >> text;
@@ -373,9 +386,10 @@ bool BSplineGroup::load(std::string fname)
             {
                 int cpt_id;
                 ifs >> cpt_id;
-                addControlPointToSpline(spline_id, cpt_id);
+                addControlPointToSpline(spline_id, cpt_id, true);
             }
         }
+        spline(spline_id).recompute();
     }
     return true;
 }
@@ -384,10 +398,23 @@ void BSplineGroup::save(std::string fname)
 {
     garbage_collection();
 
-    std::ofstream ofs(fname.c_str());
-    ofs << num_controlPoints() <<" points" << std::endl;
-    for (int i=0; i<num_controlPoints(); ++i)
+    std::map<int, int> vertex_indices;
+
+    int N=0;
+    for (int i=0; i< num_controlPoints(); ++i)
     {
+        if (controlPoint(i).isOriginal)
+        {
+            vertex_indices[i] = N;
+            ++N;
+        }
+    }
+
+    std::ofstream ofs(fname.c_str());
+    ofs << N <<" points" << std::endl;
+    for (std::map<int, int>::iterator it = vertex_indices.begin(); it != vertex_indices.end(); ++it)
+    {
+        int i = it->second;
         ofs << controlPoint(i).x() << " " << controlPoint(i).y() << std::endl;
     }
     ofs << num_splines() <<" splines" << std::endl;
@@ -395,10 +422,10 @@ void BSplineGroup::save(std::string fname)
     {
         BSpline& bspline = spline(i);
 
-        ofs << bspline.count();
-        for (int k=0; k<bspline.count(); ++k)
+        ofs << bspline.original_cpts.size();
+        for (int k=0; k<bspline.original_cpts.size(); ++k)
         {
-            ofs << " " << bspline.connected_cpts[k];
+            ofs << " " << vertex_indices[bspline.original_cpts[k]];
         }
         ofs << std::endl;
     }
@@ -410,10 +437,23 @@ void BSplineGroup::saveOFF(std::string fname)
 {
     garbage_collection();
 
-    std::ofstream ofs(fname.c_str());
-    ofs << num_controlPoints() <<" points" << std::endl;
-    for (int i=0; i<num_controlPoints(); ++i)
+    std::map<int, int> vertex_indices;
+
+    int N=0;
+    for (int i=0; i< num_controlPoints(); ++i)
     {
+        if (controlPoint(i).isOriginal)
+        {
+            vertex_indices[i] = N;
+            ++N;
+        }
+    }
+
+    std::ofstream ofs(fname.c_str());
+    ofs << N <<" points" << std::endl;
+    for (std::map<int, int>::iterator it = vertex_indices.begin(); it != vertex_indices.end(); ++it)
+    {
+        int i = it->second;
         ofs << controlPoint(i).x() << " " << controlPoint(i).y() << std::endl;
     }
     ofs << num_splines() <<" splines" << std::endl;
@@ -421,10 +461,10 @@ void BSplineGroup::saveOFF(std::string fname)
     {
         BSpline& bspline = spline(i);
 
-        ofs << bspline.count();
-        for (int k=0; k<bspline.count(); ++k)
+        ofs << bspline.original_cpts.size();
+        for (int k=0; k<bspline.original_cpts.size(); ++k)
         {
-            ofs << " " << bspline.connected_cpts[k];
+            ofs << " " << vertex_indices[bspline.original_cpts[k]];
         }
         ofs << std::endl;
     }

@@ -321,7 +321,7 @@ void GLScene::display(bool only_show_splines)
     }
 
     if (!only_show_splines)
-    for (int i=0; i<m_splineGroup.num_controlPoints(); ++i)
+    for (int i=m_splineGroup.num_controlPoints()-1; i>=0; --i)
     {
         if (m_splineGroup.controlPoint(i).count() == 0)
             continue;
@@ -401,6 +401,7 @@ void GLScene::draw_control_point(int point_id)
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
+    float z = 0.5;
     if (cpt.isOriginal)
     {
         glPointSize(pointSize);
@@ -410,6 +411,7 @@ void GLScene::draw_control_point(int point_id)
     {
         glPointSize(3.0);
         glColor3d(0.0, 1.0, 0.0);
+        z = - 1.0f;
     }
     if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, point_id)))
     {
@@ -418,7 +420,7 @@ void GLScene::draw_control_point(int point_id)
 
     QPointF pos = imageToSceneCoords(cpt);
     glBegin(GL_POINTS);
-    glVertex3d(pos.x(), pos.y(), 0.5);
+    glVertex3d(pos.x(), pos.y(), z);
     glEnd();
 
     glPopName();
@@ -455,12 +457,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
       glEnd();
       */
 
-      glColor3d(0.0, 0.0, 1.0);
-      if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
-      {
-          glColor3d(1.0, 0.0, 0.0);
-      }
-
+      glColor3f(0.0, 0.0, 0.0);
       int numKnots = spline.knotVectors().size();
       GLfloat *knots = new GLfloat[numKnots];
       for (int i = 0; i < numKnots; ++i)
@@ -499,6 +496,24 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
       gluDeleteNurbsRenderer(theNurb);
       delete [] ctlpoints;
       delete [] knots;
+
+      glColor3d(0.0, 0.0, 1.0);
+      if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
+      {
+          glColor3d(1.0, 0.0, 0.0);
+      }
+
+      if (!only_show_splines)
+      {
+        glBegin(GL_LINE_STRIP);
+        for (int i = 0; i < spline.count(); ++i)
+        {
+            QPointF p = spline.pointAt(i);
+            if (transform) p = imageToSceneCoords(p);
+            glVertex3f(p.x(), p.y(), 0.0);
+        }
+        glEnd();
+      }
 
       glPopName();
       glPopName();
@@ -807,7 +822,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.0);
+    glLineWidth(1.5);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
@@ -840,16 +855,15 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
-    cv::cvtColor(img, img, CV_RGB2GRAY);
-    cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
+    cv::cvtColor(img, img, CV_RGB2GRAY);   // cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
 }
 
 
 void GLScene::update_region_coloring()
 {
-    cv::Mat curv_img = curvesImage(true);   cv::imwrite("curv_img.png", curv_img);
+    cv::Mat curv_img = curvesImage(true);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
     //cv::imshow("Closed Curves", curv_img);
 
