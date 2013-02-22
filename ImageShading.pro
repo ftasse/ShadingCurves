@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     3D/mesh.cpp \
     3D/point_3d.cpp \
     3D/spline.cpp \
-    Views/glew/glew.c
+    Views/glew/glew.c \
+    Utilities/SurfaceUtils.cpp
 
 HEADERS  += mainwindow.h \
     Utilities/ImageUtils.h \
@@ -55,7 +56,8 @@ HEADERS  += mainwindow.h \
     Views/glew/glew.h \
     Views/glew/GL/wglew.h \
     Views/glew/GL/glxew.h \
-    Views/glew/GL/glew.h
+    Views/glew/GL/glew.h \
+    Utilities/SurfaceUtils.h
 
 FORMS    += mainwindow.ui \
     Views/DebugWindow.ui

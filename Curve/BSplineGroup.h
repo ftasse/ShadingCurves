@@ -12,11 +12,11 @@ class BSplineGroup
 public:
     BSplineGroup();
 
-    int addControlPoint(QPointF value, float z=0.0);
+    int addControlPoint(QPointF value, float z=0.0, bool original  = false);
     int addBSpline();
     int addSurface();
 
-    bool addControlPointToSpline(int spline_id, int cpt_id);
+    bool addControlPointToSpline(int spline_id, int cpt_id, bool original = false);
 
     int createSurface(int spline_id, cv::Mat dt, float width = 50.0);
 
@@ -86,6 +86,7 @@ private:
     QList<ControlPoint> m_cpts;
 
     float EPSILON;
+    bool runningGarbageCollection;
 };
 
 #endif // BSPLINEGROUP_H

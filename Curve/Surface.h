@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <QPoint>
+#include <sstream>
 #include "../Curve/ControlPoint.h"
 
 class Surface
@@ -34,6 +35,13 @@ public:
     }
 
     bool writeOFF(std::ostream &ofs);
+
+    std::string surfaceToOFF()
+    {
+        std::stringstream ss;
+        writeOFF(ss);
+        return ss.str();
+    }
 
 public:
     BSplineGroup *m_splineGroup;

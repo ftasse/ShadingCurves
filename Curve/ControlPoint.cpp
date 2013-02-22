@@ -3,12 +3,12 @@
 #include "../Curve/BSplineGroup.h"
 
 ControlPoint::ControlPoint():
-    QPointF(), idx(-1),mz(0), isVisible(true)
+    QPointF(), idx(-1),mz(0), isVisible(true), isOriginal(true)
 {
 }
 
 ControlPoint::ControlPoint(QPointF val):
-    QPointF(val), idx(-1),mz(0), isVisible(true)
+    QPointF(val), idx(-1),mz(0), isVisible(true), isOriginal(true)
 {
 
 }

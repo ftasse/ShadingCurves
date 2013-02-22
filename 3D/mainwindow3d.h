@@ -34,11 +34,11 @@ signals:
 
 public slots:
     void load1(const char *fileName);
+    void loadBatch1(const char *fileName);
 
 private slots:
     void load2(const char *fileName);
     void loadLine1(const char *fileName);
-	void loadBatch1(const char *fileName);
 	void loadBatch2(const char *fileName);
 	void open1();
 	void open2();

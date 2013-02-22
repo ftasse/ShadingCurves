@@ -11,6 +11,8 @@ class BSpline
 {
 public:
     BSpline( int degree = 3);
+    void recompute();
+    void cleanup();
     void updateKnotVectors();
 
     //Normal at the (index)th control point
@@ -41,7 +43,7 @@ public:
 
     bool is_closed()
     {
-        return connected_cpts.front() == connected_cpts.back();
+        return original_cpts.front() == original_cpts.back();
     }
 
     int count()
@@ -52,6 +54,7 @@ public:
 public:
     BSplineGroup *m_splineGroup;
     QVector<int> connected_cpts;
+    QVector<int> original_cpts;
     int idx;
 
 private:
