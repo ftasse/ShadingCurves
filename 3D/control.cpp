@@ -9,7 +9,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     ctrlGroupBox = new QGroupBox(tr(""));
 
     checkCtrl = new QCheckBox(tr("Control Mesh"));
-    checkOld = new QCheckBox(tr("Original Mesh"));
+    checkOld = new QCheckBox(tr("All Meshes"));
     checkFeature = new QCheckBox(tr("Feature Lines"));
     checkLine = new QCheckBox(tr("Line"));
     radioCtrlShaded = new QRadioButton(tr("Shaded"));
@@ -55,7 +55,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 
     toolBara->addWidget(checkCtrl);
     toolBara->addWidget(checkFeature);
-//    toolBara->addWidget(checkOld);
+    toolBara->addWidget(checkOld);
 //    toolBara->addWidget(checkLine);
     toolBara->addWidget(checkMesh);
     toolBara->addWidget(radioMeshFlat);

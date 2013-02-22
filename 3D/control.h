@@ -44,7 +44,7 @@ public:
                     *radioMeshFlat, *radioMeshSmooth, *radioMeshEdges, *radioMeshCulled,
                     *radioMeshCurvM, *radioMeshCurvG, *radioMeshCurvTG, *radioMeshHeight, *radioMeshIP;
  	
-    QCheckBox 		*checkCtrl,*checkOld, *checkFrame, *checkFull, *checkMesh,
+    QCheckBox 		*checkCtrl, *checkOld, *checkFrame, *checkFull, *checkMesh,
                     *checkOnCtrl,
                     *checkTransf, *checkClear, *checkFeature, *checkLine;
  	
