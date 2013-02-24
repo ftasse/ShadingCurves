@@ -114,8 +114,8 @@ void GLviewport::resetColours(void)
         col_edges[2] = 0;
         col_edges[3] = 0;
 
-        col_ctrl[0] = 1;
-        col_ctrl[1] = 1;
+        col_ctrl[0] = 0.8;
+        col_ctrl[1] = 0.8;
         col_ctrl[2] = 0;
         col_ctrl[3] = 0;
 
@@ -129,9 +129,9 @@ void GLviewport::resetColours(void)
         col_old[2] = 1;
         col_old[3] = 0;
 
-        col_back[0] = 0;
-        col_back[1] = 0;
-        col_back[2] = 0;
+        col_back[0] = 0.5;
+        col_back[1] = 0.5;
+        col_back[2] = 0.5;
         col_back[3] = 0;
     }
     else

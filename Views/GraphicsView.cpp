@@ -184,12 +184,10 @@ void GraphicsView::createDistanceTransformDEBUG()
 
 void GraphicsView::show3Dwidget()
 {
-    bool orig;
     GLScene *my_scene = (GLScene *) scene();
-    glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth());
+    glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glw->setWindowTitle("3D View");
 
-    orig = glw->ctrlWidget1->checkClear->checkState();
     glw->ctrlWidget1->checkClear->setChecked(true);
 
     // transfer mesh
@@ -205,14 +203,14 @@ void GraphicsView::show3Dwidget()
         }
     }
 
-    glw->ctrlWidget1->checkClear->setChecked(orig);
-    if (surfaces.size() > 0)
-    {
-        glw->ctrlWidget1->numV->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV));
-        glw->ctrlWidget1->numF->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF));
-        glw->ctrlWidget1->numVsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV/1000));
-        glw->ctrlWidget1->numFsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF/1000));
-    }
+    glw->ctrlWidget1->checkClear->setChecked(true);
+//    if (surfaces.size() > 0)
+//    {
+//        glw->ctrlWidget1->numV->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV));
+//        glw->ctrlWidget1->numF->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF));
+//        glw->ctrlWidget1->numVsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV/1000));
+//        glw->ctrlWidget1->numFsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF/1000));
+//    }
 
 //    //Comment this when the above transfer method is working
 //    std::ofstream batch_ofs("surfaces.txt");
@@ -230,7 +228,8 @@ void GraphicsView::show3Dwidget()
 //    }
 //    glw->loadBatch1("surfaces.txt");
 
-    glw->glwidget1->setRotZero();
+    glw->ctrlWidget1->meshMenu->setCurrentIndex(0);
+    glw->ctrlWidget1->subdLevelSpinbox->setValue(2);
     glw->show();
 }
 
@@ -239,7 +238,7 @@ void GraphicsView::applyShading()
     cv::Mat img, imgOrig, imgNew;
 
     GLScene *my_scene = (GLScene *) scene();
-    glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth());
+    glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glvs->offScreen = true;
     glvs->offMainWindow = true;
     glvs->clear = false;
@@ -253,6 +252,7 @@ void GraphicsView::applyShading()
         glvs->loadFile(is);
     }
 
+    glvs->indexMesh = -1;
     glvs->setSubdivLevel(4);
     img = glvs->img;  // This img (after some normalisation)
                       // should be used as luminance difference
@@ -261,7 +261,7 @@ void GraphicsView::applyShading()
     if (img.cols > 0)
     {
         // grab original image
-        my_scene->getImage().copyTo(imgOrig);
+        my_scene->getImage()->copyTo(imgOrig);
 
         cv::imshow("Original Image", imgOrig);
 

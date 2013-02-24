@@ -85,16 +85,16 @@ public:
     {
         return m_sketchmode;
     }
-    
+
     void setImage(cv::Mat im)
     {
         m_curImage = im;
         update();
     }
 
-    cv::Mat getImage()
+    cv::Mat* getImage()
     {
-        return m_curImage;
+        return &m_curImage;
     }
 
 protected:
@@ -106,7 +106,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
-    
+
 public slots:
 
 private:

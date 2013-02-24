@@ -13,7 +13,7 @@ using namespace std;
 
 GLabstract::GLabstract(QWidget *parent, QGLWidget *shareWidget) : QGLWidget(parent, shareWidget)
 {
-    clr = 0;
+    clr = 3;
 //	min = 0;
 //	max = 0;	
 }
@@ -120,10 +120,49 @@ void GLabstract::genColorBW(float x, float minx, float maxx, float col[3])
 {
 	float value;
 
-    value = (x - minx) / (maxx - minx);
-	col[0] = value;
-	col[1] = value;
-	col[2] = value;
+//    value = (x - minx) / (maxx - minx);
+//	col[0] = value;
+//	col[1] = value;
+//	col[2] = value;
+
+//    if (minx == 1 && maxx == -1) // signal for luminance height
+//    {
+//        //minx = -127;
+//        //maxx = 128;
+//        if (x > 0 && x <= 128)
+//        {
+//            value = x / 128;
+//            col[0] = value;
+//            col[1] = value;
+//            col[2] = value;
+//        }
+//        else if (x > 128) // clip down
+//        {
+//            col[0] = 1;
+//            col[1] = 0;
+//            col[2] = 0;
+//        }
+//        else if (x < 0 && x >- -127)
+//        {
+//            value = x / 127;
+//            col[0] = value;
+//            col[1] = value;
+//            col[2] = value;
+//        }
+//        else // clip up
+//        {
+//            col[0] = 0;
+//            col[1] = 0;
+//            col[2] = 1;
+//        }
+//    }
+//    else // normal height
+//    {
+        value = (x - minx) / (maxx - minx);
+        col[0] = value;
+        col[1] = value;
+        col[2] = value;
+//    }
 }
 
 void GLabstract::genColorRG(float x, float minx, float maxx, float col[3])

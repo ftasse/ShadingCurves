@@ -15,14 +15,14 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     radioCtrlShaded = new QRadioButton(tr("Shaded"));
     radioCtrlEdges = new QRadioButton(tr("Wireframe"));
     radioCtrlCulled = new QRadioButton(tr("Solidframe"));
-    checkFrame = new QCheckBox(tr("XYZ frame"));
+    checkFrame = new QCheckBox(tr("XYZ frame + img"));
     checkFull = new QCheckBox(tr("Full"));
 
 	checkCtrl->setChecked(true);
-    checkOld->setChecked(true);
+    checkOld->setChecked(false);
     checkFeature->setChecked(true);
 	radioCtrlEdges->setChecked(true);
-	checkFrame->setChecked(false);
+    checkFrame->setChecked(true);
 	checkFull->setChecked(true);
     checkLine->setChecked(false);
 
@@ -51,20 +51,20 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     radioMeshIP = new QRadioButton(tr("Refl. Lines"));
 
 	checkMesh->setChecked(true);
-    radioMeshFlat->setChecked(true);
+    radioMeshSmooth->setChecked(true);
 
     toolBara->addWidget(checkCtrl);
     toolBara->addWidget(checkFeature);
-    toolBara->addWidget(checkOld);
+//    toolBara->addWidget(checkOld);
 //    toolBara->addWidget(checkLine);
     toolBara->addWidget(checkMesh);
     toolBara->addWidget(radioMeshFlat);
     toolBara->addWidget(radioMeshSmooth);
     toolBara->addWidget(radioMeshEdges);
     toolBara->addWidget(radioMeshCulled);
-    toolBara->addWidget(radioMeshCurvG);
+//    toolBara->addWidget(radioMeshCurvG);
     toolBara->addWidget(radioMeshHeight);
-    toolBara->addWidget(radioMeshIP);
+//    toolBara->addWidget(radioMeshIP);
 
 /////////////////////////////////////////
 //	dropMenu = new QComboBox();
@@ -81,11 +81,13 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 
 	colorMenu = new QComboBox();
 	colorMenu->clear();
-	colorMenu->insertItem(colorMenu->count(),tr("Hue"));
-	colorMenu->insertItem(colorMenu->count(),tr("R-G"));
-	colorMenu->insertItem(colorMenu->count(),tr("Dis"));
-	colorMenu->insertItem(colorMenu->count(),tr("Gr."));
-    colorMenu->insertItem(colorMenu->count(),tr("Hu2"));
+    colorMenu->insertItem(colorMenu->count(),tr("Hue spectrum"));
+    colorMenu->insertItem(colorMenu->count(),tr("Red-Green"));
+    colorMenu->insertItem(colorMenu->count(),tr("Discrete"));
+    colorMenu->insertItem(colorMenu->count(),tr("Grayscale"));
+    colorMenu->insertItem(colorMenu->count(),tr("Hue (B-R)"));
+
+    colorMenu->setCurrentIndex(3);
 
 	meshMenu = new QComboBox();
 	meshMenu->clear();
@@ -372,8 +374,8 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 
 //    toolBara->addWidget(checkFull);
     toolBara->addWidget(barWidget);
-    toolBara->addWidget(numWidget);
-    toolBara->addWidget(numSWidget);
+//    toolBara->addWidget(numWidget);
+//    toolBara->addWidget(numSWidget);
 //    restLayout->setContentsMargins(0,0,0,0);
 //    restWidget->setContentsMargins(0,0,0,0);
 //    restWidget->setLayout(restLayout);

@@ -22,7 +22,7 @@ public:
 
 	QSize minimumSizeHint() const;
 	QSize sizeHint() const;
-    GLuint			textID[6];
+    GLuint			textID[7]; // 7th for image texture
 
 
     bool        joinTheDarkSide;

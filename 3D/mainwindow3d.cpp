@@ -11,13 +11,13 @@
 
 using namespace std;
 
-MainWindow3D::MainWindow3D(GLuint iW, GLuint iH)
+MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 {
 	widget = new QWidget;
     setCentralWidget(widget);
 
-    glwidget1  = new GLviewsubd(iW, iH);
-    glwidget2  = new GLviewsubd(iW, iH);
+    glwidget1  = new GLviewsubd(iW, iH, timg);
+    glwidget2  = new GLviewsubd(iW, iH, timg);
 	glBar1	   = new GLbar();
 	glBar2	   = new GLbar();
 
@@ -195,7 +195,7 @@ void MainWindow3D::load1(std::istream &is)
 	if (glwidget1->clear)
 	{
 		ctrlWidget1->meshMenu->clear();
-		ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), "Mesh");
+        ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), "All meshes");
 	}
 		qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
 		ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
@@ -268,7 +268,7 @@ void MainWindow3D::load2(istream &is)
 	if (glwidget2->clear)
 	{
 		ctrlWidget2->meshMenu->clear();
-		ctrlWidget2->meshMenu->insertItem(ctrlWidget2->meshMenu->count(), "Mesh");
+        ctrlWidget2->meshMenu->insertItem(ctrlWidget2->meshMenu->count(), "All meshes");
 	}
     qsn = QString(to_string(ctrlWidget2->meshMenu->count()).c_str());
     ctrlWidget2->meshMenu->insertItem(ctrlWidget2->meshMenu->count(), qsn + " " + qs);

@@ -15,7 +15,7 @@ class GLviewsubd : public GLviewport
 	Q_OBJECT
 
 public:
-    GLviewsubd(GLuint iW, GLuint iH, QWidget * parent = 0, QGLWidget * shareWidget = 0);
+    GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget * parent = 0, QGLWidget * shareWidget = 0);
 	~GLviewsubd();
 
     void   loadFile(std::istream &is);
@@ -71,7 +71,8 @@ public:
 	int curvRatio1, curvRatio2;
 
     bool offScreen, offMainWindow;
-    cv::Mat img;
+    cv::Mat  img,
+            *inputImg;
 
 public slots:
     void subdivide          (void);
@@ -81,33 +82,24 @@ public slots:
     void changeLapSmValue   (int);
 //    void clear(void);
 
-	void setShowMesh		(const bool b)  { mesh_enabled = b; updateGL(); }
-//    void setShowFlatMesh	(const bool b)  { flat_mesh_enabled = b; if (b) {buildFlatMesh(); updateGL();} }
-//    void setShowSmoothMesh	(const bool b)  { smooth_mesh_enabled = b; if (b) {buildSmoothMesh(); updateGL();} }
-//    void setShowEdgedMesh	(const bool b)  { edged_mesh_enabled = b; if (b) {buildEdgedMesh(); updateGL();} }
-//    void setShowCulledMesh	(const bool b)  { culled_mesh_enabled = b; if (b) {buildCulledMesh(); updateGL();} }
-//    void setShowCurvMMesh	(const bool b)  { curvM_mesh_enabled = b; if (b) {buildCurvMMesh(); updateGL();} }
-//    void setShowCurvGMesh	(const bool b)  { curvG_mesh_enabled = b; if (b) {buildCurvGMesh(); updateGL();} }
-//    void setShowHeightMesh	(const bool b)  { height_mesh_enabled = b; if (b) {buildHeightMesh(); updateGL();} }
-//    void setShowFeatureLines(const bool b)  { feature_lines_enabled = b; if (b) {buildFeatureLines();} updateGL(); }
-    void setShowFlatMesh	(const bool b)  { flat_mesh_enabled = b; updateGL(); }
-    void setShowSmoothMesh	(const bool b)  { smooth_mesh_enabled = b; updateGL(); }
-    void setShowEdgedMesh	(const bool b)  { edged_mesh_enabled = b; updateGL(); }
-    void setShowCulledMesh	(const bool b)  { culled_mesh_enabled = b; updateGL(); }
-    void setShowCurvMMesh	(const bool b)  { curvM_mesh_enabled = b; updateGL(); }
-    void setShowCurvGMesh	(const bool b)  { curvG_mesh_enabled = b; updateGL(); }
-    void setShowHeightMesh	(const bool b)  { height_mesh_enabled = b; updateGL(); }
-    void setShowFeatureLines(const bool b)  { feature_lines_enabled = b; updateGL(); }
+    void setShowMesh		(const bool b)  { mesh_enabled = b; updateAll(); }
+    void setShowFlatMesh	(const bool b)  { flat_mesh_enabled = b; if (b) {buildFlatMesh(); updateGL();} }
+    void setShowSmoothMesh	(const bool b)  { smooth_mesh_enabled = b; if (b) {buildSmoothMesh(); updateGL();} }
+    void setShowEdgedMesh	(const bool b)  { edged_mesh_enabled = b; if (b) {buildEdgedMesh(); updateGL();} }
+    void setShowCulledMesh	(const bool b)  { culled_mesh_enabled = b; if (b) {buildCulledMesh(); updateGL();} }
+    void setShowCurvMMesh	(const bool b)  { curvM_mesh_enabled = b; if (b) {buildCurvMMesh(); updateGL();} }
+    void setShowCurvGMesh	(const bool b)  { curvG_mesh_enabled = b; if (b) {buildCurvGMesh(); updateGL();} }
+    void setShowHeightMesh	(const bool b)  { height_mesh_enabled = b; if (b) {buildHeightMesh(); updateGL();} }
+    void setShowFeatureLines(const bool b)  { feature_lines_enabled = b; if (b) {buildFeatureLines();} updateGL(); }
     void setShowIPMesh		(const bool b);
 	void setShowTriang		(const bool b)  { triang_enabled = b; updateAll(); }
 	void setShowTriang2		(const bool b)  { triang2_enabled = b; updateAll(); }
-    void setShowCtrl		(const bool b)  { ctrl_enabled = b; updateGL(); }
-    void setShowOld         (const bool b)  { old_enabled = b ; updateGL(); }
+    void setShowCtrl		(const bool b)  { ctrl_enabled = b; if (b) {buildCtrl();} updateGL(); }
+    void setShowOld         (const bool b)  { old_enabled = b ; if (b) {buildOld();} updateGL(); }
 //    void setShowShadedCtrl	(const bool b)  { shaded_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
 //    void setShowEdgedCtrl	(const bool b)  { edged_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
 //    void setShowCulledCtrl	(const bool b)  { culled_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
-//    void setShowLine        (const bool b)  { line_enabled = b; if (b) {buildLine();} updateGL();}
-    void setShowLine        (const bool b)  { line_enabled = b; updateGL(); }
+    void setShowLine        (const bool b)  { line_enabled = b; if (b) {buildLine();} updateGL();}
     void setCC              (const bool b);
     void setCCB             (const bool b);
     void setICC             (const bool b);
