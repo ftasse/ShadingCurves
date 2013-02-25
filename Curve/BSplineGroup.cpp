@@ -16,7 +16,7 @@ BSplineGroup::BSplineGroup()
 
 int BSplineGroup::addControlPoint(QPointF value, float z, bool original)
 {
-    for (int i=0; i<num_controlPoints(); ++i)
+    /*for (int i=0; i<num_controlPoints(); ++i)
     {
         if (!original && controlPoint(i).isOriginal)
             continue;
@@ -31,7 +31,8 @@ int BSplineGroup::addControlPoint(QPointF value, float z, bool original)
         {
             return i;
         }
-    }
+    }*/
+
     ControlPoint cpt(value);
     cpt.m_splineGroup = this;
     cpt.idx = num_controlPoints();
