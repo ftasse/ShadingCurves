@@ -474,45 +474,62 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
       glEnd();
       */
 
-      glColor3f(0.0, 0.0, 0.0);
-      int numKnots = spline.knotVectors().size();
-      GLfloat *knots = new GLfloat[numKnots];
-      for (int i = 0; i < numKnots; ++i)
-      {
-          knots[i] = spline.knotVectors()[i];
+      if (!only_show_splines) {
+ /*         QVector<QPointF> points;
+          for (int i=0; i< spline.connected_cpts.size(); ++i)
+          {
+              points.push_back(spline.pointAt(i));
+          }
+          glColor3f(0.5f, 0.5f, 0.5f);
+          QVector<QPointF> lp = limitPoints(points);
+          glBegin(GL_POINTS);
+          for (int i = 0; i < lp.count(); ++i) {
+              QPointF pt = imageToSceneCoords(lp.at(i));
+              glVertex2f(pt.x(),pt.y());
+          }
+          glEnd();
+*/
+//          glColor3f(0.0, 0.0, 0.0);
+//          int numKnots = spline.knotVectors().size();
+//          GLfloat *knots = new GLfloat[numKnots];
+//          for (int i = 0; i < numKnots; ++i)
+//          {
+//              knots[i] = spline.knotVectors()[i];
+//          }
+
+//          GLfloat *ctlpoints = new GLfloat[spline.count() * 3];
+//          for (int i = 0; i < spline.count(); ++i)
+//          {
+//            QPointF p = spline.pointAt(i);
+//            if (transform) p = imageToSceneCoords(p);
+//            ctlpoints[i * 3 + 0] = (GLfloat)p.x();
+//            ctlpoints[i * 3 + 1] = (GLfloat)p.y();
+//            ctlpoints[i * 3 + 2] = 0.0f;
+//          }
+
+//          GLUnurbsObj *theNurb;
+//          theNurb = gluNewNurbsRenderer();
+
+
+//          #ifdef WIN32
+//            gluNurbsCallback(theNurb, GLU_ERROR, (void (__stdcall *)(void))(&nurbsError) );
+//          #else
+//            gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid (*)()) (&nurbsError) );
+//          #endif
+
+
+//          gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
+//          gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 5.0);
+
+//          gluBeginCurve(theNurb);
+//          gluNurbsCurve(theNurb, numKnots, knots, 3, ctlpoints, order, GL_MAP1_VERTEX_3);
+//          gluEndCurve(theNurb);
+
+//          gluDeleteNurbsRenderer(theNurb);
+//          delete [] ctlpoints;
+//          delete [] knots;
+
       }
-
-      GLfloat *ctlpoints = new GLfloat[spline.count() * 3];
-      for (int i = 0; i < spline.count(); ++i)
-      {
-        QPointF p = spline.pointAt(i);
-        if (transform) p = imageToSceneCoords(p);
-        ctlpoints[i * 3 + 0] = (GLfloat)p.x();
-        ctlpoints[i * 3 + 1] = (GLfloat)p.y();
-        ctlpoints[i * 3 + 2] = 0.0f;
-      }
-
-      GLUnurbsObj *theNurb;
-      theNurb = gluNewNurbsRenderer();
-
-
-      #ifdef WIN32
-        gluNurbsCallback(theNurb, GLU_ERROR, (void (__stdcall *)(void))(&nurbsError) );
-      #else
-        gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid (*)()) (&nurbsError) );
-      #endif
-
-
-      gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
-      gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 5.0);
-
-      gluBeginCurve(theNurb);
-      gluNurbsCurve(theNurb, numKnots, knots, 3, ctlpoints, order, GL_MAP1_VERTEX_3);
-      gluEndCurve(theNurb);
-
-      gluDeleteNurbsRenderer(theNurb);
-      delete [] ctlpoints;
-      delete [] knots;
 
       glColor3d(0.0, 0.0, 1.0);
       if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
@@ -520,26 +537,23 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
           glColor3d(1.0, 0.0, 0.0);
       }
 
-      if (!only_show_splines)
+      QVector<QPointF> points;
+      for (int i=0; i< spline.original_cpts.size(); ++i)
       {
-          QVector<QPointF> points;
-          for (int i=0; i< spline.original_cpts.size(); ++i)
-          {
-              points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
-          }
-
-          QVector<QPointF> subDividePts;
-          if (points.size() >= 4)
-              subDividePts = subDivide(points, 5);
-
-        glBegin(GL_LINE_STRIP);
-        for (int i = 0; i < subDividePts.size(); ++i)
-        {
-            if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
-            glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
-        }
-        glEnd();
+          points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
       }
+
+      QVector<QPointF> subDividePts;
+      if (points.size() >= 4)
+          subDividePts = subDivide(points, 5);
+
+      glBegin(GL_LINE_STRIP);
+      for (int i = 0; i < subDividePts.size(); ++i)
+      {
+          if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
+          glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
+      }
+      glEnd();
 
       glPopName();
       glPopName();
@@ -563,7 +577,7 @@ void GLScene::draw_surface(int surface_id)
     if (surface.controlPoints().size() < uv_order.x() || surface.controlPoints()[0].size() < uv_order.y())
         return;
 
-      QPoint numKnots(surface.u_knotVectors().size(), surface.v_knotVectors().size());
+/*      QPoint numKnots(surface.u_knotVectors().size(), surface.v_knotVectors().size());
       GLfloat *u_knots = new GLfloat[numKnots.x()];
       GLfloat *v_knots = new GLfloat[numKnots.y()];
       for (int i = 0; i < numKnots.x(); ++i)
@@ -616,7 +630,7 @@ void GLScene::draw_surface(int surface_id)
       delete [] ctlpoints;
       delete [] u_knots;
       delete [] v_knots;
-
+*/
       //Display Control Polygon
       if (showControlMesh)
       {

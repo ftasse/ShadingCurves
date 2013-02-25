@@ -248,3 +248,13 @@ void BSpline::fix_orientation()
             std::reverse(connected_cpts.begin(), connected_cpts.end());
     }
 }
+
+QVector<QPointF> BSpline::getPoints()
+{
+    QVector<QPointF> points;
+    for (int i=0; i< connected_cpts.size(); ++i)
+    {
+        points.push_back(pointAt(i));
+    }
+    return points;
+}

@@ -22,3 +22,17 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
 
     return newVec;
 }
+
+QVector<QPointF> limitPoints(QVector<QPointF> spline)
+{
+    QVector<QPointF> newVec;
+    newVec.append(spline.first());
+    for (int i=1;i<spline.count()-1;i++)
+    {
+        QPointF newP = 0.1667*spline.at(i-1)+0.667*spline.at(i)+0.1667*spline.at(i+1);
+        newVec.append(newP);
+    }
+    newVec.append(spline.last());
+
+    return newVec;
+}
