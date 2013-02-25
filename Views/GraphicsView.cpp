@@ -233,7 +233,7 @@ void GraphicsView::applyShading()
     glvs->indexMesh = -1;
     glvs->setSubdivLevel(4);
     img = glvs->img;  // The luminance difference image
-//    cv::imshow("LumDif Image BGR", img);
+    cv::imshow("LumDif Image BGR", img);
 //    cv::imwrite("LumDif.png", img);
 
     if (img.cols > 0)
@@ -242,11 +242,18 @@ void GraphicsView::applyShading()
         my_scene->getImage()->copyTo(imgOrig);
 //        cv::imshow("Original Image BGR", imgOrig);
 
+//        // test conversion accuracy
+//        for (int i = 0 ; i < 10 ; i++)
+//        {
+//            cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
+//            cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
+//        }
+//        cv::imshow("Image after repeated conversions", imgOrig);
+
         //convert to Lab space
         cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
         cv::cvtColor(img, img, CV_BGR2Lab);
 //        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);
-
 
         // apply luminance adjustment
         for( int y = 0; y < imgOrig.rows; y++ )
