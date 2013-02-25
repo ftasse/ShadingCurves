@@ -212,7 +212,8 @@ void GraphicsView::show3Dwidget()
 
 void GraphicsView::applyShading()
 {
-    cv::Mat img, imgOrig, imgNew;
+    cv::Mat img, imgOrig; //, imgNew;
+    int     tmp;
 
     GLScene *my_scene = (GLScene *) scene();
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
@@ -231,43 +232,44 @@ void GraphicsView::applyShading()
 
     glvs->indexMesh = -1;
     glvs->setSubdivLevel(4);
-    img = glvs->img;  // This img (after some normalisation)
-                      // should be used as luminance difference
-    cv::imshow("LumDif Image", img);
+    img = glvs->img;  // The luminance difference image
+//    cv::imshow("LumDif Image BGR", img);
+//    cv::imwrite("LumDif.png", img);
 
     if (img.cols > 0)
     {
         // grab original image
         my_scene->getImage()->copyTo(imgOrig);
-
-        cv::imshow("Original Image", imgOrig);
+//        cv::imshow("Original Image BGR", imgOrig);
 
         //convert to Lab space
         cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
         cv::cvtColor(img, img, CV_BGR2Lab);
+//        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);
 
-        imgNew = cv::Mat::zeros(imgOrig.size(), imgOrig.type());    //Apparent, imgOrig.type() specifies how many how many bytes are used for each pixel and not the color code (such as RGB or Lab)
-        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);       //So we should convert the new image from the default BGR to Lab before further processing
 
         // apply luminance adjustment
         for( int y = 0; y < imgOrig.rows; y++ )
         {
             for( int x = 0; x < imgOrig.cols; x++ )
             {
-//                imgNew.at<cv::Vec3b>(y,x)[0] = 0;
-
-//                imgNew.at<cv::Vec3b>(y,x)[0] =
- //                   img.at<cv::Vec3b>(y,x)[0];
-
-                imgNew.at<cv::Vec3b>(y,x)[0] =
-                    imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
+                tmp = imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
+                if (tmp > 255)
+                {
+                    tmp = 255;
+                }
+                if (tmp < 0)
+                {
+                    tmp = 0;
+                }
+                imgOrig.at<cv::Vec3b>(y,x)[0] = tmp;
             }
         }
 
         //convert back to BGR
-        cv::cvtColor(imgNew, imgNew, CV_Lab2BGR);
+        cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
 
-        cv::imshow("Resulting Image", imgNew);
+        cv::imshow("Resulting Image", imgOrig);
 
 //        my_scene->setImage(imgNew);
     }
