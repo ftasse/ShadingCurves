@@ -21,6 +21,7 @@ public:
     QPointF inward_normal(int index);
 
     //Utilites
+    QVector<QPointF> getPoints(); // HENRIK: return list of control points
     ControlPoint& pointAt(int index);
     float closestParamToPointAt(int index);
     QPointF derivativeCurvePoint(float _t, unsigned int _der);

@@ -88,6 +88,9 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         }
     }
 
+    // get limit points for the control points
+    QVector<QPointF> lp = limitPoints(bspline.getPoints());
+
     // loop through all control points for the given spline curve
     for (int k=0; k<bspline.count(); ++k)
     {
@@ -100,7 +103,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
             float currentD = 0;
             QPointF normal = bspline.inward_normal(k);
             QLineF normalL(bspline.pointAt(k),bspline.pointAt(k) + normal*width);
-            QPointF tmp = bspline.pointAt(k) + normal*5;
+            QPointF tmp = lp.at(k)+normal*2;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt;
             QList<QPoint> visited;

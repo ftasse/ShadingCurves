@@ -1,5 +1,7 @@
 Flora:
-4. add check box for inward/outward surfaces (Note)
-5. Draw the splines with 5 subdivisions steps (Note)
-6. combine control points at T junctions
-10. change from open uniform knot vector to "closed" uniform (Henrik will tell you)
+1. fix moving
+2. fix colour selection with onto closed curves
+50. zooming
+100. toggle show image
+-. combine control points at T junctions (not yet)
+-. change from open uniform knot vector to "closed" uniform (Henrik will tell you - not yet)
