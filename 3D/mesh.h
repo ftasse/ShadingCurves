@@ -26,7 +26,7 @@ public:
 	unsigned int 	my_index,
 					my_valency;
 
-    bool			isOnBoundary,
+    bool			isOnBoundary, treatAsCornerVertex,
                     isFeature,
                     isStable;
 

@@ -79,7 +79,7 @@ void Mesh::DeleteData()
 
 void Mesh::load(istream &is, unsigned int iH)
 {
-	unsigned int	i, j, vn, n;
+    unsigned int	i, j, vn, n, id;
 	PointPrec		x, y, z;
     std::string		file_type, tmp;
 	MeshVertex 		vertex;
@@ -170,6 +170,7 @@ void Mesh::load(istream &is, unsigned int iH)
             }
 			vertex.my_index = i;
             vertex.isFeature = true;
+            vertex.treatAsCornerVertex = false;
 			my_vertices.push_back(vertex);
 			my_vertices[i].my_faceIndices.clear();
 		}
@@ -194,6 +195,14 @@ void Mesh::load(istream &is, unsigned int iH)
 			}
 			my_facets.push_back(facet);
 		}
+
+        // read sharp corners
+        for (i = 0 ; i < my_numE ; i++)
+        {
+            is >> id;
+            my_vertices[id].treatAsCornerVertex = true;
+        }
+
 
 //        for (i = 0 ; i < my_numV ; i++)
 //        {
@@ -1254,7 +1263,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 
         if (vertex->isOnBoundary)
         {
-            if (vertex->my_valency == 1)
+            if (vertex->my_valency == 1 || vertex->treatAsCornerVertex) //!! TO DO
             {
                 Vpoi = vertex->my_point;
             }
@@ -1351,6 +1360,15 @@ void Mesh::CatmullClark(Mesh *smesh)
         vert.my_index = i;
         vert.my_faceIndices.clear();
         vert.isFeature = true;
+
+        if (my_vertices[i].treatAsCornerVertex)
+        {
+            vert.treatAsCornerVertex = true;
+        }
+        else
+        {
+            vert.treatAsCornerVertex = false;
+        }
         smesh->my_vertices[i] = vert;
     }
 
