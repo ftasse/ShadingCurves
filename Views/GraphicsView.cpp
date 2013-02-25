@@ -204,29 +204,6 @@ void GraphicsView::show3Dwidget()
     }
 
     glw->ctrlWidget1->checkClear->setChecked(true);
-//    if (surfaces.size() > 0)
-//    {
-//        glw->ctrlWidget1->numV->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV));
-//        glw->ctrlWidget1->numF->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF));
-//        glw->ctrlWidget1->numVsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numV/1000));
-//        glw->ctrlWidget1->numFsub->setText(QString::number(glw->glwidget1->meshCtrl[0]->my_numF/1000));
-//    }
-
-//    //Comment this when the above transfer method is working
-//    std::ofstream batch_ofs("surfaces.txt");
-//    batch_ofs << surfaces.size() << std::endl;
-//    for (int i=0; i<surfaces.size(); ++i)
-//    {
-//        std::stringstream ss;
-//        ss << "tmp_surface_" << i << ".off";
-//        const char *fname = ss.str().c_str();
-//        std::ofstream ofs(fname);
-//        ofs << surfaces[i];
-//        ofs.close();
-
-//        batch_ofs << fname << std::endl;
-//    }
-//    glw->loadBatch1("surfaces.txt");
 
     glw->ctrlWidget1->meshMenu->setCurrentIndex(0);
     glw->ctrlWidget1->subdLevelSpinbox->setValue(2);
