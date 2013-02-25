@@ -810,7 +810,26 @@ int GLScene::computeSurface(int spline_id)
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
 
     BSpline& spline = m_splineGroup.spline(spline_id);
-    return m_splineGroup.createSurface(spline_id, dt, surfaceWidth, spline.has_inward_surface, spline.has_outward_surface);
+
+    // FLORA, delete any previous surface attached to this spline
+    for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+    {
+        Surface& surf = m_splineGroup.surface(i);
+        if (surf.connected_spline_id == spline_id)
+        {
+            m_splineGroup.removeSurface(surf.idx);
+        }
+    }
+    m_splineGroup.garbage_collection();
+
+    int surf_id = 0;
+    if (spline.has_inward_surface)
+        surf_id  = m_splineGroup.createSurface(spline_id, dt, surfaceWidth, true);
+
+    if (spline.has_outward_surface)
+        surf_id  = m_splineGroup.createSurface(spline_id, dt, surfaceWidth, false);
+
+    return surf_id;
 }
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)

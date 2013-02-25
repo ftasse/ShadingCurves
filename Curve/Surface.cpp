@@ -63,6 +63,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 
     std::vector<int> vertex_indices;
+    std::vector<int> sharp_corner_indices;
     std::map<std::pair<int, int>, int > vertex_indices_uv;
 
     for (int k=0; k<controlPoints().size(); ++k)
@@ -82,22 +83,23 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 
     BSpline& spline = m_splineGroup->spline(connected_spline_id);
-
     int face_count = (controlPoints().size()-1)*(controlPoints()[0].size() - 1);
-    int edge_count = 0;
 
-    if (spline.is_closed())
+
+    for (int k=0; k<controlPoints().size(); ++k)
     {
-        edge_count = (controlPoints().size()-1)*((controlPoints()[0].size()-1)*2) +
-                     (controlPoints()[0].size()-1);
-    } else
-    {
-        edge_count = (controlPoints().size()-1)*((controlPoints()[0].size() - 1) + (controlPoints()[0].size())) +
-                     (controlPoints()[0].size() - 1);
+        int start_pt_id = vertex_indices_uv[std::pair<int, int>(k,0)];
+        int end_pt_id = vertex_indices_uv[std::pair<int, int>(k, controlPoints()[k].size()-1)];
+
+        sharp_corner_indices.push_back(start_pt_id);
+        if (start_pt_id != end_pt_id)
+        {
+            sharp_corner_indices.push_back(end_pt_id);
+        }
     }
 
 
-    ofs << vertex_indices.size() << " " << face_count << " " << edge_count << std::endl;
+    ofs << vertex_indices.size() << " " << face_count << " " << sharp_corner_indices.size() << std::endl;
 
     //Write vertices
     for (int i=0; i<vertex_indices.size(); ++i)
@@ -144,5 +146,11 @@ bool Surface::writeOFF(std::ostream &ofs)
         }
 
         flip_face = !flip_face;
+    }
+
+    //Write sharp corners
+    for (int i=0; i<sharp_corner_indices.size(); ++i)
+    {
+        ofs << sharp_corner_indices[i] << std::endl;
     }
 }
