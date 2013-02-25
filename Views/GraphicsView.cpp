@@ -218,7 +218,7 @@ void GraphicsView::applyShading()
     GLScene *my_scene = (GLScene *) scene();
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glvs->offScreen = true;
-    glvs->offMainWindow = true;
+//    glvs->offMainWindow = true;
     glvs->clear = false;
 
     // transfer mesh
@@ -231,55 +231,60 @@ void GraphicsView::applyShading()
     }
 
     glvs->indexMesh = -1;
-    glvs->setSubdivLevel(4);
-    img = glvs->img;  // The luminance difference image
-    cv::imshow("LumDif Image BGR", img);
+    glvs->setSubdivLevel(4); // calls updateGL
+
+
+
+//////OLD CODE
+//    img = glvs->img;  // The luminance difference image
+//    cv::imshow("LumDif Image BGR", img);
 //    cv::imwrite("LumDif.png", img);
 
-    if (img.cols > 0)
-    {
-        // grab original image
-        my_scene->getImage()->copyTo(imgOrig);
-//        cv::imshow("Original Image BGR", imgOrig);
+//    if (img.cols > 0)
+//    {
+//        // grab original image
+//        my_scene->getImage()->copyTo(imgOrig);
+////        cv::imshow("Original Image BGR", imgOrig);
 
-//        // test conversion accuracy
-//        for (int i = 0 ; i < 10 ; i++)
+////        // test conversion accuracy
+////        for (int i = 0 ; i < 10 ; i++)
+////        {
+////            cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
+////            cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
+////        }
+////        cv::imshow("Image after repeated conversions", imgOrig);
+
+//        //convert to Lab space
+//        cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
+////        cv::cvtColor(img, img, CV_BGR2Lab);
+////        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);
+
+//        // apply luminance adjustment
+//        for( int y = 0; y < imgOrig.rows; y++ )
 //        {
-//            cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
-//            cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
+//            for( int x = 0; x < imgOrig.cols; x++ )
+//            {
+//                tmp = imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
+//                if (tmp > 255)
+//                {
+//                    tmp = 255;
+//                }
+//                if (tmp < 0)
+//                {
+//                    tmp = 0;
+//                }
+//                imgOrig.at<cv::Vec3b>(y,x)[0] = tmp;
+//            }
 //        }
-//        cv::imshow("Image after repeated conversions", imgOrig);
 
-        //convert to Lab space
-        cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
-        cv::cvtColor(img, img, CV_BGR2Lab);
-//        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);
+//        //convert back to BGR
+//        cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
 
-        // apply luminance adjustment
-        for( int y = 0; y < imgOrig.rows; y++ )
-        {
-            for( int x = 0; x < imgOrig.cols; x++ )
-            {
-                tmp = imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
-                if (tmp > 255)
-                {
-                    tmp = 255;
-                }
-                if (tmp < 0)
-                {
-                    tmp = 0;
-                }
-                imgOrig.at<cv::Vec3b>(y,x)[0] = tmp;
-            }
-        }
+//        cv::imshow("Resulting Image", imgOrig);
+//        cv::imwrite("Result.png", imgOrig);
 
-        //convert back to BGR
-        cv::cvtColor(imgOrig, imgOrig, CV_Lab2BGR);
-
-        cv::imshow("Resulting Image", imgOrig);
-
-//        my_scene->setImage(imgNew);
-    }
+////        my_scene->setImage(imgNew);
+//    }
 
     delete glvs;
 }

@@ -3,7 +3,7 @@
 
 ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 {
-    buffer2imgButton = new QPushButton("Buffer2img", this);
+    buffer2imgButton = new QPushButton("ShowShadedResult", this);
     toolBara->addWidget(buffer2imgButton);
 
     ctrlGroupBox = new QGroupBox(tr(""));

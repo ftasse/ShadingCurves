@@ -322,6 +322,8 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
+        int     tmp;
+
         numberPaintCalls++;
         cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
 
@@ -344,7 +346,7 @@ void GLviewsubd::paintGL(void)
         if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
             qDebug("Could not draw offscreen");
 
-        //Drawing
+        //Setup view
         glClearColor(0.5, 0.5, 0.5, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_PROJECTION);
@@ -359,10 +361,6 @@ void GLviewsubd::paintGL(void)
         glPushMatrix();
         glLoadIdentity();
         glRenderMode(GL_RENDER);
-    //    glLineWidth(1.0);
-    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //    glEnable(GL_BLEND);
-    //    glEnable(GL_LINE_SMOOTH);
 
         //draw stuff here
         origClr = clr;
@@ -371,6 +369,7 @@ void GLviewsubd::paintGL(void)
         glCallList(height_mesh_list);
         clr = origClr;
 
+        //create image
         img.create(imageHeight, imageWidth, CV_8UC3);
         GLenum inputColourFormat;
         #ifdef GL_BGR
@@ -395,17 +394,47 @@ void GLviewsubd::paintGL(void)
         glDeleteRenderbuffersEXT(1, &renderbuffer);
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
 
+        //process image
         cv::cvtColor(img, img, CV_BGR2RGB);
         cv::flip(img, img, 0);
-//        cv::cvtColor(img, img, CV_RGB2GRAY);
-    //    cv::threshold( img, img, 254, 255,   CV_THRESH_BINARY);
         offScreen = false;
-        if (!offMainWindow)
-        {
-            cv::imshow("3Dbuffer", img);
-            cv::imwrite("3Dbuffer.png", img);
+//        if (!offMainWindow)
+//        {
+            cv::imshow("Img: LumDif", img);
+            cv::imwrite("ImgLumDif.png", img);
+            inputImg->copyTo(imgShaded);
+
+            if (img.cols > 0)
+            {
+                cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
+
+                // apply luminance adjustment
+                for( int y = 0; y < imgShaded.rows; y++ )
+                {
+                    for( int x = 0; x < imgShaded.cols; x++ )
+                    {
+                        tmp = imgShaded.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
+                        if (tmp > 255)
+                        {
+                            tmp = 255;
+                        }
+                        if (tmp < 0)
+                        {
+                            tmp = 0;
+                        }
+                        imgShaded.at<cv::Vec3b>(y,x)[0] = tmp;
+                    }
+                }
+
+                //convert back to BGR
+                cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
+
+                cv::imshow("Img: Shaded result", imgShaded);
+                cv::imwrite("ImgResult.png", imgShaded);
+
+            }
             updateGL();
-        }
+//        }
     }
     else
     {
