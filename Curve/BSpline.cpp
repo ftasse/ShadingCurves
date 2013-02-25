@@ -212,10 +212,22 @@ void BSpline::recompute()
         subDividePts = subDivide(points);
 
 
-    for (int i=0; i< subDividePts.size(); ++i)
+    for (int i=0; i< subDividePts.size() -1 ; ++i)
     {
         int new_cpt = m_splineGroup->addControlPoint(subDividePts[i]);
         m_splineGroup->addControlPointToSpline(idx, new_cpt);
+    }
+
+    if (connected_cpts.size() >= 2)
+    {
+        if (is_closed())
+        {
+            m_splineGroup->addControlPointToSpline(idx, connected_cpts[0]);
+        } else
+        {
+            int new_cpt = m_splineGroup->addControlPoint(subDividePts.back());
+            m_splineGroup->addControlPointToSpline(idx, new_cpt);
+        }
     }
 
     updateKnotVectors();

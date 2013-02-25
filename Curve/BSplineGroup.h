@@ -18,7 +18,7 @@ public:
 
     bool addControlPointToSpline(int spline_id, int cpt_id, bool original = false);
 
-    int createSurface(int spline_id, cv::Mat dt, float width = 50.0, bool inward = true, bool outward=true);
+    int createSurface(int spline_id, cv::Mat dt, float width = 50.0, bool inward = true);
 
     void removeControlPoint(int cpt_id);
     void removeSpline(int spline_id);
