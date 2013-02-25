@@ -13,11 +13,17 @@ MainWindow::MainWindow(QWidget *parent) :
     //Setup
     ui->setupUi(this);
     scene = new GLScene ();
+    scene->inward_surface_box = ui->inward_suface_box;
+    scene->outward_surface_box = ui->outward_surface_box;
     ui->graphicsView->setScene(scene);
+
     ui->graphicsView->setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
 
     //Connections
+    connect(ui->inward_suface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
+    connect(ui->outward_surface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
+
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
     connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));
     connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));

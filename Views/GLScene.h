@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
+#include <QCheckBox>
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
 
@@ -29,6 +30,7 @@ public:
 
     //Sketching functions
     void createBSpline();
+    void setSurfaceWidth(float _surface_width);
     int computeSurface(int spline_id);
     int registerPointAtScenePos(QPointF scenePos);
     QPointF sceneToImageCoords(QPointF scenePos);
@@ -108,6 +110,7 @@ protected:
 signals:
 
 public slots:
+    void change_inward_outward_surface();
 
 private:
     cv::Mat m_curImage;
@@ -127,6 +130,8 @@ public:
     float surfaceWidth;
     bool showControlMesh;
     bool showControlPoints;
+    QCheckBox *inward_surface_box;
+    QCheckBox *outward_surface_box;
 
     QSizeF imSize;
 };

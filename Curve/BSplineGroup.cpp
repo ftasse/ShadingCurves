@@ -59,7 +59,7 @@ int BSplineGroup::addSurface()
     return num_surfaces() - 1;
 }
 
-int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
+int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inward, bool outward)
 {
     // FLORA, delete any previous surface attached to this spline
     for (int i=0; i<num_surfaces(); ++i)
@@ -79,9 +79,12 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
     Surface& surf = surface(surface_id);
     BSpline& bspline = spline(spline_id);
 
+    bspline.fix_orientation();
+
     surf.connected_spline_id = spline_id;
     surf.controlPoints().append(bspline.connected_cpts);
     QVector<int> translated_cpts_ids;
+    QVector<int> out_translated_cpts_ids;
     QVector<int> perpendicular_cpts_ids;
 
     for (int k=0; k<bspline.count(); ++k)
@@ -102,7 +105,8 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
     {
         if (k == bspline.count()-1 && bspline.connected_cpts[k] == bspline.connected_cpts[0]) //if closed curve
         {
-            translated_cpts_ids.push_back(translated_cpts_ids[0]);
+            if (inward) translated_cpts_ids.push_back(translated_cpts_ids[0]);
+            if (outward) out_translated_cpts_ids.push_back(out_translated_cpts_ids[0]);
         } else
         {
             // HENRIK: move in the distance transform image
@@ -131,15 +135,26 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width)
                 }
             }
 
-            int cpt_id = addControlPoint(new_cpt);
-            translated_cpts_ids.push_back(cpt_id);
+            if (inward)
+            {
+                int cpt_id = addControlPoint(new_cpt);
+                translated_cpts_ids.push_back(cpt_id);
+            }
+            if (outward)
+            {
+                QPointF out_new_cpt = bspline.pointAt(k)-(new_cpt-bspline.pointAt(k));
+                int cpt_id = addControlPoint(out_new_cpt);
+                out_translated_cpts_ids.push_back(cpt_id);
+            }
         }
     }
 
     surf.controlPoints().append(perpendicular_cpts_ids);
-    surf.controlPoints().append(translated_cpts_ids);
+    if (inward) surf.controlPoints().append(translated_cpts_ids);
+    if (outward) surf.controlPoints().append(out_translated_cpts_ids);
 
     surf.updateKnotVectors();
+    qDebug("%s", surf.surfaceToOFF().c_str());
     return surface_id;
 }
 

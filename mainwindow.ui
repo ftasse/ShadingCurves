@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>840</width>
-    <height>455</height>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>297</height>
+            <height>354</height>
            </rect>
           </property>
           <attribute name="label">
@@ -191,6 +191,48 @@
             <string>Surface width</string>
            </property>
           </widget>
+          <widget class="QWidget" name="widget_2" native="true">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>290</y>
+             <width>181</width>
+             <height>51</height>
+            </rect>
+           </property>
+           <widget class="QCheckBox" name="inward_suface_box">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>0</y>
+              <width>141</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>inward surface</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="outward_surface_box">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>20</y>
+              <width>141</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>outward surface</string>
+            </property>
+           </widget>
+          </widget>
          </widget>
          <widget class="QWidget" name="shading_toolbox">
           <property name="geometry">
@@ -198,7 +240,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>297</height>
+            <height>354</height>
            </rect>
           </property>
           <attribute name="label">

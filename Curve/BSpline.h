@@ -13,6 +13,7 @@ public:
     BSpline( int degree = 3);
     void recompute();
     void cleanup();
+    void fix_orientation();
     void updateKnotVectors();
 
     //Normal at the (index)th control point
@@ -56,6 +57,9 @@ public:
     QVector<int> connected_cpts;
     QVector<int> original_cpts;
     int idx;
+
+    bool has_inward_surface;
+    bool has_outward_surface;
 
 private:
     unsigned int m_spec_degree;

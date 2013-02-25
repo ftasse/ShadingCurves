@@ -27,7 +27,7 @@ QPointF nearestPoint(QPointF pt, QPointF a, QPointF b, float &t)
 }
 
 BSpline::BSpline(int degree):
-    idx(-1), m_spec_degree(degree), m_degree(degree)
+    idx(-1), m_spec_degree(degree), m_degree(degree), has_inward_surface(true), has_outward_surface(false)
 {
 }
 
@@ -219,4 +219,20 @@ void BSpline::recompute()
     }
 
     updateKnotVectors();
+}
+
+void BSpline::fix_orientation()
+{
+    if (connected_cpts.size()>0 && is_closed())
+    {
+        //Check if current orientation is correct
+        QPointF inside_point = pointAt(0) + 5*inward_normal_inaccurate(0);
+        std::vector<cv::Point> contour;
+        for (int i=0; i<connected_cpts.size(); ++i)
+        {
+            contour.push_back(cv::Point(pointAt(i).x(), pointAt(i).y()));
+        }
+        if (cv::pointPolygonTest(contour, cv::Point2f(inside_point.x(), inside_point.y()), false) < 0)
+            std::reverse(connected_cpts.begin(), connected_cpts.end());
+    }
 }

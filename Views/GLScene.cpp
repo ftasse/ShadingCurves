@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 #include <QGraphicsView>
 #include <QColorDialog>
+#include <QDialog>
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -120,6 +121,7 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     uint nodeId, targetId;
+
     if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
     {
         if (!(event->modifiers() & Qt::ControlModifier))
@@ -133,6 +135,19 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+
+    if (m_curSplineIdx >= 0)
+    {
+        inward_surface_box->setEnabled(true);
+        outward_surface_box->setEnabled(true);
+        inward_surface_box->setChecked( m_splineGroup.spline(m_curSplineIdx).has_inward_surface );
+        outward_surface_box->setChecked( m_splineGroup.spline(m_curSplineIdx).has_outward_surface );
+    } else
+    {
+        inward_surface_box->setEnabled(false);
+        outward_surface_box->setEnabled(false);
+    }
+
     update();
 }
 
@@ -771,6 +786,20 @@ void GLScene::createBSpline()
     update();
 }
 
+void GLScene::setSurfaceWidth(float _surface_width)
+{
+    surfaceWidth = _surface_width;
+    if (m_curSplineIdx >=0 )
+    {
+        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+        {
+            int spline_id = m_splineGroup.surface(k).connected_spline_id;
+            if (spline_id == m_curSplineIdx)
+                computeSurface(spline_id);
+        }
+    }
+}
+
 int GLScene::computeSurface(int spline_id)
 {
     // HENRIK, include distrance transform image
@@ -780,7 +809,8 @@ int GLScene::computeSurface(int spline_id)
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
 
-    return m_splineGroup.createSurface(spline_id,dt, surfaceWidth);
+    BSpline& spline = m_splineGroup.spline(spline_id);
+    return m_splineGroup.createSurface(spline_id, dt, surfaceWidth, spline.has_inward_surface, spline.has_outward_surface);
 }
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
@@ -990,6 +1020,30 @@ void GLScene::saveCurves(std::string fname)
 void GLScene::saveOff(std::string fname)
 {
     m_splineGroup.saveOFF(fname);
+}
+
+void GLScene::change_inward_outward_surface()
+{
+    if (m_curSplineIdx >= 0)
+    {
+        BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
+        if (spline.count() == 0)
+            return;
+        spline.has_inward_surface = inward_surface_box->isChecked();
+        spline.has_outward_surface = outward_surface_box->isChecked();
+        if (!spline.has_inward_surface && !spline.has_outward_surface)
+        {
+            for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+            {
+                int spline_id = m_splineGroup.surface(k).connected_spline_id;
+                if (spline_id == m_curSplineIdx)
+                    m_splineGroup.removeSurface(k);
+            }
+
+        } else
+            computeSurface(m_curSplineIdx);
+        update();
+    }
 }
 
 void nurbsError(uint errorCode)
