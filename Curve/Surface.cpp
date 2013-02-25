@@ -86,7 +86,8 @@ bool Surface::writeOFF(std::ostream &ofs)
     int face_count = (controlPoints().size()-1)*(controlPoints()[0].size() - 1);
 
 
-    for (int k=0; k<controlPoints().size(); ++k)
+    int k = 1;  //This only set sharp corners on the control points with non-zero depth. Uncomment the for loop to set it for all appropriate corners (with depth or not)
+    //for (k=0; k<controlPoints().size(); ++k)
     {
         int start_pt_id = vertex_indices_uv[std::pair<int, int>(k,0)];
         int end_pt_id = vertex_indices_uv[std::pair<int, int>(k, controlPoints()[k].size()-1)];
