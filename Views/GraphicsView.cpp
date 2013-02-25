@@ -246,7 +246,8 @@ void GraphicsView::applyShading()
         cv::cvtColor(imgOrig, imgOrig, CV_BGR2Lab);
         cv::cvtColor(img, img, CV_BGR2Lab);
 
-        imgNew = cv::Mat::zeros(imgOrig.size(), imgOrig.type());
+        imgNew = cv::Mat::zeros(imgOrig.size(), imgOrig.type());    //Apparent, imgOrig.type() specifies how many how many bytes are used for each pixel and not the color code (such as RGB or Lab)
+        cv::cvtColor(imgNew, imgNew, CV_BGR2Lab);       //So we should convert the new image from the default BGR to Lab before further processing
 
         // apply luminance adjustment
         for( int y = 0; y < imgOrig.rows; y++ )
@@ -255,11 +256,11 @@ void GraphicsView::applyShading()
             {
 //                imgNew.at<cv::Vec3b>(y,x)[0] = 0;
 
-                imgNew.at<cv::Vec3b>(y,x)[0] =
-                    img.at<cv::Vec3b>(y,x)[0];
-
 //                imgNew.at<cv::Vec3b>(y,x)[0] =
-//                    imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0];
+ //                   img.at<cv::Vec3b>(y,x)[0];
+
+                imgNew.at<cv::Vec3b>(y,x)[0] =
+                    imgOrig.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
             }
         }
 

@@ -154,7 +154,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     if (outward) surf.controlPoints().append(out_translated_cpts_ids);
 
     surf.updateKnotVectors();
-    qDebug("%s", surf.surfaceToOFF().c_str());
+    //qDebug("%s", surf.surfaceToOFF().c_str());
     return surface_id;
 }
 
