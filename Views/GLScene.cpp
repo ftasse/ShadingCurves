@@ -821,7 +821,7 @@ int GLScene::computeSurface(int spline_id)
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
 
     cv::Mat dt;
-    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
     BSpline& spline = m_splineGroup.spline(spline_id);
 
@@ -930,7 +930,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
     cv::cvtColor(img, img, CV_RGB2GRAY);   // cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
 }
 
