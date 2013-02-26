@@ -111,7 +111,9 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
             // HENRIK: move in the distance transform image
             float currentD = 0;
             QPointF normal = bspline.inward_normal(k);
-            QLineF normalL(bspline.pointAt(k),bspline.pointAt(k) + normal*width);
+            if(!inward)
+                normal = -normal;
+            QLineF normalL(lp.at(k),lp.at(k) + normal*width);
             QPointF tmp = lp.at(k)+normal*2;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt;
@@ -122,7 +124,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
                 QPoint m = localMax(dt,cv::Rect(current.x()-2,current.y()-2,current.x()+2,current.y()+2)
                                     ,&currentD,normalL,visited);
                 // check lines
-                QLineF currentL(bspline.pointAt(k),m);
+                QLineF currentL(lp.at(k),m);
                 float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
                 if(abs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
@@ -134,10 +136,6 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
                 }
             }
 
-            if (!inward)
-            {
-               new_cpt = bspline.pointAt(k)-(new_cpt-bspline.pointAt(k));
-            }
             int cpt_id = addControlPoint(new_cpt);
             translated_cpts_ids.push_back(cpt_id);
         }

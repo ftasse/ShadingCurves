@@ -458,7 +458,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
 
       // Display normals
-      /*glColor3f(0.5, 0.5, 0.0);
+      glColor3f(0.5, 0.5, 0.0);
       glBegin(GL_LINES);
       if (!only_show_splines)
       for (int i = 0; i < spline.count(); ++i)
@@ -472,7 +472,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
           glVertex2f(normal.x(), normal.y());
       }
       glEnd();
-      */
+
 
       if (!only_show_splines) {
  /*         QVector<QPointF> points;
