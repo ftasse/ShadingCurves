@@ -121,7 +121,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
 
             while(true) {
                 float oldD = currentD;
-                QPoint m = localMax(dt,cv::Rect(current.x()-2,current.y()-2,current.x()+2,current.y()+2)
+                QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
                                     ,&currentD,normalL,visited);
                 // check lines
                 QLineF currentL(lp.at(k),m);
@@ -129,6 +129,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
                 if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
+  //                  qDebug() << "angle: " << angle << "D: " << currentD;
                     break;
                 } else {
                     visited.append(current);
@@ -488,7 +489,7 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
     QList<QPoint> cand; // candidates
     for(int x=sx;x<=N.width;x++)
         for(int y=sy;y<=N.height;y++) {
-            if(x<0 || x>=S.width || y<0 || y>=S.height)
+            if(x<0 || x>=S.width || y<0 || y>=S.height) // || sqrt(float((x-(sx+1))*(x-(sx+1))+(y-(sy+1),2)*(y-(sy+1))))>1.0001)
                 continue;
             float d = I.at<float>(y,x);
             bool visCheck = visited.contains(QPoint(x,y));

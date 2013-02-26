@@ -164,7 +164,7 @@ void GraphicsView::createDistanceTransformDEBUG()
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
 
     cv::Mat dt;
-    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_3);
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
     cv::Mat dt_normalized;
     cv::normalize(dt, dt_normalized, 0.0, 255.0, cv::NORM_MINMAX);
