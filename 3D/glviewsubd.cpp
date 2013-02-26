@@ -393,11 +393,11 @@ void GLviewsubd::paintGL(void)
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         glDeleteRenderbuffersEXT(1, &renderbuffer);
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
+        offScreen = false;
 
         //process image
         cv::cvtColor(img, img, CV_BGR2RGB);
         cv::flip(img, img, 0);
-        offScreen = false;
 //        if (!offMainWindow)
 //        {
             cv::imshow("Img: LumDif", img);
@@ -413,7 +413,7 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgShaded.cols; x++ )
                     {
-                        tmp = imgShaded.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 127;
+                        tmp = imgShaded.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 128;
                         if (tmp > 255)
                         {
                             tmp = 255;

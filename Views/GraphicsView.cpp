@@ -212,8 +212,8 @@ void GraphicsView::show3Dwidget()
 
 void GraphicsView::applyShading()
 {
-    cv::Mat img, imgOrig; //, imgNew;
-    int     tmp;
+//    cv::Mat img, imgOrig; //, imgNew;
+//    int     tmp;
 
     GLScene *my_scene = (GLScene *) scene();
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
@@ -232,8 +232,6 @@ void GraphicsView::applyShading()
 
     glvs->indexMesh = -1;
     glvs->setSubdivLevel(4); // calls updateGL
-
-
 
 //////OLD CODE
 //    img = glvs->img;  // The luminance difference image
