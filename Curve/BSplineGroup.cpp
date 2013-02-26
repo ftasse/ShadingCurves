@@ -24,10 +24,10 @@ int BSplineGroup::addControlPoint(QPointF value, float z, bool original)
         float dy =  controlPoint(i).y() - value.y();
         float dz =  controlPoint(i).z() - z;
         float dist = sqrt(dx*dx + dy*dy + dz*dz);
-        if (abs(dz) < EPSILON && dist < 5.0)
+        if (fabs(dz) < EPSILON && dist < 5.0)
         {
             return i;
-        } else if (abs(dz) > EPSILON && dist < EPSILON)
+        } else if (fabs(dz) > EPSILON && dist < EPSILON)
         {
             return i;
         }
@@ -126,7 +126,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
                 // check lines
                 QLineF currentL(lp.at(k),m);
                 float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-                if(abs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
+                if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
                     break;
@@ -492,7 +492,7 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
                 continue;
             float d = I.at<float>(y,x);
             bool visCheck = visited.contains(QPoint(x,y));
-            if(abs(d-m)<EPSILON && !visCheck)
+            if(fabs(d-m)<EPSILON && !visCheck)
                 cand.append(QPoint(x,y));
             else if(d>m) {
                 m=d;

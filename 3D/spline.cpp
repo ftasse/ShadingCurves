@@ -651,14 +651,14 @@ void SplineS::diffU(SplineS *der)
                 poi = poi + tmp;
                 plg.push_back(poi);
             }
-//			else if (abs(my_net[i][j + 1].getX() - my_net[i][j].getX()) <= EPS &&
-//			         abs(my_net[i][j + 1].getY() - my_net[i][j].getY()) <= EPS &&
-//			         abs(my_net[i][j + 1].getZ() - my_net[i][j].getZ()) <= EPS )
+//			else if (fabs(my_net[i][j + 1].getX() - my_net[i][j].getX()) <= EPS &&
+//			         fabs(my_net[i][j + 1].getY() - my_net[i][j].getY()) <= EPS &&
+//			         fabs(my_net[i][j + 1].getZ() - my_net[i][j].getZ()) <= EPS )
             else
             {
-//				cout << "diff: " << abs(my_net[i][j + 1].getX() - my_net[i][j].getX()) <<
-//				abs(my_net[i][j + 1].getY() - my_net[i][j].getY()) <<
-//				abs(my_net[i][j + 1].getZ() - my_net[i][j].getZ()) << endl;
+//				cout << "diff: " << fabs(my_net[i][j + 1].getX() - my_net[i][j].getX()) <<
+//				fabs(my_net[i][j + 1].getY() - my_net[i][j].getY()) <<
+//				fabs(my_net[i][j + 1].getZ() - my_net[i][j].getZ()) << endl;
 
                 //fix for crease
                 plg.push_back(plg.back());
