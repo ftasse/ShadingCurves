@@ -543,7 +543,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
       }
 
       QVector<QPointF> subDividePts;
-      if (points.size() >= 4)
+      if (points.size() > 1)
           subDividePts = subDivide(points, 5);
 
       glBegin(GL_LINE_STRIP);

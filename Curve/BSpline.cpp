@@ -208,7 +208,7 @@ void BSpline::recompute()
 
     QVector<QPointF> subDividePts;
 
-    if (points.size() >= 4)
+    if (points.size() > 1)
         subDividePts = subDivide(points);
 
 

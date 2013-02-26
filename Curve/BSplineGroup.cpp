@@ -129,7 +129,6 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
                 if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
                     new_cpt.rx() = m.rx();
                     new_cpt.ry() = m.ry();
-  //                  qDebug() << "angle: " << angle << "D: " << currentD;
                     break;
                 } else {
                     visited.append(current);
@@ -483,8 +482,8 @@ void BSplineGroup::saveOFF(std::string fname)
 QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
 {
     // thresholds
-    float Td = 0.000001f; // for distance
-    float Ta = 0.0001f; // for angle
+    float Td = .75f; // for distance
+    float Ta = 1.0f; // for angle
 
     int sx = N.x;
     int sy = N.y;
@@ -507,26 +506,29 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
             assert(!(d-m>EPSILON && visCheck));
         }
 
-    // remove candidates based on angle
+    assert(cand.count()>0);
+    // find smallest angle
     float sa = 360; // smallest angle
+    QList<float> angles;
     for (int i = 0;i<cand.count();i++) {
         QLineF currentL(normalL.p1(),cand.at(i));
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        if(angle>sa+Ta)
-            cand.removeAt(i);
-        else if(angle<sa)
+        angles.append(angle);
+        if(angle<sa)
             sa = angle;
     }
 
     // pick max candidate
     QPoint winner;
-    m = 0;
+    m = -1;
     for (int i = 0;i<cand.count();i++) {
-        QPoint tmp = cand.at(i);
-        float d = I.at<float>(tmp.y(),tmp.x());
-        if(d>m) {
-            winner = tmp;
-            m = d;
+        if(angles.at(i)<sa+Ta) {
+            QPoint tmp = cand.at(i);
+            float d = I.at<float>(tmp.y(),tmp.x());
+            if(d>m) {
+                winner = tmp;
+                m = d;
+            }
         }
     }
 
