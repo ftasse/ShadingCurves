@@ -110,7 +110,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         {
             // HENRIK: move in the distance transform image
             float currentD = 0;
-            QPointF normal = bspline.inward_normal(k);
+            QPointF normal = bspline.inward_normal_inaccurate(k);
             if(!inward)
                 normal = -normal;
             QLineF normalL(lp.at(k),lp.at(k) + normal*width);
@@ -482,6 +482,10 @@ void BSplineGroup::saveOFF(std::string fname)
 // HENRIK: find max value in I, in neighbourhood N
 QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
 {
+    // thresholds
+    float Td = 0.000001f; // for distance
+    float Ta = 0.0001f; // for angle
+
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();
@@ -489,11 +493,11 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
     QList<QPoint> cand; // candidates
     for(int x=sx;x<=N.width;x++)
         for(int y=sy;y<=N.height;y++) {
-            if(x<0 || x>=S.width || y<0 || y>=S.height) // || sqrt(float((x-(sx+1))*(x-(sx+1))+(y-(sy+1),2)*(y-(sy+1))))>1.0001)
+            if(x<0 || x>=S.width || y<0 || y>=S.height)
                 continue;
             float d = I.at<float>(y,x);
             bool visCheck = visited.contains(QPoint(x,y));
-            if(fabs(d-m)<EPSILON && !visCheck)
+            if(fabs(d-m)<Td && !visCheck)
                 cand.append(QPoint(x,y));
             else if(d>m) {
                 m=d;
@@ -503,17 +507,29 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
             assert(!(d-m>EPSILON && visCheck));
         }
 
-    // loop through the candidates
-    float ma = 360; // min angle
-    QPoint winner;
-    for (QList<QPoint>::iterator it = cand.begin(); it!=cand.end(); it++) {
-        QLineF currentL(normalL.p1(),*it);
+    // remove candidates based on angle
+    float sa = 360; // smallest angle
+    for (int i = 0;i<cand.count();i++) {
+        QLineF currentL(normalL.p1(),cand.at(i));
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        if(angle<ma) {
-            ma = angle;
-            winner = *it;
+        if(angle>sa+Ta)
+            cand.removeAt(i);
+        else if(angle<sa)
+            sa = angle;
+    }
+
+    // pick max candidate
+    QPoint winner;
+    m = 0;
+    for (int i = 0;i<cand.count();i++) {
+        QPoint tmp = cand.at(i);
+        float d = I.at<float>(tmp.y(),tmp.x());
+        if(d>m) {
+            winner = tmp;
+            m = d;
         }
     }
+
     *oldD = m;
     return winner;
 }

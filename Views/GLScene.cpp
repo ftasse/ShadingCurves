@@ -463,12 +463,11 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
       if (!only_show_splines)
       for (int i = 0; i < spline.count(); ++i)
       {
-          float t = spline.closestParamToPointAt(i);
-          QPointF curvPos = spline.derivativeCurvePoint(t, 0);
+          QPointF curvPos = spline.pointAt(i);
           QPointF scenePos = imageToSceneCoords(curvPos);
           glVertex2f(scenePos.x(), scenePos.y());
 
-          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal(i)*20.0);
+          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal_inaccurate(i)*20.0);
           glVertex2f(normal.x(), normal.y());
       }
       glEnd();
