@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>512</height>
+    <width>842</width>
+    <height>534</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>346</height>
+            <height>391</height>
            </rect>
           </property>
           <attribute name="label">
@@ -197,26 +197,10 @@
              <x>0</x>
              <y>290</y>
              <width>181</width>
-             <height>51</height>
+             <height>91</height>
             </rect>
            </property>
            <widget class="QCheckBox" name="inward_suface_box">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>0</y>
-              <width>141</width>
-              <height>22</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>inward surface</string>
-            </property>
-           </widget>
-           <widget class="QCheckBox" name="outward_surface_box">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -229,7 +213,55 @@
              </rect>
             </property>
             <property name="text">
-             <string>outward surface</string>
+             <string>boundary, 1. direction</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="outward_surface_box">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>40</y>
+              <width>141</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>boundary, 2. direction</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="outward_surface_box_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>0</y>
+              <width>141</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>slope curve</string>
+            </property>
+           </widget>
+           <widget class="QCheckBox" name="outward_surface_box_3">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>60</y>
+              <width>141</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>closed, continuous</string>
             </property>
            </widget>
           </widget>
@@ -240,7 +272,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>346</height>
+            <height>391</height>
            </rect>
           </property>
           <attribute name="label">
@@ -272,8 +304,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>840</width>
-     <height>27</height>
+     <width>842</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
