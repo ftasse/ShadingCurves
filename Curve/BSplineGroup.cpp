@@ -10,7 +10,7 @@
 
 BSplineGroup::BSplineGroup()
 {
-    EPSILON = .0001f;
+    EPSILON = .00001f;
     angleT = 35.0f;
     runningGarbageCollection = false;
 }
@@ -64,8 +64,7 @@ int BSplineGroup::addSurface()
 int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inward)
 {
     int z;
-    float angleT = 35.0f;
-    bool slope = true;
+    bool slope = false;
 
     if (inward)
     {
@@ -95,12 +94,11 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         QPointF tangent = cp1-cp2;
         QPointF normal = QPointF(-tangent.y(),tangent.x());
         float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
-        if (norm > 1e-5)
+        if (norm > EPSILON)
             normal /= norm;
         QLineF normalL(cp,cp + normal*width);
         QPointF tmp = cp+normal*2;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-        qDebug() << normal.x() << normal.y();
         tmp = traceDT(dt,cp,current,normalL,width);
 
         // is this dumb?
@@ -110,6 +108,44 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         points[1].prepend(id_cp);
         id_cp = addControlPoint(tmp);
         points[2].prepend(id_cp);
+
+        // close the loop
+        id_cp = addControlPoint(cp);
+        points2[0].prepend(id_cp);
+        id_cp = addControlPoint(controlPoint(points[1][0]));
+        points2[1].prepend(id_cp);
+        id_cp = addControlPoint(tmp);
+        points2[2].prepend(id_cp);
+
+        // do something similar on the other side
+        cp = controlPoint(points[0][points[0].size()-1]); // end control point
+        cp1 = controlPoint(points[2][points[2].size()-1]); // first translated point
+        cp2 = controlPoint(points2[2][points[2].size()-1]); // second translated point (on the other side)
+        tangent = cp2-cp1;
+        normal = QPointF(-tangent.y(),tangent.x());
+        norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
+        if (norm > EPSILON)
+            normal /= norm;
+        normalL = QLineF(cp,cp + normal*width);
+        tmp = cp+normal*2;
+        current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
+        tmp = traceDT(dt,cp,current,normalL,width);
+
+        // is this dumb?
+        id_cp = addControlPoint(cp);
+        points[0].append(id_cp);
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
+        points[1].append(id_cp);
+        id_cp = addControlPoint(tmp);
+        points[2].append(id_cp);
+
+        // close the loop
+        id_cp = addControlPoint(cp);
+        points2[0].append(id_cp);
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
+        points2[1].append(id_cp);
+        id_cp = addControlPoint(tmp);
+        points2[2].append(id_cp);
 
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)

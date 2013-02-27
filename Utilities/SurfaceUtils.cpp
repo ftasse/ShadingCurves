@@ -3,10 +3,13 @@
 // NOTE: fix for degree<3
 QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
 {
+    bool closed = true;
+
     if(steps==0)
         return spline;
     QVector<QPointF> newVec;
-    newVec.append(spline.first());
+    if(!closed||spline.count()<4)
+        newVec.append(spline.first());
 
     // deal with splines with less than 4 control points
     if(spline.count()==2) {
@@ -33,7 +36,8 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
         newVec.append(new2);
     }
     newVec.append(0.5*spline.at(spline.count()-2)+0.5*spline.last());
-    newVec.append(spline.last());
+    if(!closed)
+        newVec.append(spline.last());
 
     newVec = subDivide(newVec,steps-1);
 
