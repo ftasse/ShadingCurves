@@ -467,7 +467,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
           QPointF scenePos = imageToSceneCoords(curvPos);
           glVertex2f(scenePos.x(), scenePos.y());
 
-          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal_inaccurate(i)*20.0);
+          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal_inaccurate(i)*5.0);
           glVertex2f(normal.x(), normal.y());
       }
       glEnd();

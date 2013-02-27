@@ -154,6 +154,7 @@ QPointF BSpline::inward_normal_inaccurate(int index)
 
     //Use control line segments derivative
     if (index > 0 && index < count()-1) tangent = pointAt(index+1) - pointAt(index-1);
+    else if (pointAt(0)==pointAt(count()-1)) tangent = pointAt(1) - pointAt(count()-2); // junction point
     else if (index == 0)    tangent = pointAt(index+1) - pointAt(index);
     else    tangent = pointAt(index) - pointAt(index-1);
 
