@@ -1,7 +1,26 @@
 Flora:
-1. fix moving
-2. fix colour selection with onto closed curves
-50. zooming
-100. toggle show image
+High priority:
+delete all data
+fix moving (move display curve using subvision before glPopName)
+fix deleting
+surface check boxes are unchecked by default
+add functionality to uniform subidivision option
+add slope curve option to b spline
+fix colour issue (use all curves for distance transform)
+
+Mid priority:
+
+zooming
+change resolution
+fix colour selection with an underlying image
+toggle between image/blank image/result
+add shape window (quadratics)
+Low priority:
+add cubics to shape window
+
+
+1. 2. 
+50. 
+100. 
 -. combine control points at T junctions (not yet)
 -. change from open uniform knot vector to "closed" uniform (Henrik will tell you - not yet)

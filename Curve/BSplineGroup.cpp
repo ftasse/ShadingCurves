@@ -64,7 +64,7 @@ int BSplineGroup::addSurface()
 int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inward)
 {
     int z;
-    bool slope = false;
+    bool slope = true;
 
     if (inward)
     {
@@ -81,11 +81,11 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
 
 //    bspline.fix_orientation();
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);
+    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
 
     if(slope) {
 
-        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
+
 
         // add additional point at end points
         QPointF cp = controlPoint(points[0][0]); // end control point
@@ -104,7 +104,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // is this dumb?
         float id_cp = addControlPoint(cp);
         points[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]));
+        id_cp = addControlPoint(controlPoint(points[1][0]),z);
         points[1].prepend(id_cp);
         id_cp = addControlPoint(tmp);
         points[2].prepend(id_cp);
@@ -112,7 +112,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // close the loop
         id_cp = addControlPoint(cp);
         points2[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]));
+        id_cp = addControlPoint(controlPoint(points[1][0]),z);
         points2[1].prepend(id_cp);
         id_cp = addControlPoint(tmp);
         points2[2].prepend(id_cp);
@@ -134,7 +134,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // is this dumb?
         id_cp = addControlPoint(cp);
         points[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]),z);
         points[1].append(id_cp);
         id_cp = addControlPoint(tmp);
         points[2].append(id_cp);
@@ -142,7 +142,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // close the loop
         id_cp = addControlPoint(cp);
         points2[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]),z);
         points2[1].append(id_cp);
         id_cp = addControlPoint(tmp);
         points2[2].append(id_cp);
@@ -155,14 +155,28 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     surf.connected_spline_id = spline_id;
     surf.controlPoints().append(points.at(0));
     surf.controlPoints().append(points.at(1));
-    surf.controlPoints().append(points.at(2));
+//    surf.controlPoints().append(points.at(2));
+
+    for (int u=0; u<surf.controlPoints().size(); ++u)
+    {
+        for (int v=0; v<surf.controlPoints()[u].size(); ++v)
+        {
+            ControlPoint &pt = controlPoint(surf.controlPoints()[u][v]);
+            qDebug("%d(%.2f, %2f, %.2f)\t", surf.controlPoints()[u][v],pt.x(), pt.y(), pt.z());
+        }
+        qDebug("\n");
+    }
 
     surf.updateKnotVectors();
+    std::ofstream ofs("debug_surface.off");
+    surf.writeOFF(ofs);
+    ofs.close();
     return surface_id;
 }
 
 QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward)
 {
+    float cT = 90; // threshold for curvature (in degrees)
 
     QVector<int> original = bspline.connected_cpts;
     QVector<int> translated_cpts_ids;
@@ -201,7 +215,30 @@ QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,fl
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,width);
 
-            // add curvature check here?
+            // curvature check
+            if(k>0) {
+                QPointF prevCP1 = QPointF(controlPoint(original.at(k-1)).x(),controlPoint(original.at(k-1)).y());
+                QPointF prevCP2 = QPointF(controlPoint(translated_cpts_ids.last()).x(),controlPoint(translated_cpts_ids.last()).y());
+                QLineF previousL = QLineF(prevCP1,prevCP2);
+                QPointF thisCP = QPointF(controlPoint(original.at(k)).x(),controlPoint(original.at(k)).y());
+                QLineF thisL = QLineF(thisCP,new_cpt);
+                float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
+                if(angle>cT) {
+                    original.insert(original.begin()+k, addControlPoint(prevCP1));
+                    perpendicular_cpts_ids.insert(perpendicular_cpts_ids.begin()+k, addControlPoint(prevCP1,z));
+                    QPointF tangent = thisCP-prevCP1;
+                    normal = QPointF(-tangent.y(),tangent.x());
+                    float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
+                    if (norm > EPSILON)
+                        normal /= norm;
+                    normalL = QLineF(lp.at(k),lp.at(k) + normal*width);
+                    tmp = lp.at(k)+normal*5;
+                    current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
+                    tmp = traceDT(dt,lp.at(k),current,normalL,width);
+
+                    translated_cpts_ids.push_back(addControlPoint(tmp));
+                }
+            }
 
             int cpt_id = addControlPoint(new_cpt);
             translated_cpts_ids.push_back(cpt_id);
@@ -554,7 +591,7 @@ void BSplineGroup::saveOFF(std::string fname)
         int i = it->second;
         ofs << controlPoint(i).x() << " " << controlPoint(i).y() << std::endl;
     }
-    ofs << num_splines() <<" splines" << std::endl;
+    ofs << num_splines() << " splines" << std::endl;
     for (int i=0; i<num_splines(); ++i)
     {
         BSpline& bspline = spline(i);
