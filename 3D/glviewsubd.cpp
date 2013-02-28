@@ -332,7 +332,7 @@ void GLviewsubd::paintGL(void)
         makeCurrent();
 
         //Setup for offscreen drawing if fbos are supported
-        GLuint framebuffer, renderbuffer;
+        GLuint framebuffer, renderbuffer, depthbuffer;
         GLenum status;
 
         glGenFramebuffersEXT(1, &framebuffer);
@@ -342,6 +342,13 @@ void GLviewsubd::paintGL(void)
         glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                          GL_RENDERBUFFER_EXT, renderbuffer);
+        //depth buffer
+        glGenRenderbuffersEXT(1, &depthbuffer);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, imageWidth, imageHeight);
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                         GL_RENDERBUFFER_EXT, depthbuffer);
+
         status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
         if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
             qDebug("Could not draw offscreen");
@@ -361,6 +368,8 @@ void GLviewsubd::paintGL(void)
         glPushMatrix();
         glLoadIdentity();
         glRenderMode(GL_RENDER);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
 
         //draw stuff here
         origClr = clr;
