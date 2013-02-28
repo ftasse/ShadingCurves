@@ -6,7 +6,7 @@
 
 #include "Curve/BSpline.h"
 
-QVector<QPointF> subDivide(QVector<QPointF> spline,int steps=1);
+QVector<QPointF> subDivide(QVector<QPointF> spline,int steps=2);
 QVector<QPointF> limitPoints(QVector<QPointF> spline);
 
 #endif // SURFACEUTILS_H

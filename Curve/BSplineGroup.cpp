@@ -64,7 +64,7 @@ int BSplineGroup::addSurface()
 int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inward)
 {
     int z;
-    bool slope = true;
+    bool slope = false;
 
     if (inward)
     {
@@ -84,9 +84,6 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
 
     if(slope) {
-
-
-
         // add additional point at end points
         QPointF cp = controlPoint(points[0][0]); // end control point
         QPointF cp1 = controlPoint(points[2][0]); // first translated point
@@ -155,22 +152,12 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     surf.connected_spline_id = spline_id;
     surf.controlPoints().append(points.at(0));
     surf.controlPoints().append(points.at(1));
-//    surf.controlPoints().append(points.at(2));
-
-    for (int u=0; u<surf.controlPoints().size(); ++u)
-    {
-        for (int v=0; v<surf.controlPoints()[u].size(); ++v)
-        {
-            ControlPoint &pt = controlPoint(surf.controlPoints()[u][v]);
-            qDebug("%d(%.2f, %2f, %.2f)\t", surf.controlPoints()[u][v],pt.x(), pt.y(), pt.z());
-        }
-        qDebug("\n");
-    }
+    surf.controlPoints().append(points.at(2));
 
     surf.updateKnotVectors();
-    std::ofstream ofs("debug_surface.off");
-    surf.writeOFF(ofs);
-    ofs.close();
+//    std::ofstream ofs("debug_surface.off");
+//    surf.writeOFF(ofs);
+//    ofs.close();
     return surface_id;
 }
 
