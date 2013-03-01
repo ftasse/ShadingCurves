@@ -3,7 +3,7 @@
 // NOTE: fix for degree<3
 QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
 {
-    bool closed = false;
+    bool closed = true;
 
     if(steps==0)
         return spline;
