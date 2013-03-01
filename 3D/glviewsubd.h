@@ -71,7 +71,7 @@ public:
 	int curvRatio1, curvRatio2;
 
     bool offScreen, offMainWindow;
-    cv::Mat  img, imgShaded,
+    cv::Mat  img, imgShaded, imgFill,
             *inputImg;
 
 public slots:

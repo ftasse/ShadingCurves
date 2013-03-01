@@ -393,6 +393,16 @@ void GLviewsubd::paintGL(void)
         #endif
         glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
 
+                //Setup view for FILL
+                glClearColor(1.0, 1.0, 1.0, 0.0);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                //draw stuff here
+                buildFlatMesh();
+                glCallList(flat_mesh_list);
+                //create image
+                imgFill.create(imageHeight, imageWidth, CV_8UC3);
+                glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, imgFill.data);
+
         //Clean up offscreen drawing
         glPopMatrix();
         glMatrixMode(GL_PROJECTION);
@@ -404,7 +414,7 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
-        //process image
+        //process images
         cv::cvtColor(img, img, CV_BGR2RGB);
         cv::flip(img, img, 0);
 //        if (!offMainWindow)
@@ -412,6 +422,14 @@ void GLviewsubd::paintGL(void)
             cv::imshow("Img: LumDif", img);
             cv::imwrite("ImgLumDif.png", img);
             inputImg->copyTo(imgShaded);
+            cv::imshow("Img: Original", imgShaded);
+            cv::imwrite("ImgOrig.png", imgShaded);
+
+                //extra stuff for FILL image
+                cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
+                cv::flip(imgFill, imgFill, 0);
+                cv::imshow("Img: Fill", imgFill);
+                cv::imwrite("ImgFill.png", imgFill);
 
             if (img.cols > 0)
             {
@@ -1317,7 +1335,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 	switch(type)
 	{
         case SMOOTH:
-        case FLAT:
+//        case FLAT:
             glDisable(GL_TEXTURE_1D);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             if (!old_enabled)
@@ -1345,6 +1363,13 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, params);
             }
 			break;
+
+        case FLAT:
+            glDisable(GL_LIGHTING);
+            glEnable(GL_TEXTURE_1D);
+            glBindTexture(GL_TEXTURE_1D, textID[4]);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            break;
 
 		case SOLIDFRAME:
             glEnable(GL_POLYGON_OFFSET_LINE);
@@ -1409,9 +1434,15 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
         glBegin(GL_POLYGON);
         for(j = 0 ; j < facet->my_valency ; j++)
         {
-            if (type == WIREFRAME || type == SOLIDFRAME || type == FLAT)
+//            if (type == WIREFRAME || type == SOLIDFRAME || type == FLAT)
+            if (type == WIREFRAME || type == SOLIDFRAME)
             {
                 glNormal3fv(facet->my_normalFlat);
+            }
+            else if (type == FLAT)
+            {
+                value = 1.0 / (double)meshCtrl.size() * (double)index;
+                glTexCoord1f(value);
             }
             else
             {

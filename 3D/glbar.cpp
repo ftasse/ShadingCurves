@@ -7,7 +7,7 @@ using namespace std;
 GLbar::GLbar(QWidget *parent) : GLabstract(parent)
 {
     bar_enabled = true;
-    clr = 0;
+    clr = 3;
 }
 
 GLbar::~GLbar()
