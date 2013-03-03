@@ -268,7 +268,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 	QHBoxLayout *sliderXl = new QHBoxLayout;
 	QHBoxLayout *sliderYl = new QHBoxLayout;
 	QHBoxLayout *sliderZl = new QHBoxLayout;
-	QHBoxLayout *sliderSml = new QHBoxLayout;
+//	QHBoxLayout *sliderSml = new QHBoxLayout;
 	QHBoxLayout *sliderRldl = new QHBoxLayout;
 	QHBoxLayout *sliderC1l = new QHBoxLayout;
 	QHBoxLayout *sliderC2l = new QHBoxLayout;

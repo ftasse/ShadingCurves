@@ -5,10 +5,16 @@
 #include "3D/mesh.h"
 #include "3D/point_3d.h"
 #include "3D/glviewport.h"
-#include <opencv2/core/core.hpp>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/core/mat.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+
+#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/core.hpp"
+#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/mat.hpp"
+#include "/home/jirik/progs/OpenCV-2.4.4/modules/imgproc/include/opencv2/imgproc/imgproc.hpp"
+#include "/home/jirik/progs/OpenCV-2.4.4/modules/highgui/include/opencv2/highgui/highgui.hpp"
+
 
 class GLviewsubd : public GLviewport
 {
@@ -71,8 +77,18 @@ public:
 	int curvRatio1, curvRatio2;
 
     bool offScreen, offMainWindow;
-    cv::Mat  img, imgShaded, imgFill,
+    cv::Mat  img, imgShaded, imgFill, imgFillShaded,
             *inputImg;
+
+    template<class S,class T>
+    void lab2rgb(
+        const S li,
+        const S ai,
+        const S bi,
+        T& ro,
+        T& go,
+        T& bo);
+    void lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B);
 
 public slots:
     void subdivide          (void);

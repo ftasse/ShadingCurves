@@ -947,7 +947,7 @@ void Mesh::computeNormalsSmooth(unsigned int rings)
     MeshFacet		*facet;//, *fc;
 	MeshVertex		*vertex;
     GLfloat			//normal[3],
-                    normal2[3], nextNormal[3], normA, normB, dot, dotThreshold;
+                    normal2[3], nextNormal[3], dotThreshold;
 
     dotThreshold = 0.9;
 

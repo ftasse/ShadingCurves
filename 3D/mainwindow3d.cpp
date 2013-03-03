@@ -645,18 +645,19 @@ void MainWindow3D::saveImg1()
 {
 	QStringList filters;
 
-	if (glwidget1->indexMesh < 0)
-	{
-        std::cout << "I have no data -> not saving!" << endl;
-		QMessageBox msgBox;
-		msgBox.setText("I have no data -> not saving!");
-		msgBox.exec();
-	}
-	else
-	{
+//	if (glwidget1->indexMesh < 0)
+//	{
+//        std::cout << "I have no data -> not saving!" << endl;
+//		QMessageBox msgBox;
+//		msgBox.setText("I have no data -> not saving!");
+//		msgBox.exec();
+//	}
+//	else
+//	{
         filters << "Raster image files (*.png)";
 
-		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
+//		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath(), NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -674,25 +675,26 @@ void MainWindow3D::saveImg1()
 //				statusBar()->showMessage("Saved image " + files[0], 5000);
 			}
 		}
-	}
+//	}
 }
 
 void MainWindow3D::saveImg2()
 {
 	QStringList filters;
 
-    if (glwidget2->indexMesh > 0)
-	{
-        std::cout << "I have no data -> not saving!" << endl;
-		QMessageBox msgBox;
-		msgBox.setText("I have no data -> not saving!");
-		msgBox.exec();
-	}
-	else
-	{
+//    if (glwidget2->indexMesh > 0)
+//	{
+//        std::cout << "I have no data -> not saving!" << endl;
+//		QMessageBox msgBox;
+//		msgBox.setText("I have no data -> not saving!");
+//		msgBox.exec();
+//	}
+//	else
+//	{
         filters << "Raster image files (*.png)";
 
-		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget2->meshCtrl[0]->my_save.c_str(), NULL);
+//		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget2->meshCtrl[0]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath(), NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -710,7 +712,7 @@ void MainWindow3D::saveImg2()
 //				statusBar()->showMessage("Saved image " + files[0], 5000);
 			}
 		}
-	}
+//	}
 }
 
 void MainWindow3D::saveBar()

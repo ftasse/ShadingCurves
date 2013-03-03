@@ -177,7 +177,7 @@ void GLabstract::genColorRG(float x, float minx, float maxx, float col[3])
 
 void GLabstract::genColorHue(float x, float minx, float maxx,  float col[3])
 {
-    float H, var_h, var_i, var_r, var_g, var_b, up, up0, up1, dw, dw0, dw1, lin, lin2, fac;
+    float H, var_h, var_i, var_r, var_g, var_b, up, up0, up1, dw, dw0, dw1, lin, lin2;
 
 	if (maxx == minx)
 	{
@@ -254,7 +254,7 @@ void GLabstract::genColorHue(float x, float minx, float maxx,  float col[3])
 
 void GLabstract::genColorHue2(float x, float minx, float maxx,  float col[3])
 {
-    float H, var_h, var_i, var_r, var_g, var_b, up, up0, up1, dw, dw0, dw1, lin;
+    float H, var_h, var_i, var_r, var_g, var_b, up, dw, lin;
 
     if (maxx == minx)
     {

@@ -231,7 +231,7 @@ void GraphicsView::applyShading()
     }
 
     glvs->indexMesh = -1;
-    glvs->setSubdivLevel(4); // calls updateGL
+    glvs->setSubdivLevel(5); // calls updateGL
 
 //////OLD CODE
 //    img = glvs->img;  // The luminance difference image

@@ -322,7 +322,7 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
-        int     tmp;
+        double     tmp;
 
         numberPaintCalls++;
         cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
@@ -339,13 +339,13 @@ void GLviewsubd::paintGL(void)
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
         glGenRenderbuffersEXT(1, &renderbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB8, imageWidth, imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                          GL_RENDERBUFFER_EXT, renderbuffer);
         //depth buffer
         glGenRenderbuffersEXT(1, &depthbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, imageWidth, imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, imageWidth, imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                          GL_RENDERBUFFER_EXT, depthbuffer);
 
@@ -379,7 +379,7 @@ void GLviewsubd::paintGL(void)
         clr = origClr;
 
         //create image
-        img.create(imageHeight, imageWidth, CV_8UC3);
+        img.create(imageHeight, imageWidth, CV_32FC3);
         GLenum inputColourFormat;
         #ifdef GL_BGR
             inputColourFormat = GL_BGR;
@@ -391,7 +391,9 @@ void GLviewsubd::paintGL(void)
                 inputColourFormat = GL_BGR;
             #endif
         #endif
-        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_FLOAT, img.data);
+
+        tmp = img.at<cv::Vec3f>(0,0)[0];
 
                 //Setup view for FILL
                 glClearColor(1.0, 1.0, 1.0, 0.0);
@@ -400,8 +402,8 @@ void GLviewsubd::paintGL(void)
                 buildFlatMesh();
                 glCallList(flat_mesh_list);
                 //create image
-                imgFill.create(imageHeight, imageWidth, CV_8UC3);
-                glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, imgFill.data);
+                imgFill.create(imageHeight, imageWidth, CV_32FC3);
+                glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
 
         //Clean up offscreen drawing
         glPopMatrix();
@@ -414,25 +416,26 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
-        //process images
-        cv::cvtColor(img, img, CV_BGR2RGB);
-        cv::flip(img, img, 0);
+
 //        if (!offMainWindow)
 //        {
+            //process images
+            cv::flip(img, img, 0);
             cv::imshow("Img: LumDif", img);
-            cv::imwrite("ImgLumDif.png", img);
             inputImg->copyTo(imgShaded);
             cv::imshow("Img: Original", imgShaded);
             cv::imwrite("ImgOrig.png", imgShaded);
+            imgShaded.convertTo(imgShaded, CV_32FC3);
 
                 //extra stuff for FILL image
                 cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
                 cv::flip(imgFill, imgFill, 0);
                 cv::imshow("Img: Fill", imgFill);
-                cv::imwrite("ImgFill.png", imgFill);
 
             if (img.cols > 0)
             {
+//                double  rr, gg, bb;
+                imgShaded *= 1.0 / 255.0;
                 cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
 
                 // apply luminance adjustment
@@ -440,25 +443,100 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgShaded.cols; x++ )
                     {
-                        tmp = imgShaded.at<cv::Vec3b>(y,x)[0] + img.at<cv::Vec3b>(y,x)[0] - 128;
-                        if (tmp > 255)
+                        tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.501960814);
+
+                        if (tmp > 100)
                         {
-                            tmp = 255;
+                            tmp = 100;
                         }
                         if (tmp < 0)
                         {
                             tmp = 0;
                         }
-                        imgShaded.at<cv::Vec3b>(y,x)[0] = tmp;
+                        imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+//                        //convert manually back to BGR
+////                        lab2rgb<double,double>(tmp, imgShaded.at<cv::Vec3f>(y,x)[1], imgShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+//                        lab2rgbVer2(tmp, imgShaded.at<cv::Vec3f>(y,x)[1], imgShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+//                        imgShaded.at<cv::Vec3f>(y,x)[0] = bb;
+//                        imgShaded.at<cv::Vec3f>(y,x)[1] = gg;
+//                        imgShaded.at<cv::Vec3f>(y,x)[2] = rr;
                     }
                 }
 
                 //convert back to BGR
                 cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
-
                 cv::imshow("Img: Shaded result", imgShaded);
-                cv::imwrite("ImgResult.png", imgShaded);
 
+//                //test inverse transform
+//                cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
+//                for( int y = 0; y < imgShaded.rows; y++ )
+//                {
+//                    for( int x = 0; x < imgShaded.cols; x++ )
+//                    {
+//                        tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 30;// + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.501960814);
+
+//                        if (tmp > 100)
+//                        {
+//                            tmp = 100;
+//                        }
+//                        if (tmp < 0)
+//                        {
+//                            tmp = 0;
+//                        }
+//                        imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+//                    }
+//                }
+//                cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
+//                cv::imshow("Img: Shaded result REVERSE", imgShaded);
+
+
+                    //extra stuff for FILL image
+                    imgFill.copyTo(imgFillShaded);
+                    cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
+
+                    // apply luminance adjustment
+                    for( int y = 0; y < imgFillShaded.rows; y++ )
+                    {
+                        for( int x = 0; x < imgFillShaded.cols; x++ )
+                        {
+                            tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.501960814);
+//                            cout << tmp << " ";
+//                            cout << 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196) << " ";
+                            if (tmp > 100)
+                            {
+                                tmp = 100;
+                            }
+                            if (tmp < 0)
+                            {
+                                tmp = 0;
+                            }
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+//                            //convert manually back to BGR
+////                            lab2rgb<double,double>(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+//                            lab2rgbVer2(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+//                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+//                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+//                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                        }
+                    }
+
+                    //convert back to BGR
+                    cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
+                    cv::imshow("Img: Filled and shaded result", imgFillShaded);
+
+            img *= 255;
+            img.convertTo(img, CV_8UC3);
+            cv::imwrite("ImgLumDif.png", img);
+            imgFill *= 255;
+            imgFill.convertTo(imgFill, CV_8UC3);
+            cv::imwrite("ImgFill.png", imgFill);
+            imgShaded *= 255;
+            imgShaded.convertTo(imgShaded, CV_8UC3);
+            cv::imwrite("ImgResult.png", imgShaded);
+            imgFillShaded *= 255;
+            imgFillShaded.convertTo(imgFillShaded, CV_8UC3);
+            cv::imwrite("ImgFillResult.png", imgFillShaded);
             }
             updateGL();
 //        }
@@ -1092,7 +1170,7 @@ void GLviewsubd::buildFeatureLines()
 
 void GLviewsubd::buildLine()
 {
-    unsigned int j;
+//    unsigned int j;
 
     makeCurrent();
     if(line_list)	glDeleteLists(line_list, 1);
@@ -1497,17 +1575,10 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                             glTexCoord1f(0.5);
                         }
                     }
-                    else if (clr == 3) // special luminance height (-127 .. 128)
+                    else if (clr == 3) // special luminance height (-100 .. 100)
                     {
                         value = facet->my_corners[j].my_vertex->my_point.getZ();
-                        if (value > 0)
-                        {
-                            value = 0.5 + value / 256.0;
-                        }
-                        else
-                        {
-                            value = 0.5 + value / 254.0;
-                        }
+                        value = 0.5 + value / 200.0;
                         glTexCoord1f(value); // relies on clamping to (0,1)
                     }
                     else
@@ -2170,3 +2241,216 @@ void GLviewsubd::setRotZero(void)
     scale = 1;
     updateGL();
 }
+
+template<class S,class T>
+void GLviewsubd::lab2rgb(
+    const S li,
+    const S ai,
+    const S bi,
+    T& ro,
+    T& go,
+    T& bo)
+{
+    const S lThresh=0.008856*903.3;
+
+    S y, fy;
+    if (li <= lThresh)
+    {
+        y = li / 903.3;
+        fy = 7.787 * y + 16.0 / 116.0;
+    }
+    else
+    {
+        fy = (li + 16.0) / 116.0;
+        y = fy * fy * fy;
+    }
+    S fxz[] = {S(ai / 500.0 + fy), S(bi /-200.0 + fy)};
+    S xzUnnorm[2];
+    const S fThresh = 7.787 * 0.008856 + 16.0 / 116.0;
+
+    for (int i = 0; i < 2; i++)
+    {
+        S f = fxz[i];
+        if (f <= fThresh)
+        {
+            xzUnnorm[i] = (f - 16.0 / 116.0) / 7.787;
+        }
+        else
+        {
+            xzUnnorm[i] =f * f * f;
+        }
+    }
+
+    S x = xzUnnorm[0] * 0.950456,
+      z = xzUnnorm[1] * 1.088754;
+    ro = 3.240479*x -1.53715*y - 0.498535*z;
+    go = -0.969256*x +1.875991*y + 0.041556*z;
+    bo = 0.055648*x -0.204043*y + 1.057311*z;
+}
+
+void GLviewsubd::lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B)
+{
+    double X, Y, Z;
+
+    // Lab -> normalized XYZ (X,Y,Z are all in 0...1)
+
+    Y = L * (1.0/116.0) + 16.0/116.0;
+    X = a * (1.0/500.0) + Y;
+    Z = b * (-1.0/200.0) + Y;
+
+    X = X > 6.0/29.0 ? X * X * X : X * (108.0/841.0) - 432.0/24389.0;
+    Y = L > 8.0 ? Y * Y * Y : L * (27.0/24389.0);
+    Z = Z > 6.0/29.0 ? Z * Z * Z : Z * (108.0/841.0) - 432.0/24389.0;
+
+    // normalized XYZ -> linear sRGB (in 0...1)
+
+    R = X * (1219569.0/395920.0)     + Y * (-608687.0/395920.0)    + Z * (-107481.0/197960.0);
+    G = X * (-80960619.0/87888100.0) + Y * (82435961.0/43944050.0) + Z * (3976797.0/87888100.0);
+    B = X * (93813.0/1774030.0)      + Y * (-180961.0/887015.0)    + Z * (107481.0/93370.0);
+
+    // linear sRGB -> gamma-compressed sRGB (in 0...1)
+
+    R = R > 0.0031308 ? pow(R, 1.0 / 2.4) * 1.055 - 0.055 : R * 12.92;
+    G = G > 0.0031308 ? pow(G, 1.0 / 2.4) * 1.055 - 0.055 : G * 12.92;
+    B = B > 0.0031308 ? pow(B, 1.0 / 2.4) * 1.055 - 0.055 : B * 12.92;
+}
+
+
+//static double xyz_to_lab(double c)
+//405 	{
+//406 	return c > 216.0 / 24389.0 ? pow(c, 1.0 / 3.0) : c * (841.0/108.0) + (4.0/29.0);
+//407 	}
+//408
+//409 	static void color_LinearRGB_to_Lab(struct color *c, uint8_t extra)
+//410 	{
+//411 	double R, G, B, X, Y, Z;
+//412
+//413 	assert(c != NULL);
+//414 	assert(c->type == COLOR_LINEAR_RGB);
+//415
+//416 	R = c->LinearRGB.R;
+//417 	G = c->LinearRGB.G;
+//418 	B = c->LinearRGB.B;
+//419
+//420 	// linear sRGB -> normalized XYZ (X,Y,Z are all in 0...1)
+//421
+//422 	X = xyz_to_lab(R * (10135552.0/23359437.0) + G * (8788810.0/23359437.0) + B * (4435075.0/23359437.0));
+//423 	Y = xyz_to_lab(R * (871024.0/4096299.0) + G * (8788810.0/12288897.0) + B * (887015.0/12288897.0));
+//424 	Z = xyz_to_lab(R * (158368.0/8920923.0) + G * (8788810.0/80288307.0) + B * (70074185.0/80288307.0));
+//425
+//426 	// normalized XYZ -> Lab
+//427
+//428 	c->Lab.L = Y * 116.0 - 16.0;
+//429 	c->Lab.a = (X - Y) * 500.0;
+//430 	c->Lab.b = (Y - Z) * 200.0;
+//431 	c->type = COLOR_LAB;
+//432 	}
+
+//int rgb2lab(int r, int g, int bl, double* L, double* a, double* b)
+//{
+//  double R, G, B;
+//  double X, Y, Z;
+
+//  // RGB to XYZ
+//  R = (double) r/255;        //R from 0 to 255
+//  G = (double) g/255;        //G from 0 to 255
+//  B = (double) bl/255;        //B from 0 to 255
+
+//  //printf("RGB value: {%f %f %f}\n", R , G, B);
+
+//  // assuming sRGB (D65)
+//  if (R > 0.04045 )  R = pow( ((R + 0.055 ) / 1.055), 2.4);
+//  else  R = R / 12.92;
+
+//  if (G > 0.04045 ) G = pow( (G + 0.055 ) / 1.055, 2.4);
+//  else  G = G / 12.92;
+
+//  if (B > 0.04045 ) B = pow( ( B + 0.055 ) / 1.055, 2.4);
+//  else  B = B / 12.92;
+
+//  R = R * 100;
+//  G = G * 100;
+//  B = B * 100;
+
+//  //printf("RGB value: {%f %f %f}\n", R , G, B);
+
+//  // Illuminant = D65
+
+//  X = R * 0.4124564 + G * 0.3575761 + B * 0.180375;
+//  Y = R * 0.2126729 + G * 0.7151522 + B * 0.0721750;
+//  Z = R * 0.0193339 + G * 0.1191920 + B * 0.9503041;
+
+//  //printf("XYZ: {%f %f %f}\n", X , Y, Z);
+
+//  // XYZ to Lab
+//  X =  X/95.047;          //    Illuminant= D65
+//  Y =  Y/100.000;
+//  Z =  Z/108.883;
+
+//  if (X > 0.008856) X = pow(X, (1.0/3.0));
+//  else X = (7.787 * X) + (16.0/116.0);
+
+//  if (Y > 0.008856 ) Y = pow(Y, (1.0/3.0));
+//  else Y = ( 7.787 * Y ) + (16.0/116.0);
+
+//  if ( Z > 0.008856 ) Z = pow(Z, (1.0/3.0));
+//  else Z = ( 7.787 * Z ) + (16.0/116.0);
+
+// return (*L = (double)(116.0 * Y)-16.0,
+//         *a = (double)(500.0 * (X-Y)),
+//         *b = (double)(200.0 * (Y-Z)),
+//         printf("LAB value: {%.2f %.2f %.2f}\n", *L, *a, *b));
+//}
+
+//int lab2rgb(double L, double a, double b, int *r, int *g, int *bl)
+//{
+//  double R, B, G;
+//  double X, Y, Z;
+
+//  rgb2lab(*r,*g,*bl,&L,&a,&b);
+
+//   //LAB2RGB
+//  Y = (float) (L + 16 ) / 116;
+//  X = (float) a / 500 + Y;
+//  Z = (float) Y - b / 200;
+
+//  //printf("XYZ for 1 REVERSE lab: {%f %f %f}\n", X , Y, Z);
+
+//  if (pow(Y,3) > 0.008856) Y = pow(Y,3);
+//  else Y = (Y - 16 / 116) / 7.787;
+
+//  if (pow(X,3) > 0.008856) X = pow(X,3);
+//  else  X = (X - 16 / 116) / 7.787;
+
+//  if (pow(Z,3) > 0.008856) Z = pow(Z,3);
+//  else  Z = (Z - 16 / 116) / 7.787;
+
+//  X = (double)95.047 * X ;      // Illuminant= D65
+//  Y = (double)100.000 * Y;
+//  Z = (double)108.883 * Z;
+
+//  //printf("XYZ for 2 REVERSE lab: {%f %f %f}\n", X , Y, Z);
+
+//  X = X / 100;        //X from 0 to  95.047      (Observer = 2��, Illuminant = D65)
+//  Y = Y / 100;       //Y from 0 to 100.000
+//  Z = Z / 100;        //Z from 0 to 108.883
+//  //printf("XYZ for 3 REVERSE lab: {%f %f %f}\n", X , Y, Z);
+
+//  R = (X *  3.2404542 + Y * -1.5371385 + Z * -0.4985314);
+//  G = (X * -0.9692660 + Y *  1.8758 + Z *  0.0415560);
+//  B = (X *  0.0556434 + Y * -0.2040259 + Z *  1.0572252);
+
+//  //printf("rgb for 4 REVERSE lab: {%f %f %f}\n", R , G, B);
+//  if ( R > 0.0031308 ) R = 1.055 * (pow(R, ( 1 / 2.4 ) )) - 0.055;
+//  else R = 12.92 * R;
+
+//  if ( G > 0.0031308 ) G = 1.055 * ( pow(G, ( 1 / 2.4 ) )) - 0.055;
+//  else G = 12.92 * G;
+
+//  if ( B > 0.0031308 ) B = 1.055 * ( pow(B, ( 1 / 2.4 ) )) - 0.055;
+//  else B = 12.92 * B;
+//  printf("RGB for 5 REVERSE lab: {%f %f %f}\n", R , G, B);
+
+//  return(*r = (R * 255),*g = (G * 255),*bl = (B * 255),
+//  printf("RGB value final: {%d %d %d}\n", *r , *g, *bl));
+//}

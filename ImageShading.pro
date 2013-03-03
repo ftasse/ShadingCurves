@@ -77,7 +77,8 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
                -L"C:/opencv/build/x86/vc10/bin"
 
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32
-unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
+#unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
+unix:LIBS += -L/home/jirik/progs/OpenCV-2.4.4/release/lib -lmyopencv_core -lmyopencv_imgproc -lmyopencv_highgui -lGLU
 
 #LIBS += -lGLU -fopenmp
 #QMAKE_CXXFLAGS += -fopenmp #-O3
