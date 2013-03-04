@@ -10,6 +10,7 @@ other (bonuses):
 weighted distance transform?
 
 Henrik:
+turn off brushing
 make "backwards" subdivision
 fix closed curve issue, with too many points
 fix slope curve issue, make manifold mesh
@@ -19,6 +20,7 @@ Flora:
 High priority:
 fix bug when pressing S
 when move: recompute all surfaces
+add status bar
 change green points to "super control points", change code structure
 split curves at an inserted junction, using 1/3-2/3 subdivision rule
 when curve is closed, change subivision scheme; should be able to change back (to end conditions)
