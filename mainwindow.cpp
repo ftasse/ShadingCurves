@@ -46,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionView_surface_in_3D, SIGNAL(triggered()), ui->graphicsView, SLOT(show3Dwidget()));
 
     connect(ui->getShadingButton, SIGNAL(pressed()), ui->graphicsView, SLOT(applyShading()));
+
+    connect(ui->setBrushButton, SIGNAL(pressed()), ui->graphicsView, SLOT(setBrush()));
 }
 
 MainWindow::~MainWindow()

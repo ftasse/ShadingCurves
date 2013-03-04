@@ -35,6 +35,7 @@ public slots:
     void createDistanceTransformDEBUG();
     void show3Dwidget();
     void applyShading();
+    void setBrush();
 
 private:
     DebugWindow     *dbw;

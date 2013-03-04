@@ -37,6 +37,7 @@ GLScene::GLScene(QObject *parent) :
     showControlMesh = true;
     showControlPoints = true;
     showCurrentCurvePoints = true;
+    brush = false;
 }
 
 GLScene:: ~GLScene()
@@ -46,7 +47,15 @@ GLScene:: ~GLScene()
 void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     //if (event->button() == Qt::LeftButton)
-    {
+    if(brush){
+        float width = 10; // brush width
+
+        QPointF pos =event->scenePos();
+        addEllipse(pos.x()-width/2,pos.y()-width/2,width,width,Qt::NoPen,
+                   QBrush(QColor(0,0,0),Qt::Dense3Pattern));
+        return;
+    }
+    else {
         if (selectedObjects.size() > 0)
         {
             std::set<int> cpt_ids;
@@ -122,6 +131,9 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     uint nodeId, targetId;
+
+    if(brush)
+        return mouseMoveEvent(event);
 
     if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
     {
@@ -271,7 +283,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void  GLScene::drawForeground(QPainter *painter, const QRectF &rect)
+void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
     if (painter->paintEngine()->type()
                     != QPaintEngine::OpenGL) {

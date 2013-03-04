@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>488</height>
+            <height>476</height>
            </rect>
           </property>
           <attribute name="label">
@@ -301,7 +301,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>488</height>
+            <height>476</height>
            </rect>
           </property>
           <attribute name="label">
@@ -321,6 +321,24 @@
            </property>
           </widget>
          </widget>
+         <widget class="QWidget" name="drawing_toolbox">
+          <attribute name="label">
+           <string>Drawing</string>
+          </attribute>
+          <widget class="QPushButton" name="setBrushButton">
+           <property name="geometry">
+            <rect>
+             <x>60</x>
+             <y>10</y>
+             <width>75</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Brush</string>
+           </property>
+          </widget>
+         </widget>
         </widget>
        </item>
       </layout>
@@ -334,7 +352,7 @@
      <x>0</x>
      <y>0</y>
      <width>842</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

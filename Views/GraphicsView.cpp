@@ -1,6 +1,7 @@
 #include <QResizeEvent>
 #include <QGLWidget>
 #include <QFileDialog>
+#include <QBrush>
 #include <fstream>
 #include "../Utilities/SurfaceUtils.h"
 #include "../Views/GraphicsView.h"
@@ -228,4 +229,12 @@ void GraphicsView::applyShading()
     glvs->setSubdivLevel(4); // calls updateGL
 
     delete glvs;
+}
+
+void GraphicsView::setBrush()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->brush = true;
+/*    QBrush brush(QColor(255,0,0),Qt::Dense3Pattern);
+    my_scene->setForegroundBrush(brush);*/
 }

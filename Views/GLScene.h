@@ -100,7 +100,7 @@ public:
     }
 
 protected:
-    void drawForeground(QPainter *painter, const QRectF &rect);
+    void drawBackground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
@@ -136,6 +136,7 @@ public:
     bool showCurrentCurvePoints;
     QCheckBox *inward_surface_box;
     QCheckBox *outward_surface_box;
+    bool brush;
 
     QSizeF imSize;
 };
