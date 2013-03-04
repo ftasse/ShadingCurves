@@ -83,6 +83,9 @@ public:
     // HENRIK: find the closest highest value in neighbourhood
     QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited);
 
+public:
+    std::vector< std::pair<QPoint, QColor> > colorMapping;
+
 private:
     QList<Surface> m_surfaces;
     QList<BSpline> m_splines;

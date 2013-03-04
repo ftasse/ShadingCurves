@@ -111,6 +111,10 @@ signals:
 
 public slots:
     void change_inward_outward_surface();
+    void delete_all();
+    void subdivide_current_spline();
+    void toggleShowCurrentCurvePoints(bool status);
+
 
 private:
     cv::Mat m_curImage;
@@ -121,7 +125,6 @@ private:
     double  m_projection [16];
     QList<std::pair<uint, uint> > selectedObjects;
 
-    std::vector< std::pair<QPoint, QColor> > colorMapping;
     QVector<int> modified_spline_ids;
 
 public:
@@ -130,6 +133,7 @@ public:
     float surfaceWidth;
     bool showControlMesh;
     bool showControlPoints;
+    bool showCurrentCurvePoints;
     QCheckBox *inward_surface_box;
     QCheckBox *outward_surface_box;
 

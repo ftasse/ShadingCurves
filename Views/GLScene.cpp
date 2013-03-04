@@ -36,6 +36,7 @@ GLScene::GLScene(QObject *parent) :
     surfaceWidth = 50.0;
     showControlMesh = true;
     showControlPoints = true;
+    showCurrentCurvePoints = true;
 }
 
 GLScene:: ~GLScene()
@@ -67,9 +68,9 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
                     BSpline& spline = m_splineGroup.spline(targetId);
-                    for (int k=0; k<spline.count(); ++k)
+                    for (int k=0; k<spline.original_cpts.size(); ++k)
                     {
-                        cpt_ids.insert(spline.pointAt(k).idx);
+                        cpt_ids.insert(spline.original_cpts[k]);
                     }
                     spline_ids.insert(targetId);
                 }
@@ -174,10 +175,13 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
         {
             QPoint seed = sceneToImageCoords(event->scenePos().toPoint()).toPoint();
-            QColor color = QColorDialog::getColor(Qt::black, (QWidget*)this->activeWindow());
+            cv::Vec3b bgrPixel = m_curImage.at<cv::Vec3b>(seed.y(), seed.x());
+            QColor image_color(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
+
+            QColor color = QColorDialog::getColor(image_color, (QWidget*)this->activeWindow());
             if(color.isValid())
             {
-                colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+                m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
                 update_region_coloring();
             }
         } else
@@ -191,7 +195,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     {
         //Reset blank image
         m_curImage = cv::Scalar(255,255,255);
-        colorMapping.clear();
+        m_splineGroup.colorMapping.clear();
         update();
 
     } else if (event->key() == Qt::Key_R)
@@ -331,19 +335,25 @@ void GLScene::display(bool only_show_splines)
     glLineWidth(pointSize/5.0);
     for (int i=0; i<m_splineGroup.num_splines(); ++i)
     {
+        BSpline& spline = m_splineGroup.spline(i);
+        bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline.idx));
+        if (!only_show_splines && (!showCurrentCurvePoints || spline.idx == m_curSplineIdx || is_selected))
+        {
+          for (int j=spline.connected_cpts.size()-1; j>=0; --j)
+          {
+              draw_control_point(spline.connected_cpts[j]);
+          }
+
+          for (int j=spline.original_cpts.size()-1; j>=0; --j)
+          {
+              draw_control_point(spline.original_cpts[j]);
+          }
+        }
+
         if (m_splineGroup.spline(i).count() == 0)
             continue;
-
-        draw_spline(m_splineGroup.spline(i).idx, only_show_splines);
-    }
-
-    if (!only_show_splines)
-    for (int i=m_splineGroup.num_controlPoints()-1; i>=0; --i)
-    {
-        if (m_splineGroup.controlPoint(i).count() == 0)
-            continue;
-
-        draw_control_point(m_splineGroup.controlPoint(i).idx);
+        else
+            draw_spline(m_splineGroup.spline(i).idx, only_show_splines);
     }
 }
 
@@ -845,6 +855,65 @@ int GLScene::computeSurface(int spline_id)
     return surf_id;
 }
 
+void GLScene::delete_all()
+{
+    for (int i=0; i<m_splineGroup.num_splines(); ++i)
+    {
+        m_splineGroup.removeSpline(i);
+    }
+
+    m_curSplineIdx = -1;
+    selectedObjects.clear();
+    m_splineGroup.garbage_collection();
+
+    //TODO We may want to not load a new blank image
+    openImage(imageLocationWithID("blank.png"));
+    update();
+}
+
+void GLScene::subdivide_current_spline(){
+    if (m_curSplineIdx >=0 &&  m_curSplineIdx<m_splineGroup.num_splines() ) //Check validity
+    {
+        BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
+
+        QVector<QPointF> org_points, new_points;
+
+        for (int i=0; i<spline.original_cpts.size(); ++i)
+            org_points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
+
+        new_points = subDivide(org_points);
+
+        while (spline.original_cpts.size() > 0)
+            m_splineGroup.removeControlPoint(spline.original_cpts[0]);
+
+        for (int i=0; i<new_points.size(); ++i)
+        {
+            int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0, true);
+            m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id, true);
+        }
+        spline.recompute();
+
+        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
+        {
+            int spline_id = m_splineGroup.surface(k).connected_spline_id;
+            if (spline_id == m_curSplineIdx)
+                computeSurface(spline_id);
+        }
+        m_splineGroup.garbage_collection();
+    }
+
+    update();
+}
+
+void GLScene::toggleShowCurrentCurvePoints(bool status)
+{
+    if (showCurrentCurvePoints != status)
+    {
+        showCurrentCurvePoints = status;
+        update();
+    }
+}
+
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
     unsigned int nodeId, targetId;
@@ -895,7 +964,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.5);
+    glLineWidth(1.0);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
@@ -936,7 +1005,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
 void GLScene::update_region_coloring()
 {
-    cv::Mat curv_img = curvesImage(true);   //cv::imwrite("curv_img.png", curv_img);
+    cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
     //cv::imshow("Closed Curves", curv_img);
 
@@ -948,10 +1017,10 @@ void GLScene::update_region_coloring()
     cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
 
     //Use cv::floodfill (this should be faster)
-    /*for (int i=0; i<colorMapping.size(); ++i)
+    /*for (int i=0; i<m_splineGroup.colorMapping.size(); ++i)
     {
-        QPoint seed = colorMapping[i].first;
-        QColor color = colorMapping[i].second;
+        QPoint seed = m_splineGroup.colorMapping[i].first;
+        QColor color = m_splineGroup.colorMapping[i].second;
         cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),cv::Scalar(color.blue(), color.green(), color.red()));
     }*/
 
@@ -961,7 +1030,7 @@ void GLScene::update_region_coloring()
     cv::findContours( mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
     //Randomly set colors
-    if (colorMapping.size() == 0 && contours.size() > 0)
+    if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
     {
         int idx = 0;
         cv::RNG rng(12345);
@@ -974,10 +1043,13 @@ void GLScene::update_region_coloring()
     }
 
     std::vector<bool> marked(contours.size()+1, false);
-    for (int i=colorMapping.size()-1; i>=0; --i)
+    for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
     {
-        QPoint seed = colorMapping[i].first;
-        QColor qcolor = colorMapping[i].second;
+        QPoint seed = m_splineGroup.colorMapping[i].first;
+        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.rows || seed.y() >= m_curImage.cols)
+            continue;
+
+        QColor qcolor = m_splineGroup.colorMapping[i].second;
         cv::Scalar color = cv::Scalar(qcolor.blue(), qcolor.green(), qcolor.red());
 
         uint k = 0;
@@ -1033,6 +1105,7 @@ bool GLScene::openCurves(std::string fname)
 {
     if (m_splineGroup.load(fname))
     {
+        update_region_coloring();
         update();
         return true;
 

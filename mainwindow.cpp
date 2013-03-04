@@ -21,8 +21,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
 
     //Connections
+    connect(ui->actionDelete_all_curves, SIGNAL(triggered()), scene, SLOT(delete_all()));
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
+    connect(ui->subdivideCurveButton, SIGNAL(clicked(bool)), scene, SLOT(subdivide_current_spline()));
+    connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
 
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
     connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));

@@ -27,7 +27,7 @@ QPointF nearestPoint(QPointF pt, QPointF a, QPointF b, float &t)
 }
 
 BSpline::BSpline(int degree):
-    idx(-1), m_spec_degree(degree), m_degree(degree), has_inward_surface(true), has_outward_surface(false)
+    idx(-1), m_spec_degree(degree), m_degree(degree), has_inward_surface(false), has_outward_surface(false)
 {
 }
 
