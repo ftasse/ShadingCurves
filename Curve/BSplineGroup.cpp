@@ -1,6 +1,7 @@
 #include <fstream>
 #include <QDebug>
 #include <QLineF>
+#include <QColor>
 #include <assert.h>
 #include <stdio.h>
 #include <set>
@@ -333,6 +334,21 @@ void BSplineGroup::removeSpline(int spline_id)
         }
     }
 
+    for (int i=0; i<bspline.original_cpts.count(); ++i)
+    {
+        ControlPoint& cpt = controlPoint(bspline.original_cpts[i]);
+        for (int k=0; k<cpt.count();)
+        {
+            if (cpt.connected_splines[k] == spline_id)
+            {
+                cpt.connected_splines.erase(cpt.connected_splines.begin()+k);
+            } else
+            {
+                 ++k;
+            }
+        }
+    }
+
 
     for (int i=0; i<m_surfaces.size(); ++i)
     {
@@ -344,6 +360,7 @@ void BSplineGroup::removeSpline(int spline_id)
     }
 
     bspline.connected_cpts.clear();
+    bspline.original_cpts.clear();
     bspline.updateKnotVectors();
 }
 
@@ -483,6 +500,7 @@ bool BSplineGroup::load(std::string fname)
     m_cpts.clear();
     m_splines.clear();
     m_surfaces.clear();
+    colorMapping.clear();
 
     int n_cpts, n_splines;
     std::string text;
@@ -512,6 +530,19 @@ bool BSplineGroup::load(std::string fname)
             }
         }
         spline(spline_id).recompute();
+    }
+
+    int n_colormappings;
+    ifs >> n_colormappings >> text;
+
+    for (int i=0; i<n_colormappings; ++i)
+    {
+        int x, y, red, blue, green;
+        ifs >> x >> y >> red >> green >> blue;
+
+        QColor color;
+        color.setRed(red); color.setGreen(green); color.setBlue(blue);
+        colorMapping.push_back(std::pair<QPoint, QColor> (QPoint(x,y), color));
     }
     return true;
 }
@@ -550,6 +581,14 @@ void BSplineGroup::save(std::string fname)
             ofs << " " << vertex_indices[bspline.original_cpts[k]];
         }
         ofs << std::endl;
+    }
+
+    ofs << colorMapping.size() <<" colorMapping" << std::endl;
+    for (int i=0; i<colorMapping.size(); ++i)
+    {
+        QPoint point = colorMapping[i].first;
+        QColor color = colorMapping[i].second;
+        ofs << point.x() << " " << point.y() << " " << color.red() << " " << color.green() << " " << color.blue() << std::endl;
     }
     ofs.close();
 }
