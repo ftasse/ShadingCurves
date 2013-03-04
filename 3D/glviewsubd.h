@@ -5,15 +5,15 @@
 #include "3D/mesh.h"
 #include "3D/point_3d.h"
 #include "3D/glviewport.h"
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/core/mat.hpp>
-//#include <opencv2/imgproc/imgproc.hpp>
-//#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
-#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/core.hpp"
-#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/mat.hpp"
-#include "/home/jirik/progs/OpenCV-2.4.4/modules/imgproc/include/opencv2/imgproc/imgproc.hpp"
-#include "/home/jirik/progs/OpenCV-2.4.4/modules/highgui/include/opencv2/highgui/highgui.hpp"
+//#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/core.hpp"
+//#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/mat.hpp"
+//#include "/home/jirik/progs/OpenCV-2.4.4/modules/imgproc/include/opencv2/imgproc/imgproc.hpp"
+//#include "/home/jirik/progs/OpenCV-2.4.4/modules/highgui/include/opencv2/highgui/highgui.hpp"
 
 
 class GLviewsubd : public GLviewport
