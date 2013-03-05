@@ -38,6 +38,9 @@ GLScene::GLScene(QObject *parent) :
     showControlPoints = true;
     showCurrentCurvePoints = true;
     brush = false;
+    brushType = 0;
+    brushSize = 10;
+    freehand = false;
 }
 
 GLScene:: ~GLScene()
@@ -48,11 +51,46 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     //if (event->button() == Qt::LeftButton)
     if(brush){
-        float width = 10; // brush width
+        Qt::BrushStyle style;
 
-        QPointF pos =event->scenePos();
-        addEllipse(pos.x()-width/2,pos.y()-width/2,width,width,Qt::NoPen,
-                   QBrush(QColor(0,0,0),Qt::Dense3Pattern));
+        if(!freehand) {
+            QPointF imgP = sceneToImageCoords(event->scenePos());
+            int val = surfaceImg.at<cv::Vec3b>(imgP.y(),imgP.x())[0];
+            if(val<32)
+                brushType = 0;
+            else if(val>=32&&val<64)
+                brushType = 1;
+            else if(val>=64&&val<96)
+                brushType = 2;
+            else if(val>=96&&val<128)
+                brushType = 3;
+            else if(val>=128&&val<159)
+                brushType = 4;
+            else if(val>=159&&val<191)
+                brushType = 5;
+            else if(val>=191&&val<223)
+                brushType = 6;
+            else
+                brushType = 7;
+        }
+
+        QColor c(0,0,0);
+        this->setBackgroundBrush(QBrush(QColor(255,255,255),Qt::SolidPattern));
+
+        if(brushType==0) style = Qt::SolidPattern;
+        else if(brushType==1) style = Qt::Dense1Pattern;
+        else if(brushType==2) style = Qt::Dense2Pattern;
+        else if(brushType==3) style = Qt::Dense3Pattern;
+        else if(brushType==4) style = Qt::Dense4Pattern;
+        else if(brushType==5) style = Qt::Dense5Pattern;
+        else if(brushType==6) style = Qt::Dense6Pattern;
+        else if(brushType==7) style = Qt::Dense7Pattern;
+        else if(brushType==8) {style = Qt::SolidPattern; c=QColor(255,255,255);}
+
+        QPointF pos = event->scenePos();
+        addEllipse(pos.x()-brushSize/2,pos.y()-brushSize/2,brushSize,brushSize,Qt::NoPen,
+                   QBrush(c,style));
+
         return;
     }
     else {

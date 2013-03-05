@@ -46,8 +46,8 @@ public:
     void draw_surface(int surface_id);
     void adjustDisplayedImageSize();
 
-    unsigned int getImageHeight() {return m_curImage.cols;};
-    unsigned int getImageWidth()  {return m_curImage.rows;};
+    unsigned int getImageHeight() {return m_curImage.cols;}
+    unsigned int getImageWidth()  {return m_curImage.rows;}
 
     bool writeCurrentSurface(std::ostream &ofs)
     {
@@ -137,6 +137,10 @@ public:
     QCheckBox *inward_surface_box;
     QCheckBox *outward_surface_box;
     bool brush;
+    int brushType;
+    float brushSize;
+    bool freehand;
+    cv::Mat surfaceImg;
 
     QSizeF imSize;
 };

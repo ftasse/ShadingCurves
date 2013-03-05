@@ -48,18 +48,21 @@ void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->createBSpline();
+    my_scene->brush = false;
 }
 
 void GraphicsView::edit_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
+    my_scene->brush = false;
 }
 
 void GraphicsView::move_bsplines()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->sketchmode() = GLScene::IDLE_MODE;
+    my_scene->brush = false;
 }
 
 void GraphicsView::loadImage()
@@ -228,6 +231,10 @@ void GraphicsView::applyShading()
     glvs->indexMesh = -1;
     glvs->setSubdivLevel(4); // calls updateGL
 
+    my_scene->surfaceImg = glvs->img.clone();
+
+//    cv::imshow("Shaded img 4 Henrik", glvs->img);
+
     delete glvs;
 }
 
@@ -235,6 +242,25 @@ void GraphicsView::setBrush()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->brush = true;
+    applyShading();
 /*    QBrush brush(QColor(255,0,0),Qt::Dense3Pattern);
     my_scene->setForegroundBrush(brush);*/
+}
+
+void GraphicsView::changeBrushLightness(int type)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->brushType = type;
+}
+
+void GraphicsView::changeBrushSize(int size)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->brushSize = (float) size;
+}
+
+void GraphicsView::changeFreehand(bool freehand)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->freehand = freehand;
 }

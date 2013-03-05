@@ -30,6 +30,9 @@ public slots:
 
     void changeControlPointSize(int pointSize);
     void changeSurfaceWidth(int surfaceWidth);
+    void changeBrushLightness(int type);
+    void changeBrushSize(int size);
+    void changeFreehand(bool freehand);
     void showControlMesh(bool status);
     void showControlPoints(bool status);
     void createDistanceTransformDEBUG();

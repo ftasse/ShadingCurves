@@ -4,7 +4,7 @@ add window for shading profile
 zooming
 fix remaining issues with the surfaces
 deal with junctions
-brushing (later)
+brushing
 
 other (bonuses):
 weighted distance transform?
@@ -15,11 +15,13 @@ make "backwards" subdivision
 fix closed curve issue, with too many points
 fix slope curve issue, make manifold mesh
 fix bug at high curvature normals
+fix bug when curve is narrow
 
 Flora:
 High priority:
+add functionality to "Show curves"
 fix bug when pressing S
-when move: recompute all surfaces
+when move: recompute all surfaces. Do not recompute surfaces when adding points, however, when finished (i.e. Enter is pressed), then recompute the surfaces.
 add status bar
 change green points to "super control points", change code structure
 split curves at an inserted junction, using 1/3-2/3 subdivision rule

@@ -48,6 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->getShadingButton, SIGNAL(pressed()), ui->graphicsView, SLOT(applyShading()));
 
     connect(ui->setBrushButton, SIGNAL(pressed()), ui->graphicsView, SLOT(setBrush()));
+    connect(ui->brushLightness, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeBrushLightness(int)));
+    connect(ui->brushSizeSlider, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeBrushSize(int)));
+    connect(ui->freehandBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeFreehand(bool)));
 }
 
 MainWindow::~MainWindow()

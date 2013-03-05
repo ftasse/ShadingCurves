@@ -83,7 +83,7 @@
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>200</y>
+             <y>240</y>
              <width>160</width>
              <height>29</height>
             </rect>
@@ -102,13 +102,13 @@
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>180</y>
+             <y>220</y>
              <width>66</width>
              <height>17</height>
             </rect>
            </property>
            <property name="text">
-            <string>Point Size</string>
+            <string>Point size</string>
            </property>
           </widget>
           <widget class="QPushButton" name="editCurveButton">
@@ -134,7 +134,7 @@
             </rect>
            </property>
            <property name="text">
-            <string>Show Control Mesh</string>
+            <string>Show control mesh</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -144,13 +144,13 @@
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>150</y>
+             <y>120</y>
              <width>161</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
-            <string>Show Control Points</string>
+            <string>Show control points</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -160,7 +160,7 @@
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>260</y>
+             <y>300</y>
              <width>160</width>
              <height>29</height>
             </rect>
@@ -182,7 +182,7 @@
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>240</y>
+             <y>280</y>
              <width>101</width>
              <height>17</height>
             </rect>
@@ -195,7 +195,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>290</y>
+             <y>330</y>
              <width>181</width>
              <height>91</height>
             </rect>
@@ -213,7 +213,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>boundary, 1. direction</string>
+             <string>Boundary, 1. direction</string>
             </property>
            </widget>
            <widget class="QCheckBox" name="outward_surface_box">
@@ -229,7 +229,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>boundary, 2. direction</string>
+             <string>Boundary, 2. direction</string>
             </property>
            </widget>
            <widget class="QCheckBox" name="outward_surface_box_2">
@@ -245,7 +245,7 @@
              </rect>
             </property>
             <property name="text">
-             <string>slope curve</string>
+             <string>Slope curve</string>
             </property>
            </widget>
            <widget class="QCheckBox" name="outward_surface_box_3">
@@ -264,31 +264,61 @@
              <string>uniform subdivision</string>
             </property>
            </widget>
+           <zorder>inward_suface_box</zorder>
+           <zorder>outward_surface_box</zorder>
+           <zorder>outward_surface_box_2</zorder>
+           <zorder>outward_surface_box_3</zorder>
+           <zorder>label_2</zorder>
+           <zorder>label</zorder>
+           <zorder>subdivideCurveButton</zorder>
+           <zorder>surfaceWidthSlider</zorder>
+           <zorder>pointSizeSlider</zorder>
+           <zorder>subdivideCurveButton</zorder>
+           <zorder>label_2</zorder>
+           <zorder>label</zorder>
+           <zorder>surfaceWidthSlider</zorder>
+           <zorder>pointSizeSlider</zorder>
           </widget>
           <widget class="QPushButton" name="subdivideCurveButton">
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>390</y>
+             <y>430</y>
              <width>181</width>
              <height>27</height>
             </rect>
            </property>
            <property name="text">
-            <string>Subdivide Selected Curve</string>
+            <string>Subdivide selected curve</string>
            </property>
           </widget>
           <widget class="QCheckBox" name="onlyShowCurvePointsBox">
            <property name="geometry">
             <rect>
-             <x>20</x>
-             <y>120</y>
+             <x>40</x>
+             <y>150</y>
              <width>181</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
-            <string>Only Show CurvePoints</string>
+            <string>Only for selected curve</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="ShowCurvesBox">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>190</y>
+             <width>141</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Show curves</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -322,6 +352,14 @@
           </widget>
          </widget>
          <widget class="QWidget" name="drawing_toolbox">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>200</width>
+            <height>476</height>
+           </rect>
+          </property>
           <attribute name="label">
            <string>Drawing</string>
           </attribute>
@@ -336,6 +374,83 @@
            </property>
            <property name="text">
             <string>Brush</string>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="brushLightness">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>60</y>
+             <width>42</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <number>8</number>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>60</y>
+             <width>101</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Brush lightness:</string>
+           </property>
+          </widget>
+          <widget class="QSlider" name="brushSizeSlider">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>130</y>
+             <width>160</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>110</y>
+             <width>61</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Brush size:</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="freehandBox">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>170</y>
+             <width>70</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Free hand (no surface guidance)</string>
            </property>
           </widget>
          </widget>
