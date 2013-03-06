@@ -51,6 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->brushLightness, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeBrushLightness(int)));
     connect(ui->brushSizeSlider, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeBrushSize(int)));
     connect(ui->freehandBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeFreehand(bool)));
+    connect(ui->radioContinuous, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeC(bool)));
+    connect(ui->radioDiscrete, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeD(bool)));
+
 }
 
 MainWindow::~MainWindow()

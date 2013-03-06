@@ -212,6 +212,12 @@ void BSpline::recompute()
     if (points.size() > 1)
         subDividePts = subDivide(points);
 
+    bool closed = false;
+    if (closed && points.size() >= 4) {
+        subDividePts.pop_back();
+        subDividePts.pop_front();
+    }
+
 
     for (int i=0; i< subDividePts.size() -1 ; ++i)
     {

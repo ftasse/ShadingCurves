@@ -271,3 +271,15 @@ void GraphicsView::changeFreehand(bool freehand)
     GLScene *my_scene = (GLScene *) scene();
     my_scene->freehand = freehand;
 }
+
+void GraphicsView::changeBrushTypeC(bool val)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->discreteB = !val;
+}
+
+void GraphicsView::changeBrushTypeD(bool val)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->discreteB = val;
+}

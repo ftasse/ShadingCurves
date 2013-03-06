@@ -1,6 +1,6 @@
 #include "SurfaceUtils.h"
+#include <QDebug>
 
-// NOTE: fix for degree<3
 QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
 {
     bool closed = false;
@@ -28,13 +28,14 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
         return newVec;
     }
 
-    for (int i=1;i<spline.count()-1;i++)
+    for(int i = 1;i<spline.count()-1;i++)
     {
         QPointF new1 = 0.5*spline.at(i-1)+0.5*spline.at(i);
         QPointF new2 = 0.125*spline.at(i-1)+0.75*spline.at(i)+0.125*spline.at(i+1);
         newVec.append(new1);
         newVec.append(new2);
     }
+
     newVec.append(0.5*spline.at(spline.count()-2)+0.5*spline.last());
     if(!closed)
         newVec.append(spline.last());

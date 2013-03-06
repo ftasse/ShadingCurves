@@ -1,8 +1,6 @@
 Main Points:
-fix colour-luminance synchronisation
 add window for shading profile
 zooming
-fix remaining issues with the surfaces
 deal with junctions
 brushing
 
@@ -10,12 +8,8 @@ other (bonuses):
 weighted distance transform?
 
 Henrik:
-turn off brushing
-make "backwards" subdivision
-fix closed curve issue, with too many points
 fix slope curve issue, make manifold mesh
-fix bug at high curvature normals
-fix bug when curve is narrow
+brushing bug
 
 Flora:
 High priority:
@@ -37,7 +31,6 @@ add shape window (quadratics)
 
 Low priority:
 add cubics to shape window
-change button for subdivision into Jiri's approach. Keep green points at level 2; add subdivision level for blue points
 
 pseudo code for splitting a curve at CP_i
 define new end points at the limit point: 0.1667*CP_i-1 + 0.667*CP_i + 0.1667*CP_i+1

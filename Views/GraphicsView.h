@@ -40,6 +40,8 @@ public slots:
     void applyShading(bool showImg, bool writeImg);
     void applyShading();
     void setBrush();
+    void changeBrushTypeC(bool val);
+    void changeBrushTypeD(bool val);
 
 private:
     DebugWindow     *dbw;
