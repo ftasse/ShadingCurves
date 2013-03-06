@@ -37,6 +37,7 @@ public slots:
     void showControlPoints(bool status);
     void createDistanceTransformDEBUG();
     void show3Dwidget();
+    void applyShading(bool showImg, bool writeImg);
     void applyShading();
     void setBrush();
 

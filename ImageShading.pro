@@ -78,9 +78,8 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
                -L"C:/opencv/build/x86/vc10/bin"
 
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32
-#unix:LIBS += -L/local/scratch/jk520/OpenCV-2.4.4/release/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 
-#LIBS += -lGLU -fopenmp
-#QMAKE_CXXFLAGS += -fopenmp #-O3
-#QMAKE_CFLAGS += -fopenmp #-O3
+#LIBS += -fopenmp
+QMAKE_CXXFLAGS += -O3 # -fopenmp
+QMAKE_CFLAGS += -O3   # -fopenmp

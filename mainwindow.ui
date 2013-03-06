@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>476</height>
+            <height>457</height>
            </rect>
           </property>
           <attribute name="label">
@@ -264,20 +264,6 @@
              <string>uniform subdivision</string>
             </property>
            </widget>
-           <zorder>inward_suface_box</zorder>
-           <zorder>outward_surface_box</zorder>
-           <zorder>outward_surface_box_2</zorder>
-           <zorder>outward_surface_box_3</zorder>
-           <zorder>label_2</zorder>
-           <zorder>label</zorder>
-           <zorder>subdivideCurveButton</zorder>
-           <zorder>surfaceWidthSlider</zorder>
-           <zorder>pointSizeSlider</zorder>
-           <zorder>subdivideCurveButton</zorder>
-           <zorder>label_2</zorder>
-           <zorder>label</zorder>
-           <zorder>surfaceWidthSlider</zorder>
-           <zorder>pointSizeSlider</zorder>
           </widget>
           <widget class="QPushButton" name="subdivideCurveButton">
            <property name="geometry">
@@ -331,7 +317,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>476</height>
+            <height>457</height>
            </rect>
           </property>
           <attribute name="label">
@@ -357,7 +343,7 @@
             <x>0</x>
             <y>0</y>
             <width>200</width>
-            <height>476</height>
+            <height>457</height>
            </rect>
           </property>
           <attribute name="label">
@@ -382,7 +368,7 @@
            </property>
            <property name="geometry">
             <rect>
-             <x>110</x>
+             <x>130</x>
              <y>60</y>
              <width>42</width>
              <height>22</height>
@@ -432,7 +418,7 @@
             <rect>
              <x>20</x>
              <y>110</y>
-             <width>61</width>
+             <width>81</width>
              <height>16</height>
             </rect>
            </property>
@@ -443,10 +429,10 @@
           <widget class="QCheckBox" name="freehandBox">
            <property name="geometry">
             <rect>
-             <x>20</x>
+             <x>10</x>
              <y>170</y>
-             <width>70</width>
-             <height>17</height>
+             <width>191</width>
+             <height>20</height>
             </rect>
            </property>
            <property name="text">
@@ -467,7 +453,7 @@
      <x>0</x>
      <y>0</y>
      <width>842</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

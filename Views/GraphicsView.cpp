@@ -213,6 +213,11 @@ void GraphicsView::show3Dwidget()
 
 void GraphicsView::applyShading()
 {
+    applyShading(true, true);
+}
+
+void GraphicsView::applyShading(bool showImg, bool writeImg)
+{
 
     GLScene *my_scene = (GLScene *) scene();
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
@@ -229,6 +234,8 @@ void GraphicsView::applyShading()
     }
 
     glvs->indexMesh = -1;
+    glvs->showImg = showImg;
+    glvs->writeImg = writeImg;
     glvs->setSubdivLevel(4); // calls updateGL
 
     my_scene->surfaceImg = glvs->img.clone();
@@ -242,7 +249,7 @@ void GraphicsView::setBrush()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->brush = true;
-    applyShading();
+    applyShading(false, false);
 /*    QBrush brush(QColor(255,0,0),Qt::Dense3Pattern);
     my_scene->setForegroundBrush(brush);*/
 }

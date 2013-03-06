@@ -49,13 +49,18 @@ GLScene:: ~GLScene()
 
 void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    int val;
+
     //if (event->button() == Qt::LeftButton)
     if(brush){
         Qt::BrushStyle style;
 
         if(!freehand) {
             QPointF imgP = sceneToImageCoords(event->scenePos());
-            int val = surfaceImg.at<cv::Vec3b>(imgP.y(),imgP.x())[0];
+            val = surfaceImg.at<cv::Vec3b>(imgP.y(),imgP.x())[0];
+
+//            brushType = val / 32;
+
             if(val<32)
                 brushType = 0;
             else if(val>=32&&val<64)

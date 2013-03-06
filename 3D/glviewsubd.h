@@ -10,12 +10,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-//#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/core.hpp"
-//#include "/home/jirik/progs/OpenCV-2.4.4/modules/core/include/opencv2/core/mat.hpp"
-//#include "/home/jirik/progs/OpenCV-2.4.4/modules/imgproc/include/opencv2/imgproc/imgproc.hpp"
-//#include "/home/jirik/progs/OpenCV-2.4.4/modules/highgui/include/opencv2/highgui/highgui.hpp"
-
-
 class GLviewsubd : public GLviewport
 {
 	Q_OBJECT
@@ -74,21 +68,13 @@ public:
 
 	bool clear;
 
+    bool    writeImg, showImg;
+
 	int curvRatio1, curvRatio2;
 
     bool offScreen, offMainWindow;
     cv::Mat  img, imgShaded, imgFill, imgFillShaded,
             *inputImg;
-
-    template<class S,class T>
-    void lab2rgb(
-        const S li,
-        const S ai,
-        const S bi,
-        T& ro,
-        T& go,
-        T& bo);
-    void lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B);
 
 public slots:
     void subdivide          (void);
