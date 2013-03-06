@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <QDebug>
 
 #include "../Utilities/SurfaceUtils.h"
 
@@ -41,6 +42,7 @@ GLScene::GLScene(QObject *parent) :
     brushType = 0;
     brushSize = 10;
     freehand = false;
+    discreteB = false;
 }
 
 GLScene:: ~GLScene()
@@ -53,39 +55,52 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if(brush){
         Qt::BrushStyle style;
 
+        int val = 255;
+
         if(!freehand) {
             QPointF imgP = sceneToImageCoords(event->scenePos());
-            int val = surfaceImg.at<cv::Vec3b>(imgP.y(),imgP.x())[0];
-            if(val<32)
-                brushType = 0;
-            else if(val>=32&&val<64)
-                brushType = 1;
-            else if(val>=64&&val<96)
-                brushType = 2;
-            else if(val>=96&&val<128)
-                brushType = 3;
-            else if(val>=128&&val<159)
-                brushType = 4;
-            else if(val>=159&&val<191)
-                brushType = 5;
-            else if(val>=191&&val<223)
-                brushType = 6;
-            else
-                brushType = 7;
+            val = surfaceImg.at<cv::Vec3b>(imgP.y(),imgP.x())[0];
+            if(discreteB) {
+                if(val<32)
+                    brushType = 0;
+                else if(val>=32&&val<64)
+                    brushType = 1;
+                else if(val>=64&&val<96)
+                    brushType = 2;
+                else if(val>=96&&val<128)
+                    brushType = 3;
+                else if(val>=128&&val<159)
+                    brushType = 4;
+                else if(val>=159&&val<191)
+                    brushType = 5;
+                else if(val>=191&&val<223)
+                    brushType = 6;
+                else
+                    brushType = 7;
+            }
         }
 
-        QColor c(0,0,0);
-        this->setBackgroundBrush(QBrush(QColor(255,255,255),Qt::SolidPattern));
+        QColor c;
+        if(discreteB)
+            c = QColor(0,0,0);
+        else
+            c = QColor(val,val,val);
 
-        if(brushType==0) style = Qt::SolidPattern;
-        else if(brushType==1) style = Qt::Dense1Pattern;
-        else if(brushType==2) style = Qt::Dense2Pattern;
-        else if(brushType==3) style = Qt::Dense3Pattern;
-        else if(brushType==4) style = Qt::Dense4Pattern;
-        else if(brushType==5) style = Qt::Dense5Pattern;
-        else if(brushType==6) style = Qt::Dense6Pattern;
-        else if(brushType==7) style = Qt::Dense7Pattern;
-        else if(brushType==8) {style = Qt::SolidPattern; c=QColor(255,255,255);}
+        if(discreteB) {
+            if(brushType==0) style = Qt::SolidPattern;
+            else if(brushType==1) style = Qt::Dense1Pattern;
+            else if(brushType==2) style = Qt::Dense2Pattern;
+            else if(brushType==3) style = Qt::Dense3Pattern;
+            else if(brushType==4) style = Qt::Dense4Pattern;
+            else if(brushType==5) style = Qt::Dense5Pattern;
+            else if(brushType==6) style = Qt::Dense6Pattern;
+            else if(brushType==7) style = Qt::Dense7Pattern;
+            else if(brushType==8) {style = Qt::SolidPattern; c=QColor(255,255,255);}
+        } else {
+            style = Qt::SolidPattern;
+            if(freehand)
+                c = QColor(min(brushType*32,255),min(brushType*32,255),min(brushType*32,255));
+        }
 
         QPointF pos = event->scenePos();
         addEllipse(pos.x()-brushSize/2,pos.y()-brushSize/2,brushSize,brushSize,Qt::NoPen,
@@ -604,7 +619,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
       QVector<QPointF> subDividePts;
       if (points.size() > 1)
-          subDividePts = subDivide(points, 5);
+          subDividePts = subDivide(points,5);
 
       glBegin(GL_LINE_STRIP);
       for (int i = 0; i < subDividePts.size(); ++i)
@@ -931,7 +946,7 @@ void GLScene::subdivide_current_spline(){
         for (int i=0; i<spline.original_cpts.size(); ++i)
             org_points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
 
-        new_points = subDivide(org_points);
+        new_points = subDivide(org_points,1);
 
         while (spline.original_cpts.size() > 0)
             m_splineGroup.removeControlPoint(spline.original_cpts[0]);

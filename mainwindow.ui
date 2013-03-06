@@ -264,20 +264,6 @@
              <string>uniform subdivision</string>
             </property>
            </widget>
-           <zorder>inward_suface_box</zorder>
-           <zorder>outward_surface_box</zorder>
-           <zorder>outward_surface_box_2</zorder>
-           <zorder>outward_surface_box_3</zorder>
-           <zorder>label_2</zorder>
-           <zorder>label</zorder>
-           <zorder>subdivideCurveButton</zorder>
-           <zorder>surfaceWidthSlider</zorder>
-           <zorder>pointSizeSlider</zorder>
-           <zorder>subdivideCurveButton</zorder>
-           <zorder>label_2</zorder>
-           <zorder>label</zorder>
-           <zorder>surfaceWidthSlider</zorder>
-           <zorder>pointSizeSlider</zorder>
           </widget>
           <widget class="QPushButton" name="subdivideCurveButton">
            <property name="geometry">
@@ -452,6 +438,58 @@
            <property name="text">
             <string>Free hand (no surface guidance)</string>
            </property>
+          </widget>
+          <widget class="QWidget" name="widget_3" native="true">
+           <property name="geometry">
+            <rect>
+             <x>9</x>
+             <y>209</y>
+             <width>181</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <widget class="QLabel" name="label_5">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>131</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Brushes:</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioDiscrete">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>40</y>
+              <width>82</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Discrete</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioContinuous">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>70</y>
+              <width>82</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Continuous</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
           </widget>
          </widget>
         </widget>

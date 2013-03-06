@@ -141,6 +141,7 @@ public:
     float brushSize;
     bool freehand;
     cv::Mat surfaceImg;
+    bool discreteB;
 
     QSizeF imSize;
 };

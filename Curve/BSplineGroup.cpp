@@ -82,9 +82,16 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
 
 //    bspline.fix_orientation();
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
+    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);
+    QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
 
     if(slope) {
+        // set end points to zero
+        controlPoint(points[1][0]).setZ(0);
+        controlPoint(points2[1][0]).setZ(0);
+        controlPoint(points[1][points[1].size()-1]).setZ(0);
+        controlPoint(points2[1][points2[1].size()-1]).setZ(0);
+
         // add additional point at end points
         QPointF cp = controlPoint(points[0][0]); // end control point
         QPointF cp1 = controlPoint(points[2][0]); // first translated point
@@ -102,7 +109,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // is this dumb?
         float id_cp = addControlPoint(cp);
         points[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]),z);
+        id_cp = addControlPoint(controlPoint(points[1][0]));
         points[1].prepend(id_cp);
         id_cp = addControlPoint(tmp);
         points[2].prepend(id_cp);
@@ -110,7 +117,7 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // close the loop
         id_cp = addControlPoint(cp);
         points2[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]),z);
+        id_cp = addControlPoint(controlPoint(points[1][0]));
         points2[1].prepend(id_cp);
         id_cp = addControlPoint(tmp);
         points2[2].prepend(id_cp);
@@ -132,19 +139,19 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         // is this dumb?
         id_cp = addControlPoint(cp);
         points[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]),z);
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
         points[1].append(id_cp);
         id_cp = addControlPoint(tmp);
         points[2].append(id_cp);
 
         // close the loop
-        id_cp = addControlPoint(cp);
+/*        id_cp = addControlPoint(cp);
         points2[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]),z);
+        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
         points2[1].append(id_cp);
         id_cp = addControlPoint(tmp);
         points2[2].append(id_cp);
-
+*/
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)
                 points[i].push_back(points2[i][j]);
@@ -156,9 +163,9 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     surf.controlPoints().append(points.at(2));
 
     surf.updateKnotVectors();
-//    std::ofstream ofs("debug_surface.off");
-//    surf.writeOFF(ofs);
-//    ofs.close();
+    std::ofstream ofs("debug_surface.off");
+    surf.writeOFF(ofs);
+    ofs.close();
     return surface_id;
 }
 
@@ -216,6 +223,7 @@ QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,fl
                     perpendicular_cpts_ids.insert(perpendicular_cpts_ids.begin()+k, addControlPoint(prevCP1,z));
                     QPointF tangent = thisCP-prevCP1;
                     normal = QPointF(-tangent.y(),tangent.x());
+                    if(!inward) normal = -normal;
                     float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
                     if (norm > EPSILON)
                         normal /= norm;
@@ -661,7 +669,9 @@ QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QL
             assert(!(d-m>EPSILON && visCheck));
         }
 
-    assert(cand.count()>0);
+    if(cand.count()==0)
+        return QPoint(sx+1,sy+1);
+
     // find smallest angle
     float sa = 360; // smallest angle
     QList<float> angles;

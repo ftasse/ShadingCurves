@@ -39,6 +39,8 @@ public slots:
     void show3Dwidget();
     void applyShading();
     void setBrush();
+    void changeBrushTypeC(bool val);
+    void changeBrushTypeD(bool val);
 
 private:
     DebugWindow     *dbw;
