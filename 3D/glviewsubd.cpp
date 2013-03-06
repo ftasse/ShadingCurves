@@ -73,6 +73,8 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     offMainWindow = false;
 
     inputImg = timg;
+
+    super = 1; //supersampling (1, 2, or 4)
 }
 
 GLviewsubd::~GLviewsubd()
@@ -325,7 +327,7 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
-        double     tmp;
+        double      tmp;
 
         numberPaintCalls++;
         cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
@@ -342,13 +344,13 @@ void GLviewsubd::paintGL(void)
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
         glGenRenderbuffersEXT(1, &renderbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB8, imageWidth, imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB8, super*imageWidth, super*imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                          GL_RENDERBUFFER_EXT, renderbuffer);
         //depth buffer
         glGenRenderbuffersEXT(1, &depthbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, imageWidth, imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, super*imageWidth, super*imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                          GL_RENDERBUFFER_EXT, depthbuffer);
 
@@ -364,9 +366,9 @@ void GLviewsubd::paintGL(void)
         glLoadIdentity();
 
         glGetIntegerv(GL_VIEWPORT, origView);
-        glViewport(0, 0, imageWidth, imageHeight);
+        glViewport(0, 0, super*imageWidth, super*imageHeight);
 
-        glOrtho(0, imageWidth, 0, imageHeight, -1000.0, 1000.0);
+        glOrtho(0, super*imageWidth, 0, super*imageHeight, -1000.0, 1000.0);
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
@@ -382,7 +384,7 @@ void GLviewsubd::paintGL(void)
         clr = origClr;
 
         //create image
-        img.create(imageHeight, imageWidth, CV_32FC3);
+        img.create(super*imageHeight, super*imageWidth, CV_32FC3);
         GLenum inputColourFormat;
         #ifdef GL_BGR
             inputColourFormat = GL_BGR;
@@ -394,7 +396,7 @@ void GLviewsubd::paintGL(void)
                 inputColourFormat = GL_BGR;
             #endif
         #endif
-        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_FLOAT, img.data);
+        glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
 
         tmp = img.at<cv::Vec3f>(0,0)[0];
 
@@ -405,8 +407,8 @@ void GLviewsubd::paintGL(void)
                 buildFlatMesh();
                 glCallList(flat_mesh_list);
                 //create image
-                imgFill.create(imageHeight, imageWidth, CV_32FC3);
-                glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
+                imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
+                glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
 
         //Clean up offscreen drawing
         glPopMatrix();
@@ -518,6 +520,25 @@ void GLviewsubd::paintGL(void)
                 if (writeImg)
                 {
                     cv::imwrite("ImgLumDif.png", img);
+                    cv::Mat imgPyrDown, imgPyrDown2;
+//                    imgPyrDown.create(imageHeight, imageWidth, CV_8UC3);
+
+                    switch (super)
+                    {
+                        case 1:
+                            cv::imwrite("ImgLumDifPyrDown.png", img);
+                            break;
+                        case 2:
+                            cv::pyrDown(img, imgPyrDown, cv::Size(imageHeight, imageWidth));
+                            cv::imwrite("ImgLumDifPyrDown.png", imgPyrDown);
+                            break;
+                        case 4:
+                            cv::pyrDown(img, imgPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
+                            cv::pyrDown(imgPyrDown, imgPyrDown2, cv::Size(imageHeight, imageWidth));
+                            cv::imwrite("ImgLumDifPyrDown.png", imgPyrDown2);
+                            break;
+                    }
+
                     cv::imwrite("ImgFill.png", imgFill);
                     cv::imwrite("ImgResult.png", imgShaded);
                     cv::imwrite("ImgFillResult.png", imgFillShaded);
@@ -1567,7 +1588,10 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 //                      glTexCoord1f(1);
                 }
             }
-            glVertex3fv(facet->my_corners[j].my_vertex->my_point.getCoords());
+//            glVertex3fv(facet->my_corners[j].my_vertex->my_point.getCoords());
+            glVertex3f(super * facet->my_corners[j].my_vertex->my_point.getX(),
+                       super * facet->my_corners[j].my_vertex->my_point.getY(),
+                       facet->my_corners[j].my_vertex->my_point.getZ());
         }
         glEnd();
 	}

@@ -76,6 +76,8 @@ public:
     cv::Mat  img, imgShaded, imgFill, imgFillShaded,
             *inputImg;
 
+    int super;
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);

@@ -234,6 +234,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     }
 
     glvs->indexMesh = -1;
+    glvs->super = 1; //supersampling (1, 2, or 4)
     glvs->showImg = showImg;
     glvs->writeImg = writeImg;
     glvs->setSubdivLevel(4); // calls updateGL
