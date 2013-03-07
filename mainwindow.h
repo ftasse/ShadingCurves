@@ -23,6 +23,8 @@ private:
 
 public slots:
     void center();
+    void change_bspline_parameters();
+    void update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 };
 
 #endif // MAINWINDOW_H

@@ -2,13 +2,28 @@
 #define CONTROLPOINT_H
 
 #include <QList>
-#include <QPointF>
 #include <QVector>
+
+#include "Point3d.h"
 
 class BSplineGroup;
 class BSpline;
 
-class ControlPoint : public QPointF
+typedef enum NormalDirection
+{
+  INWARD_DIRECTION = 0,
+  OUTWARD_DIRECTION
+} NormalDirection;
+
+typedef struct Attribute
+{
+    NormalDirection direction; //0 for inward point along the normal,    1 for outward point along the normal
+    float extent;
+    float height;
+    QPointF barycentricCoords;
+} Attribute;
+
+class ControlPoint : public Point3d
 {
 public:
     ControlPoint();
@@ -16,31 +31,19 @@ public:
 
     BSpline& splineAt(int index);
 
-    int count()
+    int num_splines()
     {
-        return connected_splines.size();
+        return splineRefs.size();
     }
 
-    float z()
-    {
-        return mz;
-    }
-
-    void setZ(float z)
-    {
-        mz = z;
-    }
+    void useDefaultAttributes();
 
 public:
     BSplineGroup *m_splineGroup;
-    QVector<int> connected_splines;
-    int idx;
-    bool isVisible;
-    bool isOriginal;
+    QVector<int> splineRefs;
 
-private:
-    float mz;
-
+    int ref;
+    Attribute attributes[2];
 };
 
 #endif // CONTROLPOINT_H

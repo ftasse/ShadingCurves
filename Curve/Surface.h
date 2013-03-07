@@ -4,38 +4,24 @@
 #include <vector>
 #include <QPoint>
 #include <sstream>
-#include "../Curve/ControlPoint.h"
+#include "BSpline.h"
 
 class Surface
 {
 public:
-    Surface(QPoint degree = QPoint(3,3));
+    Surface();
 
-    ControlPoint& pointAt(QPoint pos);
-    void updateKnotVectors();
+    void recompute(cv::Mat dt);
+    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward, bool newP);
+    QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width);
 
-    QVector< QVector<int> >& controlPoints()
-    {
-        return connected_cpts;
-    }
+    // HENRIK: find the closest highest value in neighbourhood
+    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta);
 
-    QPoint& degree()
-    {
-        return m_degree;
-    }
-
-    QVector<float>& u_knotVectors()
-    {
-        return m_knotVectors_u;
-    }
-
-    QVector<float>& v_knotVectors()
-    {
-        return m_knotVectors_v;
-    }
+    Point3d& pointAt(int u, int v);
+    QVector<QVector<int> > getFaceIndices();
 
     bool writeOFF(std::ostream &ofs);
-
     std::string surfaceToOFF()
     {
         std::stringstream ss;
@@ -45,15 +31,13 @@ public:
 
 public:
     BSplineGroup *m_splineGroup;
-    int connected_spline_id;
-    int idx;
-    QVector< QVector<int> > connected_cpts;
+    int splineRef;
+    NormalDirection direction; //Look at type on the attribute class
+    int ref;
 
-private:
-    QPoint m_degree;
-    QPoint m_spec_degree;
-    QVector<float> m_knotVectors_u;
-    QVector<float> m_knotVectors_v;
+    QVector<Point3d> vertices;
+    QVector<int> sharpCorners;
+    QVector< QVector<int> > controlMesh;
 };
 
 #endif // SURFACE_H

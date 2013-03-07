@@ -31,7 +31,7 @@ public:
     //Sketching functions
     void createBSpline();
     void setSurfaceWidth(float _surface_width);
-    int computeSurface(int spline_id);
+    void recomputeAllSurfaces();
     int registerPointAtScenePos(QPointF scenePos);
     QPointF sceneToImageCoords(QPointF scenePos);
     QPointF imageToSceneCoords(QPointF imgPos);
@@ -49,28 +49,32 @@ public:
     unsigned int getImageHeight() {return m_curImage.cols;}
     unsigned int getImageWidth()  {return m_curImage.rows;}
 
-    bool writeCurrentSurface(std::ostream &ofs)
+    ControlPoint& controlPoint(int ref) { return m_splineGroup.controlPoint(ref); }
+    BSpline& spline(int ref) { return m_splineGroup.spline(ref); }
+    Surface& surface(int ref) { return m_splineGroup.surface(ref); }
+    int& curSplineRef() { return m_curSplineIdx; }
+
+    int num_cpts() { return m_splineGroup.num_controlPoints(); }
+    int num_splines() { return m_splineGroup.num_splines(); }
+    int num_surfaces() { return m_splineGroup.num_surfaces(); }
+
+    bool writeCurrentSurface(std::ostream &ofs, int k=0)
     {
-        if (m_curSplineIdx != -1)
+        int splineRef = curSplineRef();
+        if (splineRef >= 0 && k < spline(splineRef).num_surfaces())
         {
-            for (int i=0; i< m_splineGroup.num_surfaces(); ++i)
-            {
-                if (m_splineGroup.surface(i).connected_spline_id == m_curSplineIdx)
-                {
-                    m_splineGroup.surface(i).writeOFF(ofs);
-                    return true;
-                }
-            }
+            spline(splineRef).surfaceAt(k).writeOFF(ofs);
+            return true;
         }
         return false;
     }
 
     std::vector<std::string> OFFSurfaces()
     {
-        std::vector<std::string> surface_strings(m_splineGroup.num_surfaces());
-        for (int i=0; i< m_splineGroup.num_surfaces(); ++i)
+        std::vector<std::string> surface_strings(num_surfaces());
+        for (int i=0; i< num_surfaces(); ++i)
         {
-            surface_strings[i] =  m_splineGroup.surface(i).surfaceToOFF();
+            surface_strings[i] =  surface(i).surfaceToOFF();
         }
         return surface_strings;
     }
@@ -108,9 +112,11 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
+    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
 public slots:
-    void change_inward_outward_surface();
+    void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
+
     void delete_all();
     void subdivide_current_spline();
     void toggleShowCurrentCurvePoints(bool status);
@@ -124,18 +130,12 @@ private:
     double  m_modelview [16];
     double  m_projection [16];
     QList<std::pair<uint, uint> > selectedObjects;
-
-    QVector<int> modified_spline_ids;
-
 public:
     BSplineGroup m_splineGroup;
     float pointSize;
-    float surfaceWidth;
     bool showControlMesh;
     bool showControlPoints;
     bool showCurrentCurvePoints;
-    QCheckBox *inward_surface_box;
-    QCheckBox *outward_surface_box;
     bool brush;
     int brushType;
     float brushSize;
