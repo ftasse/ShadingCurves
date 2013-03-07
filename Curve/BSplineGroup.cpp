@@ -82,10 +82,12 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
 
 //    bspline.fix_orientation();
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);
-    QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
+    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,false);
 
     if(slope) {
+        // find points on the other side
+        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,true);
+
         // set end points to zero
         controlPoint(points[1][0]).setZ(0);
         controlPoint(points2[1][0]).setZ(0);
@@ -144,14 +146,6 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
         id_cp = addControlPoint(tmp);
         points[2].append(id_cp);
 
-        // close the loop
-/*        id_cp = addControlPoint(cp);
-        points2[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
-        points2[1].append(id_cp);
-        id_cp = addControlPoint(tmp);
-        points2[2].append(id_cp);
-*/
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)
                 points[i].push_back(points2[i][j]);
@@ -163,17 +157,22 @@ int BSplineGroup::createSurface(int spline_id, cv::Mat dt, float width, bool inw
     surf.controlPoints().append(points.at(2));
 
     surf.updateKnotVectors();
-    std::ofstream ofs("debug_surface.off");
+/*    std::ofstream ofs("debug_surface.off");
     surf.writeOFF(ofs);
-    ofs.close();
+    ofs.close();*/
     return surface_id;
 }
 
-QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward)
+QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward,bool newP)
 {
     float cT = 90; // threshold for curvature (in degrees)
 
-    QVector<int> original = bspline.connected_cpts;
+    QVector<int> original;
+    if(newP) {
+        for(int i=0;i<bspline.connected_cpts.size();i++)
+            original.append(addControlPoint(controlPoint(bspline.connected_cpts[i])));
+    } else
+        original = bspline.connected_cpts;
     QVector<int> translated_cpts_ids;
     QVector<int> perpendicular_cpts_ids;
 
@@ -250,6 +249,11 @@ QVector<QVector<int> > BSplineGroup::setSurfaceCP(BSpline& bspline,cv::Mat dt,fl
 
 QPointF BSplineGroup::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width)
 {
+    // thresholds
+    float Td = .75f; // for distance
+    float Ta = 1.0f; // for angle
+
+
     float currentD = 0;
     QPointF new_cpt;
     QList<QPoint> visited;
@@ -257,7 +261,7 @@ QPointF BSplineGroup::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF nor
     while(true) {
         float oldD = currentD;
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
-                            ,&currentD,normalL,visited);
+                            ,&currentD,normalL,visited,Td,Ta);
         // check lines
         QLineF currentL(limit,m);
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
@@ -642,12 +646,8 @@ void BSplineGroup::saveOFF(std::string fname)
 
 
 // HENRIK: find max value in I, in neighbourhood N
-QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
+QPoint BSplineGroup::localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited,float Td,float Ta)
 {
-    // thresholds
-    float Td = .75f; // for distance
-    float Ta = 1.0f; // for angle
-
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();
