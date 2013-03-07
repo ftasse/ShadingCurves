@@ -54,6 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->radioContinuous, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeC(bool)));
     connect(ui->radioDiscrete, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeD(bool)));
 
+    connect(ui->super1, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper1()));
+    connect(ui->super2, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper2()));
+    connect(ui->super4, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper4()));
+    connect(ui->imgShowAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgShowAll(bool)));
+    connect(ui->imgWriteAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgWriteAll(bool)));
 }
 
 MainWindow::~MainWindow()
