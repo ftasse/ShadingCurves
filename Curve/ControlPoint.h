@@ -9,10 +9,16 @@
 class BSplineGroup;
 class BSpline;
 
+typedef enum NormalDirection
+{
+  INWARD_DIRECTION = 0,
+  OUTWARD_DIRECTION
+} NormalDirection;
+
 typedef struct Attribute
 {
-    int type; //0 for inward point along the normal,    1 for outward point along the normal
-    float extend;
+    NormalDirection direction; //0 for inward point along the normal,    1 for outward point along the normal
+    float extent;
     float height;
     QPointF barycentricCoords;
 } Attribute;
@@ -30,12 +36,14 @@ public:
         return splineRefs.size();
     }
 
+    void useDefaultAttributes();
+
 public:
     BSplineGroup *m_splineGroup;
     QVector<int> splineRefs;
 
     int ref;
-    QVector<Attribute> attributes;
+    Attribute attributes[2];
 };
 
 #endif // CONTROLPOINT_H

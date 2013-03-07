@@ -19,7 +19,7 @@ public:
     void computeSurfaces(cv::Mat dt);
     void fix_orientation();
     void change_generic_extent(float extent);
-    void change_bspline_type(bool _is_slope, bool _is_closed, bool _has_inward, bool _has_outward);
+    void change_bspline_type(bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
     //Normal at the (index)th control point
     QPointF inward_normal(int index, bool subdivided = true);
@@ -31,9 +31,9 @@ public:
     Surface& surfaceAt(int index);
 
 
-    bool has_cycle()
+    bool has_loop()
     {
-        return cptRefs.front() == cptRefs.back();
+        return cptRefs.front() == cptRefs.back() || has_uniform_subdivision;    //FLORA, should we take the bit about uniform subdivision out?
     }
 
     int num_cpts()
@@ -54,7 +54,7 @@ public:
 
     float generic_extent;
     bool is_slope;
-    bool is_closed;
+    bool has_uniform_subdivision;
     bool has_inward_surface;
     bool has_outward_surface;
 

@@ -11,12 +11,12 @@ class Surface
 public:
     Surface();
 
-    void recompute(cv::Mat dt, int type);
-    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward);
+    void recompute(cv::Mat dt);
+    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward, bool newP);
     QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width);
 
     // HENRIK: find the closest highest value in neighbourhood
-    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited);
+    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta);
 
     Point3d& pointAt(int u, int v);
     QVector<QVector<int> > getFaceIndices();
@@ -32,7 +32,7 @@ public:
 public:
     BSplineGroup *m_splineGroup;
     int splineRef;
-    int type; //Look at type on the attribute class
+    NormalDirection direction; //Look at type on the attribute class
     int ref;
 
     QVector<Point3d> vertices;

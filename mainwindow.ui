@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -157,6 +157,9 @@
            </property>
           </widget>
           <widget class="QSlider" name="surfaceWidthSlider">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="geometry">
             <rect>
              <x>10</x>
@@ -191,7 +194,7 @@
             <string>Surface width</string>
            </property>
           </widget>
-          <widget class="QWidget" name="widget_2" native="true">
+          <widget class="QWidget" name="bspline_parameters_box" native="true">
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -202,7 +205,7 @@
            </property>
            <widget class="QCheckBox" name="inward_suface_box">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -218,7 +221,7 @@
            </widget>
            <widget class="QCheckBox" name="outward_surface_box">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -232,9 +235,9 @@
              <string>Boundary, 2. direction</string>
             </property>
            </widget>
-           <widget class="QCheckBox" name="outward_surface_box_2">
+           <widget class="QCheckBox" name="slope_curve_box">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -248,9 +251,9 @@
              <string>Slope curve</string>
             </property>
            </widget>
-           <widget class="QCheckBox" name="outward_surface_box_3">
+           <widget class="QCheckBox" name="uniform_subdivision_curve_box">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="geometry">
              <rect>

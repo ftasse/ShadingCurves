@@ -50,11 +50,12 @@ int BSplineGroup::addBSpline()
     return m_splines.size() - 1;
 }
 
-int BSplineGroup::addSurface()
+int BSplineGroup::addSurface(NormalDirection direction)
 {
     Surface surface;
     surface.m_splineGroup = this;
     surface.ref = num_surfaces();
+    surface.direction = direction;
     m_surfaces.push_back(surface);
     return surface.ref;
 }
@@ -63,7 +64,6 @@ bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
 {
     m_splines[spline_id].cptRefs.push_back(cpt_id);
     m_cpts[cpt_id].splineRefs.push_back(spline_id);
-
     m_splines[spline_id].recompute();
     return true;
 }

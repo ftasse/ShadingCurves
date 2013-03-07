@@ -14,7 +14,7 @@ public:
 
     int addControlPoint(QPointF value, float z=0.0);
     int addBSpline();
-    int addSurface();
+    int addSurface(NormalDirection direction = INWARD_DIRECTION);
 
     bool addControlPointToSpline(int spline_id, int cpt_id);
 

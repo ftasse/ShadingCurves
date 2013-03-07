@@ -134,13 +134,6 @@ void GraphicsView::saveCurves()
     }
 }
 
-void GraphicsView::changeSurfaceWidth(int surfaceWidth)
-{
-    GLScene *my_scene = (GLScene *) scene();
-    my_scene->setSurfaceWidth(surfaceWidth);
-    my_scene->update();
-}
-
 void GraphicsView::saveOff()
 {
     QFileDialog::Options options;

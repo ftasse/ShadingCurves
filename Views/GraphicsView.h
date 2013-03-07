@@ -29,7 +29,6 @@ public slots:
     void saveOff();
 
     void changeControlPointSize(int pointSize);
-    void changeSurfaceWidth(int surfaceWidth);
     void changeBrushLightness(int type);
     void changeBrushSize(int size);
     void changeFreehand(bool freehand);

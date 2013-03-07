@@ -27,8 +27,27 @@ QPointF nearestPoint(QPointF pt, QPointF a, QPointF b, float &t)
 }
 
 BSpline::BSpline():
-    ref(-1), has_inward_surface(false), has_outward_surface(false), is_closed(false), is_slope(false), generic_extent(30.0f)
+    ref(-1), has_inward_surface(false), has_outward_surface(false), has_uniform_subdivision(false), is_slope(false), generic_extent(30.0f)
 {
+}
+
+void BSpline::change_generic_extent(float extent)
+{
+    generic_extent = extent;
+    for (int i=0; i< num_cpts(); ++i)
+    {
+        pointAt(i).attributes[0].extent = generic_extent;
+        pointAt(i).attributes[1].extent = generic_extent;
+    }
+}
+
+void BSpline::change_bspline_type(bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
+{
+    is_slope = _is_slope;
+    has_uniform_subdivision = _has_uniform_subdivision;
+    has_inward_surface = _has_inward;
+    has_outward_surface = _has_outward;
+    recompute();
 }
 
 ControlPoint& BSpline::pointAt(int index)
@@ -60,9 +79,9 @@ void BSpline::recompute()
     subdivided_points.clear();
 
     if (points.size() > 1)
-        subdivided_points = subDivide(points, is_closed);
+        subdivided_points = subDivide(points, has_uniform_subdivision);
 
-    if (is_closed && points.size() >= 4) {
+    if (has_uniform_subdivision && points.size() >= 4) {
         subdivided_points.pop_back();
         subdivided_points.pop_front();
     }
@@ -85,7 +104,7 @@ void BSpline::computeSurfaces(cv::Mat dt)
 
 void BSpline::fix_orientation()
 {
-    if (cptRefs.size()>0 && (is_closed|| has_cycle()))
+    if (cptRefs.size()>0 && has_loop())
     {
         //Check if current orientation is correct
         QPointF inside_point = getPoints().front() + 5*inward_normal(0, true);

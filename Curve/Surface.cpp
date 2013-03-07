@@ -8,7 +8,7 @@
 
 
 Surface::Surface():
-    ref(-1), splineRef(-1), type(0)
+    ref(-1), splineRef(-1), direction(INWARD_DIRECTION)
 {
 }
 
@@ -45,8 +45,8 @@ QVector<QVector<int> > Surface::getFaceIndices()
             }
 
             faceIndices.push_back(indices);
-       }
-       flip_face = !flip_face;
+        }
+        flip_face = !flip_face;
     }
 
     return faceIndices;
@@ -87,10 +87,10 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 }
 
-void Surface::recompute(cv::Mat dt, int type)
+void Surface::recompute(cv::Mat dt)
 {
 
-    vertices.clear();
+    /*vertices.clear();
     sharpCorners.clear();
     controlMesh.clear();
 
@@ -109,12 +109,14 @@ void Surface::recompute(cv::Mat dt, int type)
     }
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
-//    bspline.fix_orientation();
+    //    bspline.fix_orientation();
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward);
-    QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward);
+    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,false);
 
     if(slope) {
+        // find points on the other side
+        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,true);
+
         // set end points to zero
         controlPoint(points[1][0]).setZ(0);
         controlPoint(points2[1][0]).setZ(0);
@@ -144,7 +146,7 @@ void Surface::recompute(cv::Mat dt, int type)
         points[2].prepend(id_cp);
 
         // close the loop
-        id_cp = addControlPoint(cp);
+        id_cp = addControlPoint(cp);hange_bspline_parameters()
         points2[0].prepend(id_cp);
         id_cp = addControlPoint(controlPoint(points[1][0]));
         points2[1].prepend(id_cp);
@@ -173,14 +175,6 @@ void Surface::recompute(cv::Mat dt, int type)
         id_cp = addControlPoint(tmp);
         points[2].append(id_cp);
 
-        // close the loop
-/*        id_cp = addControlPoint(cp);
-        points2[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
-        points2[1].append(id_cp);
-        id_cp = addControlPoint(tmp);
-        points2[2].append(id_cp);
-*/
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)
                 points[i].push_back(points2[i][j]);
@@ -192,20 +186,25 @@ void Surface::recompute(cv::Mat dt, int type)
 
     std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);
-    ofs.close();
+    ofs.close();*/
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward)
+QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward, bool newP)
 {
-    float cT = 90; // threshold for curvature (in degrees)
+    /*float cT = 90; // threshold for curvature (in degrees)
 
-    QVector<int> original = bspline.connected_cpts;
+    QVector<int> original;
+    if(newP) {
+        for(int i=0;i<bspline.connected_cpts.size();i++)
+            original.append(addControlPoint(controlPoint(bspline.connected_cpts[i])));
+    } else
+        original = bspline.connected_cpts;
     QVector<int> translated_cpts_ids;
     QVector<int> perpendicular_cpts_ids;
 
     for (int k=0; k<bspline.count(); ++k)
     {
-        if (k == bspline.count()-1 && (bspline.is_closed || bspline.has_cycle())) //if closed curve
+        if (k == bspline.count()-1 && bspline.has_loop()) //if closed curve
         {
             perpendicular_cpts_ids.push_back(perpendicular_cpts_ids[0]);
         } else
@@ -217,19 +216,18 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
     }
 
     // get limit points for the control points
-    QVector<QPointF> subdivided_points = bspline.getPoints();   //FLORA: These are the green points
-    QVector<QPointF> lp = limitPoints(subdivided_points);
+    QVector<QPointF> lp = limitPoints(bspline.getPoints());
 
     // loop through all control points for the given spline curve
     for (int k=0; k<bspline.count(); ++k)
     {
-        if (k == bspline.count()-1 && bspline.is_closed()) //if closed curve
+        if (k == bspline.count()-1 && bspline.has_loop()) //if closed curve
         {
             translated_cpts_ids.push_back(translated_cpts_ids[0]);
         } else
         {
             // HENRIK: move in the distance transform image
-            QPointF normal = bspline.inward_normal(subdivided_points, k);
+            QPointF normal = bspline.inward_normal(k, true);
             if(!inward)
                 normal = -normal;
             QLineF normalL(lp.at(k),lp.at(k) + normal*width);
@@ -266,17 +264,22 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
             int cpt_id = addControlPoint(new_cpt);
             translated_cpts_ids.push_back(cpt_id);
         }
-    }
+    }*/
 
     QVector<QVector<int> > points;
-    points.append(original);
+    /*points.append(original);
     points.append(perpendicular_cpts_ids);
-    points.append(translated_cpts_ids);
+    points.append(translated_cpts_ids);*/
     return points;
 }
 
 QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width)
 {
+    // thresholds
+    float Td = .75f; // for distance
+    float Ta = 1.0f; // for angle
+
+
     float currentD = 0;
     QPointF new_cpt;
     QList<QPoint> visited;
@@ -284,7 +287,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
     while(true) {
         float oldD = currentD;
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
-                            ,&currentD,normalL,visited);
+                            ,&currentD,normalL,visited,Td,Ta);
         // check lines
         QLineF currentL(limit,m);
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
@@ -302,12 +305,8 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
 }
 
 // HENRIK: find max value in I, in neighbourhood N
-QPoint localMax(cv::Mat I,cv::Rect N,float* oldD,QLineF normalL,QList<QPoint> visited)
+QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta)
 {
-    // thresholds
-    float Td = .75f; // for distance
-    float Ta = 1.0f; // for angle
-
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();

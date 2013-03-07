@@ -20,11 +20,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Connections
     connect(ui->actionDelete_all_curves, SIGNAL(triggered()), scene, SLOT(delete_all()));
-    connect(ui->inward_suface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
-    connect(ui->outward_surface_box, SIGNAL(clicked(bool)), scene, SLOT(change_inward_outward_surface()));
-    connect(ui->subdivideCurveButton, SIGNAL(clicked(bool)), scene, SLOT(subdivide_current_spline()));
-    connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
-
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
     connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));
     connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));
@@ -35,9 +30,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->editCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(edit_bspline()));
     connect(ui->moveCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(move_bsplines()));
     connect(ui->pointSizeSlider, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeControlPointSize(int)));
-    connect(ui->surfaceWidthSlider, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeSurfaceWidth(int)));
     connect(ui->showControlMeshBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlMesh(bool)));
     connect(ui->showControlPointsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlPoints(bool)));
+
+    connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
+    connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool)));
+
+    connect(ui->subdivideCurveButton, SIGNAL(clicked(bool)), scene, SLOT(subdivide_current_spline()));
+    connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
 
     connect(ui->actionDistance_transform, SIGNAL(triggered()), ui->graphicsView, SLOT(createDistanceTransformDEBUG()));
 
@@ -58,6 +62,27 @@ MainWindow::~MainWindow()
 {
     delete scene;
     delete ui;
+}
+
+void MainWindow::change_bspline_parameters()
+{
+    scene->change_bspline_parameters(ui->surfaceWidthSlider->value(),
+                                     ui->slope_curve_box->isChecked(),
+                                     ui->uniform_subdivision_curve_box->isChecked(),
+                                     ui->inward_suface_box->isChecked(),
+                                     ui->outward_surface_box->isChecked());
+}
+
+void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
+{
+    ui->surfaceWidthSlider->setValue(extent);
+    ui->slope_curve_box->setChecked(_is_slope);
+    ui->uniform_subdivision_curve_box->setChecked(_has_uniform_subdivision);
+    ui->inward_suface_box->setChecked(_has_inward);
+    ui->outward_surface_box->setChecked(_has_outward);
+
+    ui->surfaceWidthSlider->setEnabled(enabled);
+    ui->bspline_parameters_box->setEnabled(enabled);
 }
 
 void MainWindow::center()

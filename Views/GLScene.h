@@ -112,9 +112,10 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
+    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
 public slots:
-    void change_bspline_parameters(float extent, bool _is_slope, bool _is_closed, bool _has_inward, bool _has_outward);
+    void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
     void delete_all();
     void subdivide_current_spline();

@@ -152,10 +152,9 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (num_surfaces() > 0)
+    if (sketchmode() == IDLE_MODE)
     {
         recomputeAllSurfaces();
-        update();
     } else
     {
         QGraphicsScene::mouseReleaseEvent(event);
@@ -181,6 +180,17 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 m_curSplineIdx = targetId;
             }
         }
+
+    }
+
+    if (curSplineRef() >= 0)
+    {
+        BSpline& bspline = spline(curSplineRef());
+        emit bspline_parameters_changed(true, bspline.generic_extent, bspline.is_slope, bspline.has_uniform_subdivision, bspline.has_inward_surface, bspline.has_outward_surface);
+
+    } else
+    {
+        emit bspline_parameters_changed(false, 0.0, false, false, false, false);
     }
 
     update();
@@ -201,6 +211,8 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
         if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
         {
+            controlPoint(cptRef).attributes[0].extent = spline(m_curSplineIdx).generic_extent;
+            controlPoint(cptRef).attributes[1].extent = spline(m_curSplineIdx).generic_extent;
             update();
         }
     } else
@@ -506,7 +518,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
     }
 
       QVector<QPointF> points = bspline.getControlPoints();
-      QVector<QPointF> subDividePts = subDivide(points, bspline.is_closed, 5);
+      QVector<QPointF> subDividePts = subDivide(points, bspline.has_uniform_subdivision, 5);
 
       glBegin(GL_LINE_STRIP);
       for (int i = 0; i < subDividePts.size(); ++i)
@@ -680,6 +692,8 @@ void GLScene::createBSpline()
 
 void GLScene::recomputeAllSurfaces()
 {
+    qDebug("Recompute surfaces");
+
     // HENRIK, include distrance transform image
     cv::Mat curvesGrayIm = curvesImage();
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
@@ -691,6 +705,7 @@ void GLScene::recomputeAllSurfaces()
     {
         spline(i).computeSurfaces(dt);
     }
+    update();
 }
 
 void GLScene::delete_all()
@@ -734,8 +749,6 @@ void GLScene::subdivide_current_spline(){
 
         recomputeAllSurfaces();
     }
-
-    update();
 }
 
 void GLScene::toggleShowCurrentCurvePoints(bool status)
@@ -805,7 +818,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     for (int i=0; i<num_splines(); ++i)
     {
         if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
-        if (only_closed_curves && !(spline(i).is_closed || spline(i).has_cycle()))   continue;
+        if (only_closed_curves && !spline(i).has_loop())   continue;
         draw_spline(i, true, false);
     }
 
@@ -962,7 +975,7 @@ void GLScene::saveOff(std::string fname)
     m_splineGroup.saveOFF(fname);
 }
 
-void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _is_closed, bool _has_inward, bool _has_outward)
+void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
 {
     bool has_changed = false;
     if (curSplineRef() >= 0)
@@ -976,9 +989,9 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _is_c
             has_changed = true;
         }
 
-        if (bspline.is_closed != _is_closed || bspline.is_slope != _is_slope || bspline.has_inward_surface != _has_inward || bspline.has_outward_surface != _has_outward)
+        if (bspline.has_uniform_subdivision != _has_uniform_subdivision || bspline.is_slope != _is_slope || bspline.has_inward_surface != _has_inward || bspline.has_outward_surface != _has_outward)
         {
-            bspline.change_bspline_type(_is_slope, _is_closed, _has_inward, _has_outward);
+            bspline.change_bspline_type(_is_slope, _has_uniform_subdivision, _has_inward, _has_outward);
             has_changed = true;
         }
     }

@@ -60,7 +60,7 @@ QVector<QPointF> limitPoints(QVector<QPointF> spline)
 QPointF getNormal(QVector<QPointF> points, int index)
 {
     QPointF tangent;
-    if (index > 0 && index < count()-1) tangent = points[index+1] - points[index-1];
+    if (index > 0 && index < points.size()-1) tangent = points[index+1] - points[index-1];
     else if (points.front() == points.back()) tangent = points[1] - points[points.size() - 2]; // junction point
     else if (index == 0)    tangent = points[index+1] - points[index];
     else    tangent = points[index] - points[index-1];
