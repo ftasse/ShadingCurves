@@ -12,16 +12,11 @@ class BSplineGroup
 public:
     BSplineGroup();
 
-    int addControlPoint(QPointF value, float z=0.0, bool original  = false);
+    int addControlPoint(QPointF value, float z=0.0);
     int addBSpline();
     int addSurface();
 
-    bool addControlPointToSpline(int spline_id, int cpt_id, bool original = false);
-
-    int createSurface(int spline_id, cv::Mat dt, float width = 50.0, bool inward = true);
-
-    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward);
-    QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width);
+    bool addControlPointToSpline(int spline_id, int cpt_id);
 
     void removeControlPoint(int cpt_id);
     void removeSpline(int spline_id);
@@ -79,9 +74,6 @@ public:
     {
         return m_cpts.size();
     }
-
-    // HENRIK: find the closest highest value in neighbourhood
-    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited);
 
 public:
     std::vector< std::pair<QPoint, QColor> > colorMapping;

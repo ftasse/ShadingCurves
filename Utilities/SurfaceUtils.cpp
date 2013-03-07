@@ -1,10 +1,8 @@
 #include "SurfaceUtils.h"
 #include <QDebug>
 
-QVector<QPointF> subDivide(QVector<QPointF> spline, int steps)
+QVector<QPointF> subDivide(QVector<QPointF> spline, bool closed, int steps)
 {
-    bool closed = false;
-
     if(steps==0)
         return spline;
     QVector<QPointF> newVec;
@@ -57,4 +55,19 @@ QVector<QPointF> limitPoints(QVector<QPointF> spline)
     newVec.append(spline.last());
 
     return newVec;
+}
+
+QPointF getNormal(QVector<QPointF> points, int index)
+{
+    QPointF tangent;
+    if (index > 0 && index < count()-1) tangent = points[index+1] - points[index-1];
+    else if (points.front() == points.back()) tangent = points[1] - points[points.size() - 2]; // junction point
+    else if (index == 0)    tangent = points[index+1] - points[index];
+    else    tangent = points[index] - points[index-1];
+
+    float norm = sqrt(tangent.x()*tangent.x() + tangent.y()*tangent.y());
+    if (norm > 1e-5)
+        tangent /= norm;
+    QPointF normal(-tangent.y(), tangent.x());
+    return normal;
 }

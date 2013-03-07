@@ -34,7 +34,6 @@ GLScene::GLScene(QObject *parent) :
     m_curSplineIdx = -1;
     m_sketchmode = IDLE_MODE;
     pointSize = 10.0;
-    surfaceWidth = 50.0;
     showControlMesh = true;
     showControlPoints = true;
     showCurrentCurvePoints = true;
@@ -117,7 +116,6 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (selectedObjects.size() > 0)
         {
             std::set<int> cpt_ids;
-            std::set<int> spline_ids;
             QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
 
             for (int i=0; i<selectedObjects.size(); ++i)
@@ -127,19 +125,13 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 if (nodeId == CPT_NODE_ID)
                 {
                     cpt_ids.insert(targetId);
-                    ControlPoint& cpt = m_splineGroup.controlPoint(targetId);
-                    for (int k=0; k<cpt.count(); ++k)
-                    {
-                        spline_ids.insert(cpt.connected_splines[k]);
-                    }
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
-                    BSpline& spline = m_splineGroup.spline(targetId);
-                    for (int k=0; k<spline.original_cpts.size(); ++k)
+                    BSpline& bspline = spline(targetId);
+                    for (int k=0; k<bspline.cptRefs.size(); ++k)
                     {
-                        cpt_ids.insert(spline.original_cpts[k]);
+                        cpt_ids.insert(bspline.cptRefs[k]);
                     }
-                    spline_ids.insert(targetId);
                 }
             }
 
@@ -148,11 +140,6 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 ControlPoint& cpt = m_splineGroup.controlPoint(*it);
                 cpt.setX(cpt.x()+diff.x());
                 cpt.setY(cpt.y()+diff.y());
-            }
-            modified_spline_ids.clear();
-            for (std::set<int>::iterator it = spline_ids.begin(); it != spline_ids.end(); ++it)
-            {
-                modified_spline_ids.push_back(*it);
             }
 
             update();
@@ -165,21 +152,10 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (modified_spline_ids.size() > 0)
+    if (num_surfaces() > 0)
     {
-        for (int i=0; i<modified_spline_ids.size(); ++i)
-        {
-            m_splineGroup.spline(modified_spline_ids[i]).recompute();
-        }
-
-        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
-        {
-            int spline_id = m_splineGroup.surface(k).connected_spline_id;
-            if (std::find(modified_spline_ids.begin(), modified_spline_ids.end(), spline_id) != modified_spline_ids.end())
-                computeSurface(spline_id);
-        }
+        recomputeAllSurfaces();
         update();
-        modified_spline_ids.clear();
     } else
     {
         QGraphicsScene::mouseReleaseEvent(event);
@@ -207,18 +183,6 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
-    if (m_curSplineIdx >= 0)
-    {
-        inward_surface_box->setEnabled(true);
-        outward_surface_box->setEnabled(true);
-        inward_surface_box->setChecked( m_splineGroup.spline(m_curSplineIdx).has_inward_surface );
-        outward_surface_box->setChecked( m_splineGroup.spline(m_curSplineIdx).has_outward_surface );
-    } else
-    {
-        inward_surface_box->setEnabled(false);
-        outward_surface_box->setEnabled(false);
-    }
-
     update();
 }
 
@@ -235,7 +199,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             createBSpline();
         }
 
-        if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef, true))
+        if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
         {
             update();
         }
@@ -273,23 +237,6 @@ void GLScene::keyPressEvent(QKeyEvent *event)
         m_curImage = cv::Scalar(255,255,255);
         update_region_coloring();
         update();
-    } else if (event->key() == Qt::Key_S)
-    {
-        if (m_curSplineIdx >=0 )
-        {
-            int surf_id = computeSurface(m_curSplineIdx);
-
-            //Update view
-            m_curSplineIdx = m_splineGroup.surface(surf_id).connected_spline_id;
-            selectedObjects.clear();
-            selectedObjects.push_back(std::pair<uint, uint>(SPLINE_NODE_ID, m_curSplineIdx));
-            update();
-
-            //Print out surface in OFF format
-            //m_splineGroup.surface(surf_id).writeOFF(std::cout);
-            //std::cout << std::flush;
-
-        }
     }
     if (event->key() == Qt::Key_Delete)
     {
@@ -395,35 +342,28 @@ void GLScene::display(bool only_show_splines)
     if (!only_show_splines)
     for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
     {
-        if (m_splineGroup.surface(i).controlPoints().size() == 0)
+        if (surface(i).controlMesh.size() == 0)
             continue;
-
-        Surface& surface = m_splineGroup.surface(i);
-        draw_surface(surface.idx);
+        draw_surface(i);
     }
 
     glLineWidth(pointSize/5.0);
-    for (int i=0; i<m_splineGroup.num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
     {
-        BSpline& spline = m_splineGroup.spline(i);
-        bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline.idx));
-        if (!only_show_splines && (!showCurrentCurvePoints || spline.idx == m_curSplineIdx || is_selected))
+        bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
+        if (!only_show_splines && (!showCurrentCurvePoints || i == curSplineRef() || is_selected))
         {
-          for (int j=spline.connected_cpts.size()-1; j>=0; --j)
+          BSpline& bspline = spline(i);
+          for (int j=bspline.num_cpts()-1; j>=0; --j)
           {
-              draw_control_point(spline.connected_cpts[j]);
-          }
-
-          for (int j=spline.original_cpts.size()-1; j>=0; --j)
-          {
-              draw_control_point(spline.original_cpts[j]);
+              draw_control_point(bspline.cptRefs[j]);
           }
         }
 
-        if (m_splineGroup.spline(i).count() == 0)
+        if (spline(i).num_cpts() == 0)
             continue;
         else
-            draw_spline(m_splineGroup.spline(i).idx, only_show_splines);
+            draw_spline(i, only_show_splines);
     }
 }
 
@@ -493,23 +433,13 @@ void GLScene::draw_control_point(int point_id)
 {
     ControlPoint& cpt = m_splineGroup.controlPoint(point_id);
 
-    if (!showControlPoints || !cpt.isVisible)
+    if (!showControlPoints)
         return;
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
-    float z = 0.5;
-    if (cpt.isOriginal)
-    {
-        glPointSize(pointSize);
-        glColor3d(0.0, 0.0, 1.0);
-    }
-    else
-    {
-        glPointSize(3.0);
-        glColor3d(0.0, 1.0, 0.0);
-        z = - 1.0f;
-    }
+    glPointSize(pointSize);
+    glColor3d(0.0, 0.0, 1.0);
     if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, point_id)))
     {
         glColor3d(1.0, 0.0, 0.0);
@@ -517,7 +447,7 @@ void GLScene::draw_control_point(int point_id)
 
     QPointF pos = imageToSceneCoords(cpt);
     glBegin(GL_POINTS);
-    glVertex3d(pos.x(), pos.y(), z);
+    glVertex3d(pos.x(), pos.y(), 0.5f);
     glEnd();
 
     glPopName();
@@ -529,102 +459,54 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
     glPushName(SPLINE_NODE_ID);
     glPushName(spline_id);
 
-    BSpline& spline = m_splineGroup.spline(spline_id);
-    int order = spline.degree() + 1;
-
-    // check for incomplete curve
-      if (spline.count() <= 1 || spline.count() < order)
+    BSpline& bspline = spline(spline_id);
+    if (bspline.num_cpts() <= 1)
         return;
 
+    if (!only_show_splines) {
+        // Display normals
+        glColor3f(0.5, 0.5, 0.0);
+        glBegin(GL_LINES);
+        if (!only_show_splines)
+            for (int i = 0; i < bspline.getPoints().size(); ++i)
+            {
+                QPointF curvPos = bspline.getPoints()[i];
+                QPointF scenePos = imageToSceneCoords(curvPos);
+                glVertex2f(scenePos.x(), scenePos.y());
 
-      // Display normals
-      glColor3f(0.5, 0.5, 0.0);
-      glBegin(GL_LINES);
-      if (!only_show_splines)
-      for (int i = 0; i < spline.count(); ++i)
-      {
-          QPointF curvPos = spline.pointAt(i);
-          QPointF scenePos = imageToSceneCoords(curvPos);
-          glVertex2f(scenePos.x(), scenePos.y());
+                QPointF normal = imageToSceneCoords(curvPos + bspline.inward_normal(i, true)*5.0);
+                glVertex2f(normal.x(), normal.y());
+            }
+        glEnd();
 
-          QPointF normal = imageToSceneCoords(curvPos + spline.inward_normal_inaccurate(i)*5.0);
-          glVertex2f(normal.x(), normal.y());
-      }
-      glEnd();
+        /*
+        QVector<QPointF> points;
+        for (int i=0; i< spline.connected_cpts.size(); ++i)
+        {
+            points.push_back(spline.pointAt(i));
+        }
+        glColor3f(0.5f, 0.5f, 0.5f);
+        QVector<QPointF> lp = limitPoints(points);
+        glBegin(GL_POINTS);
+        for (int i = 0; i < lp.count(); ++i) {
+            QPointF pt = imageToSceneCoords(lp.at(i));
+            glVertex2f(pt.x(),pt.y());
+        }
+        glEnd();
+        */
 
+        glColor3d(0.0, 0.0, 1.0);
+        if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
+        {
+            glColor3d(1.0, 0.0, 0.0);
+        }
+    } else
+    {
+        glColor3d(0.0, 0.0, 0.0);
+    }
 
-      if (!only_show_splines) {
- /*         QVector<QPointF> points;
-          for (int i=0; i< spline.connected_cpts.size(); ++i)
-          {
-              points.push_back(spline.pointAt(i));
-          }
-          glColor3f(0.5f, 0.5f, 0.5f);
-          QVector<QPointF> lp = limitPoints(points);
-          glBegin(GL_POINTS);
-          for (int i = 0; i < lp.count(); ++i) {
-              QPointF pt = imageToSceneCoords(lp.at(i));
-              glVertex2f(pt.x(),pt.y());
-          }
-          glEnd();
-*/
-//          glColor3f(0.0, 0.0, 0.0);
-//          int numKnots = spline.knotVectors().size();
-//          GLfloat *knots = new GLfloat[numKnots];
-//          for (int i = 0; i < numKnots; ++i)
-//          {
-//              knots[i] = spline.knotVectors()[i];
-//          }
-
-//          GLfloat *ctlpoints = new GLfloat[spline.count() * 3];
-//          for (int i = 0; i < spline.count(); ++i)
-//          {
-//            QPointF p = spline.pointAt(i);
-//            if (transform) p = imageToSceneCoords(p);
-//            ctlpoints[i * 3 + 0] = (GLfloat)p.x();
-//            ctlpoints[i * 3 + 1] = (GLfloat)p.y();
-//            ctlpoints[i * 3 + 2] = 0.0f;
-//          }
-
-//          GLUnurbsObj *theNurb;
-//          theNurb = gluNewNurbsRenderer();
-
-
-//          #ifdef WIN32
-//            gluNurbsCallback(theNurb, GLU_ERROR, (void (__stdcall *)(void))(&nurbsError) );
-//          #else
-//            gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid (*)()) (&nurbsError) );
-//          #endif
-
-
-//          gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
-//          gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 5.0);
-
-//          gluBeginCurve(theNurb);
-//          gluNurbsCurve(theNurb, numKnots, knots, 3, ctlpoints, order, GL_MAP1_VERTEX_3);
-//          gluEndCurve(theNurb);
-
-//          gluDeleteNurbsRenderer(theNurb);
-//          delete [] ctlpoints;
-//          delete [] knots;
-
-      }
-
-      glColor3d(0.0, 0.0, 1.0);
-      if (selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, spline_id)))
-      {
-          glColor3d(1.0, 0.0, 0.0);
-      }
-
-      QVector<QPointF> points;
-      for (int i=0; i< spline.original_cpts.size(); ++i)
-      {
-          points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
-      }
-
-      QVector<QPointF> subDividePts;
-      if (points.size() > 1)
-          subDividePts = subDivide(points,5);
+      QVector<QPointF> points = bspline.getControlPoints();
+      QVector<QPointF> subDividePts = subDivide(points, bspline.is_closed, 5);
 
       glBegin(GL_LINE_STRIP);
       for (int i = 0; i < subDividePts.size(); ++i)
@@ -649,120 +531,37 @@ void GLScene::draw_surface(int surface_id)
         glColor3d(1.0, 1.0, 0.0);
     }
 
-    Surface& surface = m_splineGroup.surface(surface_id);
-    QPoint uv_order = surface.degree() + QPoint(1, 1);
+    Surface& surf = surface(surface_id);
 
     // check for incomplete curve
-    if (surface.controlPoints().size() < uv_order.x() || surface.controlPoints()[0].size() < uv_order.y())
+    if (surf.controlMesh.size() <= 1)
         return;
 
-/*      QPoint numKnots(surface.u_knotVectors().size(), surface.v_knotVectors().size());
-      GLfloat *u_knots = new GLfloat[numKnots.x()];
-      GLfloat *v_knots = new GLfloat[numKnots.y()];
-      for (int i = 0; i < numKnots.x(); ++i)
-      {
-          u_knots[i] = surface.u_knotVectors()[i];
-      }
-      for (int i = 0; i < numKnots.y(); ++i)
-      {
-          v_knots[i] = surface.v_knotVectors()[i];
-      }
-
-      int num_cpts = surface.controlPoints().size() * surface.controlPoints()[0].size();
-      GLfloat *ctlpoints = new GLfloat[num_cpts * 3];
-      for (int u = 0; u <  surface.controlPoints().size() ; ++u)
-      {
-          for (int v= 0; v <  surface.controlPoints()[u].size(); ++v)
-          {
-                QPoint pos(u, v);
-                int h = surface.controlPoints()[u].size();
-                QPointF p = imageToSceneCoords(surface.pointAt(pos));
-                ctlpoints[(u*h + v) * 3 + 0] = (GLfloat)p.x();
-                ctlpoints[(u*h + v) * 3 + 1] = (GLfloat)p.y();
-                ctlpoints[(u*h + v) * 3 + 2] = -0.8f;
-          }
-      }
-
-      GLUnurbsObj *theNurb;
-      theNurb = gluNewNurbsRenderer();
-
-      #ifdef WIN32
-        gluNurbsCallback(theNurb, GLU_ERROR, (void (__stdcall *)(void))(&nurbsError) );
-      #else
-        gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid (*)()) (&nurbsError) );
-      #endif
-
-      gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
-      gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 5.0);
-
-      int renderMode;
-      glGetIntegerv(GL_RENDER_MODE, &renderMode);
-      if (renderMode == GL_RENDER)
-      {
-        gluBeginSurface(theNurb);
-        gluNurbsSurface(theNurb,  numKnots.x(), u_knots, numKnots.y(), v_knots, surface.controlPoints()[0].size()*3, 3, ctlpoints,
-                      uv_order.x(), uv_order.y(), GL_MAP2_VERTEX_3);
-        gluEndSurface(theNurb);
-      }
-
-      gluDeleteNurbsRenderer(theNurb);
-      delete [] ctlpoints;
-      delete [] u_knots;
-      delete [] v_knots;
-*/
-      //Display Control Polygon
-      if (showControlMesh)
-      {
+    //Display Control Polygon
+    if (showControlMesh)
+    {
         glColor3f(0.65,0.65,0.65);
         glPushMatrix();
         glTranslatef(0.0,0.0,-500.0f);
         glLineWidth(2.0);
-        for (int k=1; k<surface.controlPoints().size(); ++k)
-        {
-            glBegin(GL_LINE_STRIP);
-            for (int l=0; l<surface.controlPoints()[k].size()-1; ++l)
-            {
-                std::vector<QPointF> points;
-                std::vector<float> zvalues;
-                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(0,l))));
-                zvalues.push_back(surface.pointAt(QPoint(0,l)).z());
-                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(0,l+1))));
-                zvalues.push_back(surface.pointAt(QPoint(0,l+1)).z());
-                points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l+1))));
-                zvalues.push_back(surface.pointAt(QPoint(k,l+1)).z());
-                if (surface.pointAt(QPoint(k,l+1)) != surface.pointAt(QPoint(k,l))) //if this is not a junction point
-                {
-                    points.push_back(imageToSceneCoords(surface.pointAt(QPoint(k,l))));
-                    zvalues.push_back(surface.pointAt(QPoint(k,l)).z());
-                }
-                for (uint m=0; m<points.size(); ++m)
-                    glVertex3f(points[m].x(), points[m].y(), zvalues[m]);
 
-                glVertex3f(points[0].x(), points[0].y(), zvalues[0]);
+        QVector<QVector<int> > faceIndices = surf.getFaceIndices();
+        for (int i=0; i<faceIndices.size(); ++i)
+        {
+            glBegin(GL_POLYGON);
+            for (int m=0; m<faceIndices[i].size(); ++m)
+            {
+                QPointF point = imageToSceneCoords(surf.vertices[faceIndices[i][m]]);
+                glVertex3f(point.x(), point.y(), surf.vertices[faceIndices[i][m]].z());
             }
             glEnd();
         }
-      }
-      glLineWidth(1.0);
-      glPopMatrix();
+    }
+    glLineWidth(1.0);
+    glPopMatrix();
 
-      glPopName();
-      glPopName();
-
-      //Display control points that are not connected to any bspline
-      /*for (int k=0; k<surface.controlPoints().size(); ++k)
-      {
-          for (int l=0; l<surface.controlPoints()[k].size(); ++l)
-          {
-              QPoint pos(k, l);
-              if (surface.pointAt(pos).count() == 0)
-              {
-                  draw_control_point(surface.pointAt(pos).idx);
-              }
-          }
-      }*/
-
-
+    glPopName();
+    glPopName();
 }
 
 void GLScene::adjustDisplayedImageSize()
@@ -879,21 +678,7 @@ void GLScene::createBSpline()
     update();
 }
 
-void GLScene::setSurfaceWidth(float _surface_width)
-{
-    surfaceWidth = _surface_width;
-    if (m_curSplineIdx >=0 )
-    {
-        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
-        {
-            int spline_id = m_splineGroup.surface(k).connected_spline_id;
-            if (spline_id == m_curSplineIdx)
-                computeSurface(spline_id);
-        }
-    }
-}
-
-int GLScene::computeSurface(int spline_id)
+void GLScene::recomputeAllSurfaces()
 {
     // HENRIK, include distrance transform image
     cv::Mat curvesGrayIm = curvesImage();
@@ -902,39 +687,22 @@ int GLScene::computeSurface(int spline_id)
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
-    BSpline& spline = m_splineGroup.spline(spline_id);
-
-    // FLORA, delete any previous surface attached to this spline
-    for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+    for (int i=0; i<num_splines(); ++i)
     {
-        Surface& surf = m_splineGroup.surface(i);
-        if (surf.connected_spline_id == spline_id)
-        {
-            m_splineGroup.removeSurface(surf.idx);
-        }
+        spline(i).computeSurfaces(dt);
     }
-    m_splineGroup.garbage_collection();
-
-    int surf_id = 0;
-    if (spline.has_inward_surface)
-        surf_id  = m_splineGroup.createSurface(spline_id, dt, surfaceWidth, true);
-
-    if (spline.has_outward_surface)
-        surf_id  = m_splineGroup.createSurface(spline_id, dt, surfaceWidth, false);
-
-    return surf_id;
 }
 
 void GLScene::delete_all()
 {
-    for (int i=0; i<m_splineGroup.num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
     {
         m_splineGroup.removeSpline(i);
     }
-
-    m_curSplineIdx = -1;
-    selectedObjects.clear();
     m_splineGroup.garbage_collection();
+
+    curSplineRef() = -1;
+    selectedObjects.clear();
 
     //TODO We may want to not load a new blank image
     openImage(imageLocationWithID("blank.png"));
@@ -948,28 +716,23 @@ void GLScene::subdivide_current_spline(){
 
         QVector<QPointF> org_points, new_points;
 
-        for (int i=0; i<spline.original_cpts.size(); ++i)
-            org_points.push_back(m_splineGroup.controlPoint(spline.original_cpts[i]));
+        for (int i=0; i<spline.cptRefs.size(); ++i)
+            org_points.push_back(m_splineGroup.controlPoint(spline.cptRefs[i]));
 
         new_points = subDivide(org_points,1);
 
-        while (spline.original_cpts.size() > 0)
-            m_splineGroup.removeControlPoint(spline.original_cpts[0]);
+        while (spline.cptRefs.size() > 0)
+            m_splineGroup.removeControlPoint(spline.cptRefs[0]);
 
         for (int i=0; i<new_points.size(); ++i)
         {
-            int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0, true);
-            m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id, true);
+            int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0);
+            m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id);
         }
         spline.recompute();
-
-        for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
-        {
-            int spline_id = m_splineGroup.surface(k).connected_spline_id;
-            if (spline_id == m_curSplineIdx)
-                computeSurface(spline_id);
-        }
         m_splineGroup.garbage_collection();
+
+        recomputeAllSurfaces();
     }
 
     update();
@@ -998,7 +761,7 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
         return -1;
     }
 
-    int pointIdx = m_splineGroup.addControlPoint(sceneToImageCoords(scenePos), 0.0, true);
+    int pointIdx = m_splineGroup.addControlPoint(sceneToImageCoords(scenePos), 0.0);
     selectedObjects.clear();
     selectedObjects.push_back(std::pair<uint, uint>(CPT_NODE_ID, pointIdx));
     update();
@@ -1039,11 +802,11 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
 
-    for (int i=0; i<m_splineGroup.num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
     {
-        if (m_splineGroup.spline(i).count() == 0)   continue;
-        if (only_closed_curves && !(m_splineGroup.spline(i).is_closed()))   continue;
-        draw_spline(m_splineGroup.spline(i).idx, true, false);
+        if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
+        if (only_closed_curves && !(spline(i).is_closed || spline(i).has_cycle()))   continue;
+        draw_spline(i, true, false);
     }
 
     cv::Mat img;
@@ -1147,6 +910,8 @@ void GLScene::update_region_coloring()
     update();
 }
 
+//Public Slots
+
 bool GLScene::openImage(std::string fname)
 {
     cv::Mat image = loadImage(fname);
@@ -1197,34 +962,27 @@ void GLScene::saveOff(std::string fname)
     m_splineGroup.saveOFF(fname);
 }
 
-void GLScene::change_inward_outward_surface()
+void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _is_closed, bool _has_inward, bool _has_outward)
 {
-    if (m_curSplineIdx >= 0)
+    bool has_changed = false;
+    if (curSplineRef() >= 0)
     {
-        BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
-        if (spline.count() == 0)
-            return;
-        spline.has_inward_surface = inward_surface_box->isChecked();
-        spline.has_outward_surface = outward_surface_box->isChecked();
-        if (!spline.has_inward_surface && !spline.has_outward_surface)
+        //Use all the rules regarding inward and outward direction here
+
+        BSpline& bspline = spline(curSplineRef());
+        if (fabs(bspline.generic_extent-extent) < 1)
         {
-            for (int k=0; k<m_splineGroup.num_surfaces(); ++k)
-            {
-                int spline_id = m_splineGroup.surface(k).connected_spline_id;
-                if (spline_id == m_curSplineIdx)
-                    m_splineGroup.removeSurface(k);
-            }
+            bspline.change_generic_extent(extent);
+            has_changed = true;
+        }
 
-        } else
-            computeSurface(m_curSplineIdx);
-        update();
+        if (bspline.is_closed != _is_closed || bspline.is_slope != _is_slope || bspline.has_inward_surface != _has_inward || bspline.has_outward_surface != _has_outward)
+        {
+            bspline.change_bspline_type(_is_slope, _is_closed, _has_inward, _has_outward);
+            has_changed = true;
+        }
     }
-}
 
-void nurbsError(uint errorCode)
-{
-   const GLubyte *estring;
-
-   estring = gluErrorString(errorCode);
-   qDebug("Nurbs Error: %s\n", estring);
+    if (has_changed)
+        recomputeAllSurfaces();
 }
