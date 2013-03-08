@@ -60,8 +60,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->radioContinuous, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeC(bool)));
     connect(ui->radioDiscrete, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeD(bool)));
 
+<<<<<<< HEAD
     connect(ui->graphicsView, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
     connect(scene, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
+=======
+    connect(ui->super1, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper1()));
+    connect(ui->super2, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper2()));
+    connect(ui->super4, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper4()));
+    connect(ui->imgShowAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgShowAll(bool)));
+    connect(ui->imgWriteAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgWriteAll(bool)));
+>>>>>>> 272373585a72a92dccaaefab2be899cf6bb8e1ef
 }
 
 MainWindow::~MainWindow()

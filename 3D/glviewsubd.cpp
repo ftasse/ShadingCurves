@@ -4,6 +4,7 @@
 #include "glviewsubd.h"
 #include <assert.h>
 //#include <GL/glu.h>
+#include "tostring.h"
 
 using namespace std;
 
@@ -398,17 +399,16 @@ void GLviewsubd::paintGL(void)
         #endif
         glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
 
-        tmp = img.at<cv::Vec3f>(0,0)[0];
+        tmp = img.at<cv::Vec3f>(0,0)[0]; // for an empty image, use this value as `zero'
 
-                //Setup view for FILL
-                glClearColor(1.0, 1.0, 1.0, 0.0);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                //draw stuff here
-                buildFlatMesh();
-                glCallList(flat_mesh_list);
-                //create image
-                imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
-                glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
+        glClearColor(1.0, 1.0, 1.0, 0.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //draw stuff here
+        buildFlatMesh();
+        glCallList(flat_mesh_list);
+        //create image
+        imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
+        glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
 
         //Clean up offscreen drawing
         glPopMatrix();
@@ -421,131 +421,132 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
+        //process images
+        inputImg->copyTo(imgShaded);
+        cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
+        cv::flip(imgFill, imgFill, 0);
+        cv::flip(img, img, 0);
 
-//        if (!offMainWindow)
-//        {
-            //process images
-            inputImg->copyTo(imgShaded);
-            cv::flip(img, img, 0);
+        if (showImg)
+        {
+            cv::imshow("Img: Original", imgShaded);
+            cv::imshow("Img: Fill " + to_string(super), imgFill);
+            cv::imshow("Img: LumDif " + to_string(super), img);
+        }
+
+        if (writeImg)
+        {
+            cv::imwrite("ImgOrig.png", imgShaded);
+
+            //need to convert these to 8bit images first!
+//            cv::imwrite("ImgLumDif" + QString::number(super) + "x" + QString::number(super), img);
+//            cv::imwrite("ImgFill" + QString::number(super) + "x" + QString::number(super), imgFill);
+        }
+        imgShaded.convertTo(imgShaded, CV_32FC3);
+
+        cv::Mat imgPyrDown, imgPyrDown2, imgFillPyrDown, imgFillPyrDown2;
+
+        switch (super)
+        {
+            case 1:
+                break;
+            case 2:
+                cv::pyrDown(img, imgPyrDown, cv::Size(imageHeight, imageWidth));
+                img = imgPyrDown;
+                cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(imageHeight, imageWidth));
+                imgFill = imgFillPyrDown;
+                break;
+            case 4:
+                cv::pyrDown(img, imgPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
+                cv::pyrDown(imgPyrDown, imgPyrDown2, cv::Size(imageHeight, imageWidth));
+                img = imgPyrDown2;
+                cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
+                cv::pyrDown(imgFillPyrDown, imgFillPyrDown2, cv::Size(imageHeight, imageWidth));
+                imgFill = imgFillPyrDown2;
+                break;
+        }
+
+        if (img.cols > 0)
+        {
+            imgShaded *= 1.0 / 255.0;
+            cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
+
+            // apply luminance adjustment
+            for( int y = 0; y < imgShaded.rows; y++ )
+            {
+                for( int x = 0; x < imgShaded.cols; x++ )
+                {
+                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.49803921580314636); // 0.49803921580314636, 0.501960814
+
+                    if (tmp > 100)
+                    {
+                        tmp = 100;
+                    }
+                    if (tmp < 0)
+                    {
+                        tmp = 0;
+                    }
+                    imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                }
+            }
+
+            //convert back to BGR
+            cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
             if (showImg)
             {
-                cv::imshow("Img: LumDif", img);
-                cv::imshow("Img: Original", imgShaded);
+                cv::imshow("Img: Shaded result", imgShaded);
             }
+
+            //extra stuff for FILL image
+            imgFill.copyTo(imgFillShaded);
+            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
+
+            // apply luminance adjustment
+            for( int y = 0; y < imgFillShaded.rows; y++ )
+            {
+                for( int x = 0; x < imgFillShaded.cols; x++ )
+                {
+                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.49803921580314636);
+
+                    if (tmp > 100)
+                    {
+                        tmp = 100;
+                    }
+                    if (tmp < 0)
+                    {
+                        tmp = 0;
+                    }
+                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                }
+            }
+
+            //convert back to BGR
+            cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
+            if (showImg)
+            {
+            }
+            //show always
+            cv::imshow("Img: Lum Dif", img);
+            cv::imshow("Img: Filled and shaded result", imgFillShaded);
+
+            img *= 255;
+            img.convertTo(img, CV_8UC3);
+            imgFill *= 255;
+            imgFill.convertTo(imgFill, CV_8UC3);
+            imgShaded *= 255;
+            imgShaded.convertTo(imgShaded, CV_8UC3);
+            imgFillShaded *= 255;
+            imgFillShaded.convertTo(imgFillShaded, CV_8UC3);
+
             if (writeImg)
             {
-                cv::imwrite("ImgOrig.png", imgShaded);
+                cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".png", img);
+                cv::imwrite("ImgFillPyrDown" + to_string(super) + ".png", imgFill);
+                cv::imwrite("ImgResult" + to_string(super) + ".png", imgShaded);
+                cv::imwrite("ImgFillResult" + to_string(super) + ".png", imgFillShaded);
             }
-            imgShaded.convertTo(imgShaded, CV_32FC3);
-
-                //extra stuff for FILL image
-                cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
-                cv::flip(imgFill, imgFill, 0);
-                if (showImg)
-                {
-                    cv::imshow("Img: Fill", imgFill);
-                }
-
-            if (img.cols > 0)
-            {
-//                double  rr, gg, bb;
-                imgShaded *= 1.0 / 255.0;
-                cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
-
-                // apply luminance adjustment
-                for( int y = 0; y < imgShaded.rows; y++ )
-                {
-                    for( int x = 0; x < imgShaded.cols; x++ )
-                    {
-                        tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.501960814);
-
-                        if (tmp > 100)
-                        {
-                            tmp = 100;
-                        }
-                        if (tmp < 0)
-                        {
-                            tmp = 0;
-                        }
-                        imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-                    }
-                }
-
-                //convert back to BGR
-                cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
-                if (showImg)
-                {
-                    cv::imshow("Img: Shaded result", imgShaded);
-                }
-
-                    //extra stuff for FILL image
-                    imgFill.copyTo(imgFillShaded);
-                    cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
-
-                    // apply luminance adjustment
-                    for( int y = 0; y < imgFillShaded.rows; y++ )
-                    {
-                        for( int x = 0; x < imgFillShaded.cols; x++ )
-                        {
-                            tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.501960814);
-//                            cout << tmp << " ";
-//                            cout << 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196) << " ";
-                            if (tmp > 100)
-                            {
-                                tmp = 100;
-                            }
-                            if (tmp < 0)
-                            {
-                                tmp = 0;
-                            }
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-                        }
-                    }
-
-                    //convert back to BGR
-                    cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
-                    if (showImg)
-                    {
-                        cv::imshow("Img: Filled and shaded result", imgFillShaded);
-                    }
-
-                img *= 255;
-                img.convertTo(img, CV_8UC3);
-                imgFill *= 255;
-                imgFill.convertTo(imgFill, CV_8UC3);
-                imgShaded *= 255;
-                imgShaded.convertTo(imgShaded, CV_8UC3);
-                imgFillShaded *= 255;
-                imgFillShaded.convertTo(imgFillShaded, CV_8UC3);
-                if (writeImg)
-                {
-                    cv::imwrite("ImgLumDif.png", img);
-                    cv::Mat imgPyrDown, imgPyrDown2;
-//                    imgPyrDown.create(imageHeight, imageWidth, CV_8UC3);
-
-                    switch (super)
-                    {
-                        case 1:
-                            cv::imwrite("ImgLumDifPyrDown.png", img);
-                            break;
-                        case 2:
-                            cv::pyrDown(img, imgPyrDown, cv::Size(imageHeight, imageWidth));
-                            cv::imwrite("ImgLumDifPyrDown.png", imgPyrDown);
-                            break;
-                        case 4:
-                            cv::pyrDown(img, imgPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
-                            cv::pyrDown(imgPyrDown, imgPyrDown2, cv::Size(imageHeight, imageWidth));
-                            cv::imwrite("ImgLumDifPyrDown.png", imgPyrDown2);
-                            break;
-                    }
-
-                    cv::imwrite("ImgFill.png", imgFill);
-                    cv::imwrite("ImgResult.png", imgShaded);
-                    cv::imwrite("ImgFillResult.png", imgFillShaded);
-                }
-            }
-            updateGL();
-//        }
+        }
+        updateGL();
     }
     else
     {
@@ -1588,10 +1589,16 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 //                      glTexCoord1f(1);
                 }
             }
-//            glVertex3fv(facet->my_corners[j].my_vertex->my_point.getCoords());
-            glVertex3f(super * facet->my_corners[j].my_vertex->my_point.getX(),
-                       super * facet->my_corners[j].my_vertex->my_point.getY(),
-                       facet->my_corners[j].my_vertex->my_point.getZ());
+            if (offScreen)
+            {
+                glVertex3f(super * facet->my_corners[j].my_vertex->my_point.getX(),
+                           super * facet->my_corners[j].my_vertex->my_point.getY(),
+                           facet->my_corners[j].my_vertex->my_point.getZ());
+            }
+            else
+            {
+                glVertex3fv(facet->my_corners[j].my_vertex->my_point.getCoords());
+            }
         }
         glEnd();
 	}

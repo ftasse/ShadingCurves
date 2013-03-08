@@ -47,6 +47,11 @@ public slots:
     void setBrush();
     void changeBrushTypeC(bool val);
     void changeBrushTypeD(bool val);
+    void setSuper1();
+    void setSuper2();
+    void setSuper4();
+    void setImgShowAll(bool b);
+    void setImgWriteAll(bool b);
 
 private:
     QPointF currentCenterPoint;
@@ -54,6 +59,9 @@ private:
     DebugWindow     *dbw;
     MainWindow3D    *glw;
     GLviewsubd      *glvs;
+
+    int superSampling;
+    bool imgShowAll, imgWriteAll;
 };
 
 #endif // GRAPHICSVIEW_H

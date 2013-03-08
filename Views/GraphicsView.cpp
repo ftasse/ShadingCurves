@@ -12,6 +12,9 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setMouseTracking(true);
+    superSampling = 1;
+    imgShowAll = false;
+    imgWriteAll = true;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -323,12 +326,11 @@ void GraphicsView::show3Dwidget()
 
 void GraphicsView::applyShading()
 {
-    applyShading(true, true);
+    applyShading(imgShowAll, imgWriteAll);
 }
 
 void GraphicsView::applyShading(bool showImg, bool writeImg)
 {
-
     GLScene *my_scene = (GLScene *) scene();
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glvs->offScreen = true;
@@ -344,7 +346,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     }
 
     glvs->indexMesh = -1;
-    glvs->super = 1; //supersampling (1, 2, or 4)
+    glvs->super = superSampling; //supersampling (1, 2, or 4)
     glvs->showImg = showImg;
     glvs->writeImg = writeImg;
     glvs->setSubdivLevel(4); // calls updateGL
@@ -395,4 +397,29 @@ void GraphicsView::changeBrushTypeD(bool val)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->discreteB = val;
+}
+
+void GraphicsView::setSuper1()
+{
+    superSampling = 1;
+}
+
+void GraphicsView::setSuper2()
+{
+    superSampling = 2;
+}
+
+void GraphicsView::setSuper4()
+{
+    superSampling = 4;
+}
+
+void GraphicsView::setImgShowAll(bool b)
+{
+    imgShowAll = b;
+}
+
+void GraphicsView::setImgWriteAll(bool b)
+{
+    imgWriteAll = b;
 }

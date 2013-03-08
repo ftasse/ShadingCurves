@@ -83,5 +83,5 @@ win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl3
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 
 #LIBS += -fopenmp
-QMAKE_CXXFLAGS += -O3 # -fopenmp
-QMAKE_CFLAGS += -O3   # -fopenmp
+#QMAKE_CXXFLAGS += -O3 # -fopenmp
+#QMAKE_CFLAGS += -O3   # -fopenmp
