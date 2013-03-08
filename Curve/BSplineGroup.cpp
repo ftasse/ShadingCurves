@@ -92,6 +92,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
 
     //Change position of the junction control point to the the limit point
     ControlPoint& junction = bspline.pointAt(cptPos);
+    Point3d junctionCoords = (Point3d) junction;
     QPointF limitPoint = 0.1667*bspline.pointAt(cptPos-1)+0.667*bspline.pointAt(cptPos)+0.1667*bspline.pointAt(cptPos+1);
     junction.setX(limitPoint.x());
     junction.setY(limitPoint.y());
@@ -116,19 +117,71 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
     }
 
     //Modify the second control points for each curve from the junction
-    if (bspline.num_cpts() > 2)
+    int spline1_size = bspline.num_cpts();
+    int spline2_size = newSpline.num_cpts();
+    if (spline1_size > 1)
     {
-        ControlPoint& secondPoint = bspline.pointAt(bspline.num_cpts()-2);
-        QPointF newPosition = 0.33*secondPoint+0.667*bspline.pointAt(bspline.num_cpts()-1);
-        secondPoint.setX(newPosition.x());
-        secondPoint.setY(newPosition.y());
+        Point3d secondPoint = bspline.pointAt(bspline.num_cpts()-2);
+
+        ControlPoint& cpt1 = bspline.pointAt(bspline.num_cpts()-2);
+        QPointF newPosition1 = 0.33*secondPoint+0.667*junctionCoords;
+
+        if (spline1_size == 2)
+        {
+           int newCptRef = addControlPoint(newPosition1, secondPoint.z());
+           ControlPoint& newCpt = controlPoint(newCptRef);
+           for (int k=0; k<2; ++k)
+               newCpt.attributes[k]  = newCpt.attributes[k];
+           newCpt.splineRefs.push_back(bspline.ref);
+           bspline.cptRefs.insert(bspline.cptRefs.begin()+1, newCptRef);
+        } else
+        {
+            cpt1.setX(newPosition1.x());
+            cpt1.setY(newPosition1.y());
+        }
+
+        if (spline1_size > 2)
+        {
+            QPointF newPosition2 = 0.667*secondPoint+0.33*bspline.pointAt(bspline.num_cpts()-3);
+            int newCptRef = addControlPoint(newPosition2, secondPoint.z());
+            ControlPoint& cpt2 = controlPoint(newCptRef);
+            for (int k=0; k<2; ++k)
+                cpt2.attributes[k]  = cpt1.attributes[k];
+            cpt2.splineRefs.push_back(bspline.ref);
+            bspline.cptRefs.insert(bspline.cptRefs.begin()+bspline.num_cpts()-2, newCptRef);
+        }
     }
-    if (newSpline.num_cpts() > 2)
+    if (spline2_size > 1)
     {
-        ControlPoint& secondPoint = newSpline.pointAt(1);
-        QPointF newPosition = 0.33*secondPoint+0.667*newSpline.pointAt(0);
-        secondPoint.setX(newPosition.x());
-        secondPoint.setY(newPosition.y());
+        Point3d secondPoint = newSpline.pointAt(1);
+
+        ControlPoint& cpt1 = newSpline.pointAt(1);
+        QPointF newPosition1 = 0.33*secondPoint+0.667*junctionCoords;
+
+        if (spline2_size == 2)
+        {
+           int newCptRef = addControlPoint(newPosition1, secondPoint.z());
+           ControlPoint& newCpt = controlPoint(newCptRef);
+           for (int k=0; k<2; ++k)
+               newCpt.attributes[k]  = newCpt.attributes[k];
+           newCpt.splineRefs.push_back(newSpline.ref);
+           newSpline.cptRefs.insert(newSpline.cptRefs.begin()+1, newCptRef);
+        } else
+        {
+            cpt1.setX(newPosition1.x());
+            cpt1.setY(newPosition1.y());
+        }
+
+        if (spline2_size > 2)
+        {
+            QPointF newPosition2 = 0.667*secondPoint+0.33*newSpline.pointAt(2);
+            int newCptRef = addControlPoint(newPosition2, secondPoint.z());
+            ControlPoint& cpt2 = controlPoint(newCptRef);
+            for (int k=0; k<2; ++k)
+                cpt2.attributes[k]  = cpt1.attributes[k];
+            cpt2.splineRefs.push_back(newSpline.ref);
+            newSpline.cptRefs.insert(newSpline.cptRefs.begin()+2, newCptRef);
+        }
     }
 
     return newSplineRef;

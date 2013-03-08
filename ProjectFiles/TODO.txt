@@ -3,9 +3,6 @@ add window for shading profile
 zooming
 deal with junctions
 
-Issues:
-Look into surface creations for curves with uniform subdivision
-
 other (bonuses):
 weighted distance transform?
 
