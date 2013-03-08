@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_slope_curve()));
-    connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_uniform_subdivision()));
     connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
     connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool)));
 
@@ -82,6 +82,16 @@ void MainWindow::change_slope_curve()
     {
         ui->inward_suface_box->setChecked(true);
         ui->outward_surface_box->setChecked(true);
+        ui->uniform_subdivision_curve_box->setChecked(false);
+    }
+    change_bspline_parameters();
+}
+
+void MainWindow::change_uniform_subdivision()
+{
+    if (ui->uniform_subdivision_curve_box->isChecked())
+    {
+        ui->slope_curve_box->setChecked(false);
     }
     change_bspline_parameters();
 }

@@ -64,10 +64,74 @@ int BSplineGroup::addSurface(int splineRef, NormalDirection direction)
 
 bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
 {
+    if (controlPoint(cpt_id).num_splines() == 1 && controlPoint(cpt_id).splineRefs.front()!=spline_id)
+        splitCurveAt(controlPoint(cpt_id).splineRefs.front(), cpt_id);
     m_splines[spline_id].cptRefs.push_back(cpt_id);
     m_cpts[cpt_id].splineRefs.push_back(spline_id);
     m_splines[spline_id].recompute();
     return true;
+}
+
+int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
+{
+    BSpline& bspline = spline(splineRef);
+    if (bspline.cptRefs.front() == cptRef || bspline.cptRefs.back() == cptRef)
+        return splineRef;
+
+    int cptPos = -1;
+    for (int k=0; k<bspline.num_cpts(); ++k)
+    {
+        if (bspline.cptRefs[k] == cptRef)
+        {
+            cptPos = k;
+            break;
+        }
+    }
+    if (cptPos < 0)
+        return splineRef;
+
+    //Change position of the junction control point to the the limit point
+    ControlPoint& junction = bspline.pointAt(cptPos);
+    QPointF limitPoint = 0.1667*bspline.pointAt(cptPos-1)+0.667*bspline.pointAt(cptPos)+0.1667*bspline.pointAt(cptPos+1);
+    junction.setX(limitPoint.x());
+    junction.setY(limitPoint.y());
+
+    //Create a new curve and move control points on the right to this new spline
+    int newSplineRef = addBSpline();
+    BSpline& newSpline = spline(newSplineRef);
+    junction.splineRefs.push_back(newSplineRef);
+    newSpline.cptRefs.push_back(junction.ref);
+    while (cptPos+1 < bspline.num_cpts())
+    {
+        ControlPoint& cpt = bspline.pointAt(cptPos+1);
+        newSpline.cptRefs.push_back(cpt.ref);
+        for (int k=0; k<cpt.num_splines(); ++k)
+        {
+            if (cpt.splineRefs[k] == splineRef)
+            {
+                cpt.splineRefs[k] = newSplineRef;
+            }
+        }
+        bspline.cptRefs.erase(bspline.cptRefs.begin() + cptPos+1);
+    }
+
+    //Modify the second control points for each curve from the junction
+    if (bspline.num_cpts() > 2)
+    {
+        ControlPoint& secondPoint = bspline.pointAt(bspline.num_cpts()-2);
+        QPointF newPosition = 0.33*secondPoint+0.667*bspline.pointAt(bspline.num_cpts()-1);
+        secondPoint.setX(newPosition.x());
+        secondPoint.setY(newPosition.y());
+    }
+    if (newSpline.num_cpts() > 2)
+    {
+        ControlPoint& secondPoint = newSpline.pointAt(1);
+        QPointF newPosition = 0.33*secondPoint+0.667*newSpline.pointAt(0);
+        secondPoint.setX(newPosition.x());
+        secondPoint.setY(newPosition.y());
+    }
+
+    return newSplineRef;
 }
 
 void BSplineGroup::removeControlPoint(int cpt_id)

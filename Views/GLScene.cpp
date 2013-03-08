@@ -272,11 +272,13 @@ void GLScene::keyPressEvent(QKeyEvent *event)
         update();
 
     } else if (event->key() == Qt::Key_R)
-    {
-        m_curImage = cv::Scalar(255,255,255);
-        update_region_coloring();
-        update();
-    }
+   {
+       recomputeAllSurfaces();
+       m_curImage = cv::Scalar(255,255,255);
+       update_region_coloring();
+       update();
+   }
+
     if (event->key() == Qt::Key_Delete)
     {
         if (selectedObjects.size() > 0)
@@ -305,7 +307,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 
             selectedObjects.clear();
             m_splineGroup.garbage_collection();
-            update();
+            recomputeAllSurfaces();
         }
     } else if (m_sketchmode == ADD_CURVE_MODE)
     {
@@ -315,6 +317,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
             case Qt::Key_Return:
             {
                 m_sketchmode = IDLE_MODE;
+                recomputeAllSurfaces();
                 emit setStatusMessage("Move Curve Mode");
                 break;
             }
@@ -550,6 +553,10 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
       QVector<QPointF> points = bspline.getControlPoints();
       QVector<QPointF> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
+      if (bspline.has_uniform_subdivision && points.size() >= 4) {
+          subDividePts.pop_back();
+          subDividePts.pop_front();
+      }
 
       glBegin(GL_LINE_STRIP);
       for (int i = 0; i < subDividePts.size(); ++i)

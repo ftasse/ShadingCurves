@@ -18,6 +18,9 @@ public:
 
     bool addControlPointToSpline(int spline_id, int cpt_id);
 
+    //FLORA: Return the handle for the new curve
+    int splitCurveAt(int splineRef, int cptRef);
+
     void removeControlPoint(int cpt_id);
     void removeSpline(int spline_id);
     void removeSurface(int surface_id);

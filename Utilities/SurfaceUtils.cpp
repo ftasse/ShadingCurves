@@ -14,7 +14,7 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
         newVec.append(0.667*spline.first()+0.333*spline.last());
         newVec.append(0.333*spline.first()+0.667*spline.last());
         newVec.append(spline.last());
-        newVec = subDivide(newVec,steps-1);
+        newVec = subDivide(newVec,steps-1, closed);
         return newVec;
     }
 
@@ -22,7 +22,7 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
         newVec.append(0.25*spline.first()+0.75*spline.at(1));
         newVec.append(0.25*spline.last()+0.75*spline.at(1));
         newVec.append(spline.last());
-        newVec = subDivide(newVec,steps-1);
+        newVec = subDivide(newVec,steps-1, closed);
         return newVec;
     }
 
@@ -38,7 +38,7 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
     if(!closed)
         newVec.append(spline.last());
 
-    newVec = subDivide(newVec,steps-1);
+    newVec = subDivide(newVec,steps-1, closed);
 
     return newVec;
 }

@@ -109,7 +109,7 @@ void BSpline::computeSurfaces(cv::Mat dt)
             }
         } else if (surfaceAt(k).direction == OUTWARD_DIRECTION)
         {
-            if (has_outward_surface)
+            if (!is_slope  && has_outward_surface)
             {
                 surfaceAt(k).recompute(dt);
                 recomputed_outward_surface = true;
@@ -129,7 +129,7 @@ void BSpline::computeSurfaces(cv::Mat dt)
         m_splineGroup->surface(surf_id).recompute(dt);
     }
 
-    if (has_outward_surface && !recomputed_outward_surface)
+    if (!is_slope && has_outward_surface && !recomputed_outward_surface)
     {
         int surf_id = m_splineGroup->addSurface(ref, OUTWARD_DIRECTION);
         m_splineGroup->surface(surf_id).recompute(dt);
@@ -159,7 +159,12 @@ QVector<QPointF> BSpline::getControlPoints()
     QVector<QPointF> points;
     for (int i=0; i< cptRefs.size(); ++i)
     {
-        points.push_back(m_splineGroup->controlPoint(cptRefs[i]));
+        points.push_back(pointAt(i));
+    }
+    if (has_uniform_subdivision && has_loop() && points.size()>3)
+    {
+        points.push_back(points[1]);
+        points.push_back(points[2]);
     }
     return points;
 }
