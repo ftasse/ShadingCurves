@@ -37,6 +37,7 @@ GLScene::GLScene(QObject *parent) :
     showControlMesh = true;
     showControlPoints = true;
     showCurrentCurvePoints = true;
+    showCurves = true;
     hasMoved = false;
     brush = false;
     brushType = 0;
@@ -148,10 +149,14 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
             update();
             return;
+        }   else
+        {
+            /*QPointF tmp2 = mapToS (event->pos());
+            QPointF tmp = tmp2-mapToScene(previous_point);
+            translate(tmp.x(),tmp.y());*/
+            QGraphicsScene::mouseMoveEvent(event);
         }
     }
-
-    QGraphicsScene::mouseMoveEvent(event);
 }
 
 void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -213,6 +218,12 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
         if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
         {
+            if (spline(m_curSplineIdx).num_cpts()>2 && spline(m_curSplineIdx).cptRefs.front() == cptRef)
+            {
+                spline(m_curSplineIdx).has_uniform_subdivision = true;
+                spline(m_curSplineIdx).recompute();
+                currentSplineChanged();
+            }
             controlPoint(cptRef).attributes[0].extent = spline(m_curSplineIdx).generic_extent;
             controlPoint(cptRef).attributes[1].extent = spline(m_curSplineIdx).generic_extent;
             update();
@@ -237,9 +248,23 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
+void GLScene::wheelEvent(QWheelEvent* event)    //FLORA, this does not work
+{
+    //Scale the view ie. do the zoom
+    double scaleFactor = 1.15; //How fast we zoom
+    if(event->delta() > 0) {
+        //Zoom in
+        changeResolution(currentImage().cols*scaleFactor, currentImage().rows*scaleFactor);
+
+    } else {
+        //Zooming out
+        changeResolution(currentImage().cols/scaleFactor, currentImage().rows/scaleFactor);
+    }
+}
+
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_W)
+   if (event->key() == Qt::Key_W)
     {
         //Reset blank image
         m_curImage = cv::Scalar(255,255,255);
@@ -290,6 +315,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
             case Qt::Key_Return:
             {
                 m_sketchmode = IDLE_MODE;
+                emit setStatusMessage("Move Curve Mode");
                 break;
             }
             default:
@@ -352,6 +378,9 @@ void GLScene::display(bool only_show_splines)
         glColor3d(1.0, 1.0, 1.0);
         draw_image(m_curImage);
     }
+
+    if (!showCurves)
+        return;
 
     if (!only_show_splines)
     for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
@@ -585,14 +614,24 @@ void GLScene::adjustDisplayedImageSize()
 {
     cv::Mat& image = currentImage();
     imSize = QSizeF(image.cols, image.rows);
-    if (imSize.width() > width())
+    /*if (imSize.width() > width())
     {
         imSize = QSizeF(width(), (width() * image.rows)/image.cols);
     }
     if (imSize.height() > height())
     {
         imSize = QSizeF((height() * image.cols)/image.rows, height());
-    }
+    }*/
+}
+
+void GLScene::changeResolution(int resWidth, int resHeight)
+{
+    float xs = resWidth / ((float) currentImage().cols);
+    float ys = resHeight / ((float) currentImage().rows);
+    cv::resize(currentImage(), currentImage(), cv::Size(resWidth, resHeight));
+    adjustDisplayedImageSize();
+    m_splineGroup.scale(xs, ys);
+    recomputeAllSurfaces();
 }
 
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)

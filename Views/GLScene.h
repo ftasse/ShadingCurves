@@ -44,6 +44,8 @@ public:
     void draw_control_point(int point_id);
     void draw_spline(int spline_id, bool only_show_splines = false, bool transform = true);
     void draw_surface(int surface_id);
+
+    void changeResolution(int resWidth, int resHeight);
     void adjustDisplayedImageSize();
 
     unsigned int getImageHeight() {return m_curImage.cols;}
@@ -109,9 +111,11 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void wheelEvent(QWheelEvent* event);
     void keyPressEvent(QKeyEvent *event);
 
 signals:
+    void setStatusMessage(QString message);
     void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
 public slots:
@@ -138,6 +142,7 @@ public:
     bool showControlMesh;
     bool showControlPoints;
     bool showCurrentCurvePoints;
+    bool showCurves;
     bool brush;
     int brushType;
     float brushSize;

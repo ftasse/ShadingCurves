@@ -11,10 +11,14 @@ class GraphicsView : public QGraphicsView
 public:
     explicit GraphicsView(QWidget *parent);
 
+    //void setCenter(const QPointF& centerPoint);
+
 protected:
     void resizeEvent(QResizeEvent *event);
+    //void wheelEvent(QWheelEvent* event);
     
 signals:
+    void setStatusMessage(QString message);
     
 public slots:
     void create_bspline();
@@ -32,8 +36,10 @@ public slots:
     void changeBrushLightness(int type);
     void changeBrushSize(int size);
     void changeFreehand(bool freehand);
+    void changeResolution();
     void showControlMesh(bool status);
     void showControlPoints(bool status);
+    void showCurves(bool status);
     void createDistanceTransformDEBUG();
     void show3Dwidget();
     void applyShading(bool showImg, bool writeImg);
@@ -43,6 +49,8 @@ public slots:
     void changeBrushTypeD(bool val);
 
 private:
+    QPointF currentCenterPoint;
+
     DebugWindow     *dbw;
     MainWindow3D    *glw;
     GLviewsubd      *glvs;

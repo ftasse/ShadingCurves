@@ -22,6 +22,7 @@ public:
     void removeSpline(int spline_id);
     void removeSurface(int surface_id);
 
+    void scale(float xs, float ys);
     void garbage_collection();
 
     //IO

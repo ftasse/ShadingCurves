@@ -140,6 +140,20 @@ void BSplineGroup::removeSurface(int surface_id)
     surf.sharpCorners.clear();
 }
 
+void BSplineGroup::scale(float xs, float ys)
+{
+    for (int i=0; i<num_controlPoints(); ++i)
+    {
+        controlPoint(i).setX(xs*controlPoint(i).x());
+        controlPoint(i).setY(ys*controlPoint(i).y());
+    }
+
+    for (int i=0; i<num_splines(); ++i)
+    {
+        spline(i).recompute();
+    }
+}
+
 void BSplineGroup::garbage_collection()
 {
     if (runningGarbageCollection)

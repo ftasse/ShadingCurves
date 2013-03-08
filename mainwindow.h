@@ -23,6 +23,9 @@ private:
 
 public slots:
     void center();
+
+    void showStatusMessage(QString message);
+
     void change_bspline_parameters();
     void change_slope_curve();
     void change_inward_outward_direction();

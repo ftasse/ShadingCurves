@@ -33,8 +33,14 @@ public:
 
     bool has_loop()
     {
-        return (cptRefs.front() == cptRefs.back() && !has_uniform_subdivision) ||
-                (cptRefs.size()==3 && has_uniform_subdivision && cptRefs.back() == cptRefs[1]);
+        if (cptRefs.front() == cptRefs.back() && !has_uniform_subdivision)
+            return true;
+
+        /*
+         * FLORA: Is this valid?
+         */
+        return (cptRefs.size()>=3 && has_uniform_subdivision && cptRefs.back() == cptRefs[1]);
+        //return false;
     }
 
     int num_cpts()

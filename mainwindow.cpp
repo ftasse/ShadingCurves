@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
 
+    showStatusMessage("Idle Mode");
+
     //Connections
     connect(ui->actionDelete_all_curves, SIGNAL(triggered()), scene, SLOT(delete_all()));
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
@@ -25,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));
     connect(ui->actionSave_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(saveCurves()));
     connect(ui->actionCreate_BSpline, SIGNAL(triggered()), ui->graphicsView, SLOT(create_bspline()));
+    connect(ui->actionChange_resolution, SIGNAL(triggered()), ui->graphicsView, SLOT(changeResolution()));
 
     connect(ui->createCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(create_bspline()));
     connect(ui->editCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(edit_bspline()));
@@ -32,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pointSizeSlider, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeControlPointSize(int)));
     connect(ui->showControlMeshBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlMesh(bool)));
     connect(ui->showControlPointsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlPoints(bool)));
+    connect(ui->ShowCurvesBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showCurves(bool)));
 
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
@@ -56,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->radioContinuous, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeC(bool)));
     connect(ui->radioDiscrete, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(changeBrushTypeD(bool)));
 
+    connect(ui->graphicsView, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
+    connect(scene, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -113,4 +119,9 @@ void MainWindow::center()
     QRect position = frameGeometry();
     position.moveCenter(QDesktopWidget().availableGeometry().center());
     move(position.topLeft());
+}
+
+void MainWindow::showStatusMessage(QString message)
+{
+    statusBar()->showMessage(message, 0);
 }

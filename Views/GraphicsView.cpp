@@ -1,6 +1,7 @@
 #include <QResizeEvent>
 #include <QGLWidget>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QBrush>
 #include <fstream>
 #include "../Utilities/SurfaceUtils.h"
@@ -23,11 +24,114 @@ void GraphicsView::resizeEvent(QResizeEvent *event)
     QGraphicsView::resizeEvent(event);
 }
 
+/*void GraphicsView::wheelEvent(QWheelEvent* event) {
+
+    //Get the position of the mouse before scaling, in scene coords
+    QPointF pointBeforeScale(mapToScene(event->pos()));
+
+    //Get the original screen centerpoint
+    QPointF screenCenter = currentCenterPoint;
+
+    //Scale the view ie. do the zoom
+    double scaleFactor = 1.15; //How fast we zoom
+    GLScene *my_scene = (GLScene *) scene();
+    if(event->delta() > 0) {
+        //Zoom in
+        scale(scaleFactor, scaleFactor);
+
+    } else {
+        //Zooming out
+        scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    }
+
+    //Get the position after scaling, in scene coords
+    QPointF pointAfterScale(mapToScene(event->pos()));
+
+    //Get the offset of how the screen moved
+    QPointF offset = pointBeforeScale - pointAfterScale;
+
+    //Adjust to the new center for correct zooming
+    QPointF newCenter = screenCenter + offset;
+    setCenter(newCenter);
+}
+
+//Set the current centerpoint in the
+void GraphicsView::setCenter(const QPointF& centerPoint) {
+    //Get the rectangle of the visible area in scene coords
+    QRectF visibleArea = mapToScene(rect()).boundingRect();
+
+    //Get the scene area
+    QRectF sceneBounds = sceneRect();
+
+    double boundX = visibleArea.width() / 2.0;
+    double boundY = visibleArea.height() / 2.0;
+    double boundWidth = sceneBounds.width() - 2.0 * boundX;
+    double boundHeight = sceneBounds.height() - 2.0 * boundY;
+
+    //The max boundary that the centerPoint can be to
+    QRectF bounds(boundX, boundY, boundWidth, boundHeight);
+
+    if(bounds.contains(centerPoint)) {
+        //We are within the bounds
+        currentCenterPoint = centerPoint;
+    } else {
+        //We need to clamp or use the center of the screen
+        if(visibleArea.contains(sceneBounds)) {
+            //Use the center of scene ie. we can see the whole scene
+            currentCenterPoint = sceneBounds.center();
+        } else {
+
+            currentCenterPoint = centerPoint;
+
+            //We need to clamp the center. The centerPoint is too large
+            if(centerPoint.x() > bounds.x() + bounds.width()) {
+                currentCenterPoint.setX(bounds.x() + bounds.width());
+            } else if(centerPoint.x() < bounds.x()) {
+                currentCenterPoint.setX(bounds.x());
+            }
+
+            if(centerPoint.y() > bounds.y() + bounds.height()) {
+                currentCenterPoint.setY(bounds.y() + bounds.height());
+            } else if(centerPoint.y() < bounds.y()) {
+                currentCenterPoint.setY(bounds.y());
+            }
+
+        }
+    }
+
+    //Update the scrollbars
+    centerOn(currentCenterPoint);
+}*/
+
 void GraphicsView::changeControlPointSize(int pointSize)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->pointSize = pointSize;
     my_scene->update();
+}
+
+void GraphicsView::changeResolution()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    std::stringstream dss;
+    dss << my_scene->currentImage().cols << " " << my_scene->currentImage().rows;
+
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("New image resolution"),
+                                         tr("Width, Height:"), QLineEdit::Normal,
+                                         QString(dss.str().c_str()), &ok);
+    if (ok && !text.isEmpty())
+    {
+        std::stringstream ss;
+        ss << text.toStdString();
+
+        int width, height;
+        ss >> width >> height;
+        if (width > 0 && height > 0)
+        {
+            my_scene->changeResolution(width, height);
+        }
+    }
 }
 
 void GraphicsView::showControlMesh(bool status)
@@ -44,11 +148,20 @@ void GraphicsView::showControlPoints(bool status)
     my_scene->update();
 }
 
+void GraphicsView::showCurves(bool status)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->showCurves = status;
+    my_scene->update();
+}
+
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->createBSpline();
     my_scene->brush = false;
+
+    emit setStatusMessage("Add Curve Mode");
 }
 
 void GraphicsView::edit_bspline()
@@ -56,6 +169,8 @@ void GraphicsView::edit_bspline()
     GLScene *my_scene = (GLScene *) scene();
     my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
     my_scene->brush = false;
+
+    emit setStatusMessage("Edit Curve Mode");
 }
 
 void GraphicsView::move_bsplines()
@@ -63,6 +178,8 @@ void GraphicsView::move_bsplines()
     GLScene *my_scene = (GLScene *) scene();
     my_scene->sketchmode() = GLScene::IDLE_MODE;
     my_scene->brush = false;
+
+    emit setStatusMessage("Move Curve Mode");
 }
 
 void GraphicsView::loadImage()
@@ -246,6 +363,8 @@ void GraphicsView::setBrush()
     applyShading(false, false);
 /*    QBrush brush(QColor(255,0,0),Qt::Dense3Pattern);
     my_scene->setForegroundBrush(brush);*/
+
+    emit setStatusMessage("Brush Mode");
 }
 
 void GraphicsView::changeBrushLightness(int type)

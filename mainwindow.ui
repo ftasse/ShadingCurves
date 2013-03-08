@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>842</width>
-    <height>646</height>
+    <height>726</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
         <widget class="QToolBox" name="toolBox">
          <property name="maximumSize">
           <size>
-           <width>200</width>
+           <width>230</width>
            <height>16777215</height>
           </size>
          </property>
@@ -46,8 +46,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>200</width>
-            <height>457</height>
+            <width>230</width>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -322,8 +322,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>200</width>
-            <height>457</height>
+            <width>230</width>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -348,8 +348,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>200</width>
-            <height>457</height>
+            <width>230</width>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -532,6 +532,7 @@
      <string>Edit</string>
     </property>
     <addaction name="actionCreate_BSpline"/>
+    <addaction name="actionChange_resolution"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="title">
@@ -602,6 +603,11 @@
   <action name="actionDelete_all_curves">
    <property name="text">
     <string>Delete all</string>
+   </property>
+  </action>
+  <action name="actionChange_resolution">
+   <property name="text">
+    <string>Change resolution</string>
    </property>
   </action>
  </widget>
