@@ -24,10 +24,11 @@ public:
     QVector<QVector<int> > getFaceIndices();
 
     bool writeOFF(std::ostream &ofs);
-    std::string surfaceToOFF()
+    std::string surfaceToOFF( cv::Vec3b color)
     {
         std::stringstream ss;
         writeOFF(ss);
+        ss << (int)color(0) << " " << (int)color(1) << " " << (int)color(2) << "\n";
         return ss.str();
     }
 

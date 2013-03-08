@@ -73,10 +73,21 @@ public:
 
     std::vector<std::string> OFFSurfaces()
     {
+        update_region_coloring();
         std::vector<std::string> surface_strings(num_surfaces());
         for (int i=0; i< num_surfaces(); ++i)
         {
-            surface_strings[i] =  surface(i).surfaceToOFF();
+            BSpline& bspline = spline(surface(i).splineRef);
+            QPointF normal  = bspline.inward_normal(1);
+            if (surface(i).direction == OUTWARD_DIRECTION)
+            {
+                normal = -normal;
+            }
+            QPointF pixelPoint = bspline.getPoints()[1] + 5*normal;
+            cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+            surface_strings[i] =  surface(i).surfaceToOFF(color);
+
+            qDebug("%s", surface_strings[i].c_str());
         }
         return surface_strings;
     }
