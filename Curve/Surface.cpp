@@ -124,7 +124,7 @@ void Surface::recompute(cv::Mat dt)
 
     BSpline& bspline = m_splineGroup->spline(splineRef);
     // bspline.fix_orientation();
-
+/*
     for (int i=0; i<bspline.num_cpts(); ++i)
     {
         /*
@@ -132,7 +132,7 @@ void Surface::recompute(cv::Mat dt)
          *  Note that you can get attributes for inward direction from cpt.attributes[0] and for outward direction from cpt.attributes[1]
          */
         //ControlPoint& cpt = bspline.pointAt(i);
-    }
+//    }
 
     QVector<QPointF> subdivided_points = bspline.getPoints();
     for (int i=0; i<subdivided_points .size(); ++i)
@@ -168,8 +168,8 @@ void Surface::recompute(cv::Mat dt)
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
         tmp = traceDT(dt,cp,current,normalL,width);
 
-        // is this dumb?
-        int id_cp = addVertex(cp);  //FLORA: This was "float id_cp = addControlPoint(cp);" but  addControlPoint(cp) returns an int
+        // add first point?
+        int id_cp = addVertex(cp);
         points[0].prepend(id_cp);
         id_cp = addVertex(vertices[points[1][0]]);
         points[1].prepend(id_cp);
@@ -185,9 +185,9 @@ void Surface::recompute(cv::Mat dt)
         points2[2].prepend(id_cp);
 
         // do something similar on the other side
-        cp = vertices[points[0][points[0].size()-1]]; // end control point
-        cp1 = vertices[points[2][points[2].size()-1]]; // first translated point
-        cp2 = vertices[points2[2][points[2].size()-1]]; // second translated point (on the other side)
+        cp = vertices[points[0][points[0].size()-1]];
+        cp1 = vertices[points[2][points[2].size()-1]];
+        cp2 = vertices[points2[2][points[2].size()-1]];
         tangent = cp2-cp1;
         normal = QPointF(-tangent.y(),tangent.x());
         norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
@@ -198,7 +198,7 @@ void Surface::recompute(cv::Mat dt)
         current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
         tmp = traceDT(dt,cp,current,normalL,width);
 
-        // is this dumb?
+        // add middle point
         id_cp = addVertex(cp);
         points[0].append(id_cp);
         id_cp = addVertex(vertices[points[1][points[1].size()-1]]);
@@ -206,6 +206,7 @@ void Surface::recompute(cv::Mat dt)
         id_cp = addVertex(tmp);
         points[2].append(id_cp);
 
+        // merge the two grids
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)
                 points[i].push_back(points2[i][j]);
