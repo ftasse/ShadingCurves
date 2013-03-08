@@ -18,22 +18,12 @@ split curves at an inserted junction, using 1/3-2/3 subdivision rule
 add shape window (quadratics)
 
 Mid priority:
-update region colouring on open curve
+update region colouring on open curve (solved?)
 zooming
 toggle between image/blank image/result
 
 Low priority:
 add cubics to shape window
-
-Done:
-add status bar
-add functionality to "Show curves"
-fix bug when pressing S
-when move: recompute all surfaces. Do not recompute surfaces when adding points, however, when finished (i.e. Enter is pressed), then recompute the surfaces.
-change blue points to "super control points", change code structure
-add slope curve option to b spline
-when curve is closed, change subivision scheme; should be able to change back (to end conditions)
-change resolution
 
 pseudo code for splitting a curve at CP_i
 define new end points at the limit point: 0.1667*CP_i-1 + 0.667*CP_i + 0.1667*CP_i+1
