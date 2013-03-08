@@ -1,7 +1,7 @@
 #include "SurfaceUtils.h"
 #include <QDebug>
 
-QVector<QPointF> subDivide(QVector<QPointF> spline, bool closed, int steps)
+QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
 {
     if(steps==0)
         return spline;

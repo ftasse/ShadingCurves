@@ -115,6 +115,7 @@ signals:
     void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
 public slots:
+    void currentSplineChanged();
     void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
     void delete_all();
@@ -125,6 +126,7 @@ public slots:
 private:
     cv::Mat m_curImage;
     int m_curSplineIdx;
+    bool hasMoved;
 
     SketchMode m_sketchmode;
     double  m_modelview [16];

@@ -50,13 +50,15 @@ int BSplineGroup::addBSpline()
     return m_splines.size() - 1;
 }
 
-int BSplineGroup::addSurface(NormalDirection direction)
+int BSplineGroup::addSurface(int splineRef, NormalDirection direction)
 {
     Surface surface;
     surface.m_splineGroup = this;
     surface.ref = num_surfaces();
+    surface.splineRef = splineRef;
     surface.direction = direction;
     m_surfaces.push_back(surface);
+    spline(splineRef).surfaceRefs.push_back(surface.ref);
     return surface.ref;
 }
 
@@ -107,9 +109,9 @@ void BSplineGroup::removeSpline(int spline_id)
         }
     }
 
-    for (int i=0; i<bspline.surfaceRefs.count(); ++i)
+    while (bspline.surfaceRefs.size() > 0)
     {
-        Surface& surf = surface(bspline.surfaceRefs[i]);
+        Surface& surf = surface(bspline.surfaceRefs[0]);
         removeSurface(surf.ref);
     }
 
@@ -124,7 +126,7 @@ void BSplineGroup::removeSurface(int surface_id)
     BSpline& bspline = spline(surf.splineRef);
     for (int i=0; i<bspline.num_surfaces();)
     {
-        if (bspline.surfaceAt(i).ref = surf.ref)
+        if (bspline.surfaceAt(i).ref == surf.ref)
         {
             bspline.surfaceRefs.erase(bspline.surfaceRefs.begin()+i);
         } else
@@ -133,7 +135,6 @@ void BSplineGroup::removeSurface(int surface_id)
         }
     }
 
-    surf.splineRef = -1;
     surf.vertices.clear();
     surf.controlMesh.clear();
     surf.sharpCorners.clear();

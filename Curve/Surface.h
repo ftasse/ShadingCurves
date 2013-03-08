@@ -18,6 +18,8 @@ public:
     // HENRIK: find the closest highest value in neighbourhood
     QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta);
 
+    int addVertex(Point3d vertex);
+    int addVertex(QPointF point, float z = 0.0f);
     Point3d& pointAt(int u, int v);
     QVector<QVector<int> > getFaceIndices();
 
@@ -38,6 +40,9 @@ public:
     QVector<Point3d> vertices;
     QVector<int> sharpCorners;
     QVector< QVector<int> > controlMesh;
+
+private:
+    QVector<int> bspline_vertexIds;
 };
 
 #endif // SURFACE_H

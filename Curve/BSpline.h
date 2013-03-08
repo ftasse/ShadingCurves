@@ -33,7 +33,8 @@ public:
 
     bool has_loop()
     {
-        return cptRefs.front() == cptRefs.back() || has_uniform_subdivision;    //FLORA, should we take the bit about uniform subdivision out?
+        return (cptRefs.front() == cptRefs.back() && !has_uniform_subdivision) ||
+                (cptRefs.size()==3 && has_uniform_subdivision && cptRefs.back() == cptRefs[1]);
     }
 
     int num_cpts()

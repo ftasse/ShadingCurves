@@ -12,6 +12,17 @@ Surface::Surface():
 {
 }
 
+int Surface::addVertex(Point3d vertex)
+{
+    vertices.push_back(vertex);
+    return vertices.size()-1;
+}
+
+int Surface::addVertex(QPointF point, float z)
+{
+    return addVertex(Point3d(point.x(), point.y(), z));
+}
+
 Point3d& Surface::pointAt(int u, int v)
 {
     return vertices[controlMesh[u][v]];
@@ -90,15 +101,16 @@ bool Surface::writeOFF(std::ostream &ofs)
 void Surface::recompute(cv::Mat dt)
 {
 
-    /*vertices.clear();
+    vertices.clear();
     sharpCorners.clear();
     controlMesh.clear();
+    bspline_vertexIds.clear();
 
-    float width = 50.0;
-    bool inward = true;
+
+    bool inward = (direction == INWARD_DIRECTION);
+
+    /* FLORA: z and width should not be hardcoded, but obtained from the control points */
     int z;
-    bool slope = false;
-
     if (inward)
     {
         z = -50;
@@ -107,26 +119,45 @@ void Surface::recompute(cv::Mat dt)
     {
         z = 50;
     }
-    BSpline& bspline = m_splineGroup->spline(splineRef);
+    float width = 50.0;
 
-    //    bspline.fix_orientation();
+
+    BSpline& bspline = m_splineGroup->spline(splineRef);
+    // bspline.fix_orientation();
+
+    for (int i=0; i<bspline.num_cpts(); ++i)
+    {
+        /*
+         *  From Flora:
+         *  Note that you can get attributes for inward direction from cpt.attributes[0] and for outward direction from cpt.attributes[1]
+         */
+        //ControlPoint& cpt = bspline.pointAt(i);
+    }
+
+    QVector<QPointF> subdivided_points = bspline.getPoints();
+    for (int i=0; i<subdivided_points .size(); ++i)
+    {
+        //FLORA: May be the z value, instead of 0.0f, should be the height in cpt attribute ? maybe via some interpolation in the subdivision
+        Point3d point(subdivided_points[i].x(), subdivided_points[i].y(), 0.0f);
+        bspline_vertexIds.push_back(addVertex(Point3d(point.x(), point.y(), point.z())));
+    }
 
     QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,false);
 
-    if(slope) {
+    if(bspline.is_slope) {
         // find points on the other side
         QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,true);
 
         // set end points to zero
-        controlPoint(points[1][0]).setZ(0);
-        controlPoint(points2[1][0]).setZ(0);
-        controlPoint(points[1][points[1].size()-1]).setZ(0);
-        controlPoint(points2[1][points2[1].size()-1]).setZ(0);
+        vertices[points[1][0]].setZ(0);
+        vertices[points2[1][0]].setZ(0);
+        vertices[points[1][points[1].size()-1]].setZ(0);
+        vertices[points2[1][points2[1].size()-1]].setZ(0);
 
         // add additional point at end points
-        QPointF cp = controlPoint(points[0][0]); // end control point
-        QPointF cp1 = controlPoint(points[2][0]); // first translated point
-        QPointF cp2 = controlPoint(points2[2][0]); // second translated point (on the other side)
+        QPointF cp = vertices[points[0][0]]; // end control point
+        QPointF cp1 = vertices[points[2][0]]; // first translated point
+        QPointF cp2 = vertices[points2[2][0]]; // second translated point (on the other side)
         QPointF tangent = cp1-cp2;
         QPointF normal = QPointF(-tangent.y(),tangent.x());
         float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
@@ -138,25 +169,25 @@ void Surface::recompute(cv::Mat dt)
         tmp = traceDT(dt,cp,current,normalL,width);
 
         // is this dumb?
-        float id_cp = addControlPoint(cp);
+        int id_cp = addVertex(cp);  //FLORA: This was "float id_cp = addControlPoint(cp);" but  addControlPoint(cp) returns an int
         points[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]));
+        id_cp = addVertex(vertices[points[1][0]]);
         points[1].prepend(id_cp);
-        id_cp = addControlPoint(tmp);
+        id_cp = addVertex(tmp);
         points[2].prepend(id_cp);
 
         // close the loop
-        id_cp = addControlPoint(cp);hange_bspline_parameters()
+        id_cp = addVertex(cp);
         points2[0].prepend(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][0]));
+        id_cp = addVertex(vertices[points[1][0]]);
         points2[1].prepend(id_cp);
-        id_cp = addControlPoint(tmp);
+        id_cp = addVertex(tmp);
         points2[2].prepend(id_cp);
 
         // do something similar on the other side
-        cp = controlPoint(points[0][points[0].size()-1]); // end control point
-        cp1 = controlPoint(points[2][points[2].size()-1]); // first translated point
-        cp2 = controlPoint(points2[2][points[2].size()-1]); // second translated point (on the other side)
+        cp = vertices[points[0][points[0].size()-1]]; // end control point
+        cp1 = vertices[points[2][points[2].size()-1]]; // first translated point
+        cp2 = vertices[points2[2][points[2].size()-1]]; // second translated point (on the other side)
         tangent = cp2-cp1;
         normal = QPointF(-tangent.y(),tangent.x());
         norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
@@ -168,11 +199,11 @@ void Surface::recompute(cv::Mat dt)
         tmp = traceDT(dt,cp,current,normalL,width);
 
         // is this dumb?
-        id_cp = addControlPoint(cp);
+        id_cp = addVertex(cp);
         points[0].append(id_cp);
-        id_cp = addControlPoint(controlPoint(points[1][points[1].size()-1]));
+        id_cp = addVertex(vertices[points[1][points[1].size()-1]]);
         points[1].append(id_cp);
-        id_cp = addControlPoint(tmp);
+        id_cp = addVertex(tmp);
         points[2].append(id_cp);
 
         for(int i=0;i<points2.size();i++)
@@ -180,38 +211,61 @@ void Surface::recompute(cv::Mat dt)
                 points[i].push_back(points2[i][j]);
     }
 
-    surf.controlPoints().append(points.at(0));
-    surf.controlPoints().append(points.at(1));
-    surf.controlPoints().append(points.at(2));
+    controlMesh.append(points.at(0));
+    controlMesh.append(points.at(1));
+    controlMesh.append(points.at(2));
 
-    std::ofstream ofs("debug_surface.off");
+    for (int k=0; k<controlMesh.size(); ++k)
+    {
+        int start_pt_id = controlMesh[k][0];
+        int end_pt_id = controlMesh[k][controlMesh[k].size()-1];
+        sharpCorners.push_back(start_pt_id);
+
+        /*
+         * This only set sharp corners on the control points with non-zero depth.
+         * Remove "fabs(vertices[end_pt_id].z())<1.0" to set all appropriate corners (with depth or not)
+         */
+        if (start_pt_id != end_pt_id && fabs(vertices[end_pt_id].z())<1.0)
+        {
+            sharpCorners.push_back(end_pt_id);
+        }
+    }
+
+    /*std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);
     ofs.close();*/
 }
 
 QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward, bool newP)
 {
-    /*float cT = 90; // threshold for curvature (in degrees)
+    float cT = 90; // threshold for curvature (in degrees)
 
     QVector<int> original;
     if(newP) {
-        for(int i=0;i<bspline.connected_cpts.size();i++)
-            original.append(addControlPoint(controlPoint(bspline.connected_cpts[i])));
+        for(int i=0;i<bspline_vertexIds.size();i++)
+        {
+            int vertexId = bspline_vertexIds[i];
+            original.append(addVertex(vertices[vertexId]));
+        }
     } else
-        original = bspline.connected_cpts;
+        original = bspline_vertexIds;
     QVector<int> translated_cpts_ids;
     QVector<int> perpendicular_cpts_ids;
 
-    for (int k=0; k<bspline.count(); ++k)
+    for (int k=0; k<bspline_vertexIds.size(); ++k)
     {
-        if (k == bspline.count()-1 && bspline.has_loop()) //if closed curve
+        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve
         {
-            perpendicular_cpts_ids.push_back(perpendicular_cpts_ids[0]);
+            if (!bspline.has_uniform_subdivision)
+                perpendicular_cpts_ids.push_back(perpendicular_cpts_ids[0]);
+            else
+                perpendicular_cpts_ids.push_back(perpendicular_cpts_ids[0]); //FLORA, found out what this should be
         } else
         {
-            QPointF new_cpt = bspline.pointAt(k);
-            int cpt_id = addControlPoint(new_cpt, z);
-            perpendicular_cpts_ids.push_back(cpt_id);
+            Point3d new_cpt = vertices[bspline_vertexIds[k]];
+            new_cpt.setZ(z);
+            int vertexId = addVertex(new_cpt);
+            perpendicular_cpts_ids.push_back(vertexId);
         }
     }
 
@@ -219,11 +273,14 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
     QVector<QPointF> lp = limitPoints(bspline.getPoints());
 
     // loop through all control points for the given spline curve
-    for (int k=0; k<bspline.count(); ++k)
+    for (int k=0; k<bspline_vertexIds.size(); ++k)
     {
-        if (k == bspline.count()-1 && bspline.has_loop()) //if closed curve
+        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve
         {
-            translated_cpts_ids.push_back(translated_cpts_ids[0]);
+            if (!bspline.has_uniform_subdivision)
+                 translated_cpts_ids.push_back( translated_cpts_ids[0]);
+            else
+                 translated_cpts_ids.push_back( translated_cpts_ids[0]); //FLORA, found out what this should be
         } else
         {
             // HENRIK: move in the distance transform image
@@ -237,15 +294,15 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
 
             // curvature check
             if(k>0) {
-                QPointF prevCP1 = QPointF(controlPoint(original.at(k-1)).x(),controlPoint(original.at(k-1)).y());
-                QPointF prevCP2 = QPointF(controlPoint(translated_cpts_ids.last()).x(),controlPoint(translated_cpts_ids.last()).y());
+                QPointF prevCP1 = QPointF(vertices[original.at(k-1)].x(),vertices[original.at(k-1)].y());
+                QPointF prevCP2 = QPointF(vertices[translated_cpts_ids.last()].x(),vertices[translated_cpts_ids.last()].y());
                 QLineF previousL = QLineF(prevCP1,prevCP2);
-                QPointF thisCP = QPointF(controlPoint(original.at(k)).x(),controlPoint(original.at(k)).y());
+                QPointF thisCP = QPointF(vertices[original.at(k)].x(),vertices[original.at(k)].y());
                 QLineF thisL = QLineF(thisCP,new_cpt);
                 float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
                 if(angle>cT) {
-                    original.insert(original.begin()+k, addControlPoint(prevCP1));
-                    perpendicular_cpts_ids.insert(perpendicular_cpts_ids.begin()+k, addControlPoint(prevCP1,z));
+                    original.insert(original.begin()+k, addVertex(prevCP1));
+                    perpendicular_cpts_ids.insert(perpendicular_cpts_ids.begin()+k, addVertex(prevCP1, z));
                     QPointF tangent = thisCP-prevCP1;
                     normal = QPointF(-tangent.y(),tangent.x());
                     if(!inward) normal = -normal;
@@ -257,19 +314,19 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
                     current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
                     tmp = traceDT(dt,lp.at(k),current,normalL,width);
 
-                    translated_cpts_ids.push_back(addControlPoint(tmp));
+                    translated_cpts_ids.push_back(addVertex(tmp));
                 }
             }
 
-            int cpt_id = addControlPoint(new_cpt);
-            translated_cpts_ids.push_back(cpt_id);
+            int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
+            translated_cpts_ids.push_back(vertexId);
         }
-    }*/
+    }
 
     QVector<QVector<int> > points;
-    /*points.append(original);
+    points.append(original);
     points.append(perpendicular_cpts_ids);
-    points.append(translated_cpts_ids);*/
+    points.append(translated_cpts_ids);
     return points;
 }
 

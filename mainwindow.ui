@@ -195,6 +195,9 @@
            </property>
           </widget>
           <widget class="QWidget" name="bspline_parameters_box" native="true">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="geometry">
             <rect>
              <x>0</x>
@@ -205,7 +208,7 @@
            </property>
            <widget class="QCheckBox" name="inward_suface_box">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -221,7 +224,7 @@
            </widget>
            <widget class="QCheckBox" name="outward_surface_box">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -237,7 +240,7 @@
            </widget>
            <widget class="QCheckBox" name="slope_curve_box">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="geometry">
              <rect>
@@ -253,7 +256,7 @@
            </widget>
            <widget class="QCheckBox" name="uniform_subdivision_curve_box">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="geometry">
              <rect>

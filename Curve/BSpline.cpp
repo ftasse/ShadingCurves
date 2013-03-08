@@ -79,7 +79,7 @@ void BSpline::recompute()
     subdivided_points.clear();
 
     if (points.size() > 1)
-        subdivided_points = subDivide(points, has_uniform_subdivision);
+        subdivided_points = subDivide(points, 2, has_uniform_subdivision);
 
     if (has_uniform_subdivision && points.size() >= 4) {
         subdivided_points.pop_back();
@@ -89,17 +89,51 @@ void BSpline::recompute()
 
 void BSpline::computeSurfaces(cv::Mat dt)
 {
-    //Call code for recomputing surfaces here
-    while (num_surfaces() > 0)
+    bool recomputed_inward_surface = false;
+    bool recomputed_outward_surface = false;
+
+    //FLORA: recompute or delete surfaces
+    for (int k=0; k<num_surfaces();)
     {
-        m_splineGroup->removeSurface(surfaceRefs[0]);
+        if (surfaceAt(k).direction == INWARD_DIRECTION)
+        {
+            if (has_inward_surface)
+            {
+                surfaceAt(k).recompute(dt);
+                recomputed_inward_surface = true;
+                ++k;
+            }
+            else
+            {
+                m_splineGroup->removeSurface(surfaceRefs[k]);
+            }
+        } else if (surfaceAt(k).direction == OUTWARD_DIRECTION)
+        {
+            if (has_outward_surface)
+            {
+                surfaceAt(k).recompute(dt);
+                recomputed_outward_surface = true;
+                ++k;
+            } else
+            {
+                m_splineGroup->removeSurface(surfaceRefs[k]);
+            }
+        }
     }
 
-    /*if (has_inward_surface)
-        m_splineGroup->createSurface(ref, dt, generic_extent, true);
+    //FLORA: Create new surfaces if needed
 
-    if (has_outward_surface)
-        m_splineGroup->createSurface(ref, dt, generic_extent, false);*/
+    if (has_inward_surface  && !recomputed_inward_surface)
+    {
+        int surf_id = m_splineGroup->addSurface(ref, INWARD_DIRECTION);
+        m_splineGroup->surface(surf_id).recompute(dt);
+    }
+
+    if (has_outward_surface && !recomputed_outward_surface)
+    {
+        int surf_id = m_splineGroup->addSurface(ref, OUTWARD_DIRECTION);
+        m_splineGroup->surface(surf_id).recompute(dt);
+    }
 }
 
 void BSpline::fix_orientation()

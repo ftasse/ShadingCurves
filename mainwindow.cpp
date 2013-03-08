@@ -33,9 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->showControlMeshBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlMesh(bool)));
     connect(ui->showControlPointsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlPoints(bool)));
 
-    connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
-    connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
-    connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
+    connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
+    connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
+    connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_slope_curve()));
     connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_bspline_parameters()));
     connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
     connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool)));
@@ -64,8 +64,28 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::change_slope_curve()
+{
+    if (ui->slope_curve_box->isChecked())
+    {
+        ui->inward_suface_box->setChecked(true);
+        ui->outward_surface_box->setChecked(true);
+    }
+    change_bspline_parameters();
+}
+
+void MainWindow::change_inward_outward_direction()
+{
+    if (!ui->inward_suface_box->isChecked() || !ui->outward_surface_box->isChecked())
+    {
+        ui->slope_curve_box->setChecked(false);
+    }
+    change_bspline_parameters();
+}
+
 void MainWindow::change_bspline_parameters()
 {
+
     scene->change_bspline_parameters(ui->surfaceWidthSlider->value(),
                                      ui->slope_curve_box->isChecked(),
                                      ui->uniform_subdivision_curve_box->isChecked(),
@@ -75,14 +95,17 @@ void MainWindow::change_bspline_parameters()
 
 void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
 {
+    ui->surfaceWidthSlider->setEnabled(enabled);
+    ui->slope_curve_box->setEnabled(enabled);
+    ui->uniform_subdivision_curve_box->setEnabled(enabled);
+    ui->inward_suface_box->setEnabled(enabled);
+    ui->outward_surface_box->setEnabled(enabled);
+
     ui->surfaceWidthSlider->setValue(extent);
     ui->slope_curve_box->setChecked(_is_slope);
     ui->uniform_subdivision_curve_box->setChecked(_has_uniform_subdivision);
     ui->inward_suface_box->setChecked(_has_inward);
     ui->outward_surface_box->setChecked(_has_outward);
-
-    ui->surfaceWidthSlider->setEnabled(enabled);
-    ui->bspline_parameters_box->setEnabled(enabled);
 }
 
 void MainWindow::center()
