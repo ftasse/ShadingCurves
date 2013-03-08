@@ -12,7 +12,7 @@ public:
     Surface();
 
     void recompute(cv::Mat dt);
-    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward, bool newP);
+    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward, QPoint shapeAtr);
     QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width);
 
     // HENRIK: find the closest highest value in neighbourhood
