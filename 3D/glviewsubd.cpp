@@ -241,7 +241,7 @@ void GLviewsubd::initializeGL(void)
     PointPrec		col[3];
     GLfloat			texture[5][res][4], alpha;
 
-    alpha = 0.5;
+    alpha = 0.0;
 
 //    if (joinTheDarkSide)
 //    {
@@ -404,6 +404,8 @@ void GLviewsubd::paintGL(void)
         glClearColor(1.0, 1.0, 1.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //draw stuff here
+        buildFrame();
+        glCallList(frame_list);
         buildFlatMesh();
         glCallList(flat_mesh_list);
         //create image
@@ -522,7 +524,7 @@ void GLviewsubd::paintGL(void)
 
             //convert back to BGR
             cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
-            if (showImg)
+            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
             {
             }
             //show always
@@ -836,48 +838,48 @@ void GLviewsubd::drawPoiBound()
 
 void GLviewsubd::drawFrame()
 {
-    Point_3D    p0, p1, p2, p3;
+//    Point_3D    p0, p1, p2, p3;
 
-    glDisable(GL_TEXTURE_1D);
+//    glDisable(GL_TEXTURE_1D);
 
-    if (indexMesh > -1)
-    {
-        p0 = meshCtrl[indexMesh]->my_centre;
-        p1 = p0;
-        p2 = p0;
-        p3 = p0;
-        p1.setX(p1.getX()  + 0.1 / meshCtrl[0]->my_scale);
-        p2.setY(p1.getY()  + 0.1 / meshCtrl[0]->my_scale);
-        p3.setZ(p1.getZ()  + 0.1 / meshCtrl[0]->my_scale);
-    }
-    else
-    {
-        p0 = Point_3D(0.5 * (double)imageWidth, 0.5 * (double)imageHeight, 0);
-        p1 = p0;
-        p2 = p1;
-        p3 = p2;
+//    if (indexMesh > -1)
+//    {
+//        p0 = meshCtrl[indexMesh]->my_centre;
+//        p1 = p0;
+//        p2 = p0;
+//        p3 = p0;
+//        p1.setX(p1.getX()  + 0.1 / meshCtrl[0]->my_scale);
+//        p2.setY(p1.getY()  + 0.1 / meshCtrl[0]->my_scale);
+//        p3.setZ(p1.getZ()  + 0.1 / meshCtrl[0]->my_scale);
+//    }
+//    else
+//    {
+//        p0 = Point_3D(0.5 * (double)imageWidth, 0.5 * (double)imageHeight, 0);
+//        p1 = p0;
+//        p2 = p1;
+//        p3 = p2;
 
-        p1.setX(p1.getX() + 0.1 * (double)qMin(imageWidth, imageHeight));
-        p2.setY(p1.getY() + 0.1 * (double)qMin(imageWidth, imageHeight));
-        p3.setZ(p1.getZ() + 0.1 * (double)qMin(imageWidth, imageHeight));
-    }
+//        p1.setX(p1.getX() + 0.1 * (double)qMin(imageWidth, imageHeight));
+//        p2.setY(p1.getY() + 0.1 * (double)qMin(imageWidth, imageHeight));
+//        p3.setZ(p1.getZ() + 0.1 * (double)qMin(imageWidth, imageHeight));
+//    }
 
-    // draw frame
-    glLineWidth(7);
-    glBegin(GL_LINES);
-        glColor3fv(col_red);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_red);
-        glVertex3fv(p0.getCoords());
-        glVertex3fv(p1.getCoords());
-        glColor3fv(col_green);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_green);
-        glVertex3fv(p0.getCoords());
-        glVertex3fv(p2.getCoords());
-        glColor3fv(col_blue);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_blue);
-        glVertex3fv(p0.getCoords());
-        glVertex3fv(p3.getCoords());
-    glEnd();
+//    // draw frame
+//    glLineWidth(7);
+//    glBegin(GL_LINES);
+//        glColor3fv(col_red);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_red);
+//        glVertex3fv(p0.getCoords());
+//        glVertex3fv(p1.getCoords());
+//        glColor3fv(col_green);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_green);
+//        glVertex3fv(p0.getCoords());
+//        glVertex3fv(p2.getCoords());
+//        glColor3fv(col_blue);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_blue);
+//        glVertex3fv(p0.getCoords());
+//        glVertex3fv(p3.getCoords());
+//    glEnd();
 
     //draw rectangle with image texture
     glDisable(GL_TEXTURE_GEN_S);
@@ -886,29 +888,29 @@ void GLviewsubd::drawFrame()
     glBindTexture(GL_TEXTURE_2D, textID[6]);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(10, 10);
+//    glEnable(GL_POLYGON_OFFSET_FILL);
+//    glPolygonOffset(10, 10);
 
     glLineWidth(4);
     glBegin(GL_QUADS);
-        glColor3fv(col_dead);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_dead);
+//        glColor3fv(col_dead);
+//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_dead);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(0, 1);
-        glVertex3f(0, 0, 0);
+        glVertex3f(0, 0, -200);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(1, 1);
-        glVertex3f(imageWidth, 0 ,0);
+        glVertex3f(super * imageWidth, 0, -200);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(1, 0);
-        glVertex3f(imageWidth, imageHeight, 0);
+        glVertex3f(super * imageWidth, super * imageHeight, -200);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(0, 0);
-        glVertex3f(0, imageHeight, 0);
+        glVertex3f(0, super * imageHeight, -200);
     glEnd();
 
 //    //draw rectangle
@@ -935,7 +937,7 @@ void GLviewsubd::buildFlatMesh()
     if(flat_mesh_list)	glDeleteLists(flat_mesh_list, 1);
     flat_mesh_list = glGenLists (1);
     glNewList (flat_mesh_list, GL_COMPILE);
-		glEnable(GL_LIGHTING);
+//		glEnable(GL_LIGHTING);
         if (indexMesh > -1 )
         {
             drawMesh(FLAT, meshCurr[indexMesh], indexMesh, 0);
@@ -1438,8 +1440,10 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 
         case FLAT:
             glDisable(GL_LIGHTING);
-            glEnable(GL_TEXTURE_1D);
-            glBindTexture(GL_TEXTURE_1D, textID[4]);
+//            glEnable(GL_TEXTURE_1D);
+//            glBindTexture(GL_TEXTURE_1D, textID[4]);
+            glColor4fv(meshCtrl[index]->colFlat);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, meshCtrl[index]->colFlat);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             break;
 
@@ -1513,8 +1517,8 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             }
             else if (type == FLAT)
             {
-                value = 1.0 / (double)meshCtrl.size() * (double)index;
-                glTexCoord1f(value);
+//                value = 1.0 / (double)meshCtrl.size() * (double)index;
+//                glTexCoord1f(value);
             }
             else
             {

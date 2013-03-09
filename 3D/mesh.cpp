@@ -203,6 +203,12 @@ void Mesh::load(istream &is, unsigned int iH)
             my_vertices[id].treatAsCornerVertex = true;
         }
 
+        //read colour
+        is >> colFlat[2] >> colFlat[1] >> colFlat[0];
+        colFlat[0] /= 255.0;
+        colFlat[1] /= 255.0;
+        colFlat[2] /= 255.0;
+        colFlat[3] = 0.0;
 
 //        for (i = 0 ; i < my_numV ; i++)
 //        {

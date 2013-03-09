@@ -15,7 +15,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     radioCtrlShaded = new QRadioButton(tr("Shaded"));
     radioCtrlEdges = new QRadioButton(tr("Wireframe"));
     radioCtrlCulled = new QRadioButton(tr("Solidframe"));
-    checkFrame = new QCheckBox(tr("XYZ frame + img"));
+    checkFrame = new QCheckBox(tr("Image"));
     checkFull = new QCheckBox(tr("Full"));
 
 	checkCtrl->setChecked(true);

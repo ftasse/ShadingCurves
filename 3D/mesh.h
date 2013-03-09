@@ -156,6 +156,8 @@ public:
 	unsigned int my_numF;
 	unsigned int my_numE;
 
+    float colFlat[4];
+
 	int my_degree;
 
 	unsigned int	my_level;
