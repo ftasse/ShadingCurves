@@ -478,7 +478,7 @@ void GLviewsubd::paintGL(void)
             {
                 for( int x = 0; x < imgShaded.cols; x++ )
                 {
-                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.49803921580314636); // 0.49803921580314636, 0.501960814
+                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603); // 0.49803921580314636, 0.50196081399917603
 
                     if (tmp > 100)
                     {
@@ -508,7 +508,7 @@ void GLviewsubd::paintGL(void)
             {
                 for( int x = 0; x < imgFillShaded.cols; x++ )
                 {
-                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.49803921580314636);
+                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603);
 
                     if (tmp > 100)
                     {
@@ -1615,8 +1615,8 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(3 + index, 1);
         glDisable(GL_TEXTURE_1D);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_faces);
-        glColor4fv(col_faces);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_back);
+        glColor4fv(col_back);
 
         for (i = 0 ; i < mesh->my_numF ; i++)
         {
