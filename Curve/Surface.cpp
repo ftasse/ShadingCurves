@@ -121,10 +121,11 @@ void Surface::recompute(cv::Mat dt)
         z = 50;
     }
     float width = 50.0;
-
+    QPointF tmpShape(.4f,.0f);
 
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
+    // HENRIK: what's the point of this? Can't we just pass a QList<QPointF> to setSurface?
     QVector<QPointF> subdivided_points = bspline.getPoints();
     for (int i=0; i<subdivided_points .size(); ++i)
     {
@@ -132,8 +133,6 @@ void Surface::recompute(cv::Mat dt)
         Point3d point(subdivided_points[i].x(), subdivided_points[i].y(), 0.0f);
         bspline_vertexIds.push_back(addVertex(Point3d(point.x(), point.y(), point.z())));
     }
-
-    QPointF tmpShape(.4f,.0f);
 
     QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,tmpShape);
 
@@ -148,7 +147,7 @@ void Surface::recompute(cv::Mat dt)
         vertices[points2[1][points2[1].size()-1]].setZ(0);
 
         // add additional point at end points
-        QPointF cp = vertices[points[0][0]]; // end control point
+        QPointF cp = vertices[points[1][0]]; // end control point
         QPointF cp1 = vertices[points[2][0]]; // first translated point
         QPointF cp2 = vertices[points2[2][0]]; // second translated point (on the other side)
         QPointF tangent = cp1-cp2;
@@ -178,7 +177,7 @@ void Surface::recompute(cv::Mat dt)
         points2[2].prepend(id_cp);
 
         // do something similar on the other side
-        cp = vertices[points[0][points[0].size()-1]];
+        cp = vertices[points[1][points[0].size()-1]];
         cp1 = vertices[points[2][points[2].size()-1]];
         cp2 = vertices[points2[2][points[2].size()-1]];
         tangent = cp2-cp1;
@@ -209,6 +208,7 @@ void Surface::recompute(cv::Mat dt)
     controlMesh.append(points.at(1));
     controlMesh.append(points.at(2));
 
+    // is this correct?
     for (int k=0; k<controlMesh.size(); ++k)
     {
         int start_pt_id = controlMesh[k][0];
@@ -233,25 +233,14 @@ void Surface::recompute(cv::Mat dt)
 QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward,QPointF& shapeAtr)
 {
     float cT = 90; // threshold for curvature (in degrees)
-    int dir = 0;
-    if(!inward) dir=1;
 
     QVector<int> shape_controlpoints; // the set of control points that define the shape
-/*    if(newP) {
-        for(int i=0;i<bspline_vertexIds.size();i++)
-        {
-            int vertexId = bspline_vertexIds[i];
-            shape_controlpoints.append(addVertex(vertices[vertexId]));
-        }
-    } else
-        shape_controlpoints = bspline_vertexIds;*/
-
     QVector<int> translated_cpts_ids;
     QVector<int> original_cpts_ids;
 
     for (int k=0; k<bspline_vertexIds.size(); ++k)
     {
-        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve
+        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve. HENRIK: why should this happen here, and not before?
         {
             if (!bspline.has_uniform_subdivision)
                 original_cpts_ids.push_back(original_cpts_ids[0]);
@@ -280,7 +269,6 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
                  translated_cpts_ids.push_back( translated_cpts_ids[0]); //FLORA, found out what this should be
         } else
         {
-            // HENRIK: move in the distance transform image
             QPointF normal = bspline.inward_normal(k, true);
             if(!inward)
                 normal = -normal;
@@ -289,7 +277,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,width);
 
-            // curvature check, TODO: ADD SHAPE POINT CORRECTLY
+            // curvature check: add point if angle is above cT
             if(k>0) {
                 QPointF prevCP1 = QPointF(vertices[original_cpts_ids.at(k-1)].x(),vertices[original_cpts_ids.at(k-1)].y());
                 QPointF prevCP2 = QPointF(vertices[translated_cpts_ids.last()].x(),vertices[translated_cpts_ids.last()].y());
