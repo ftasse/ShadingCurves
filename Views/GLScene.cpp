@@ -551,23 +551,23 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         glColor3d(0.0, 0.0, 0.0);
     }
 
-      QVector<QPointF> points = bspline.getControlPoints();
-      QVector<QPointF> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
-      if (bspline.has_uniform_subdivision && points.size() >= 4) {
-          subDividePts.pop_back();
-          subDividePts.pop_front();
-      }
+    QVector<QPointF> points = bspline.getControlPoints();
+    QVector<QPointF> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
+    if (bspline.has_uniform_subdivision && points.size() >= 4) {
+        subDividePts.pop_back();
+        subDividePts.pop_front();
+    }
 
-      glBegin(GL_LINE_STRIP);
-      for (int i = 0; i < subDividePts.size(); ++i)
-      {
-          if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
-          glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
-      }
-      glEnd();
+    glBegin(GL_LINE_STRIP);
+    for (int i = 0; i < subDividePts.size(); ++i)
+    {
+        if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
+        glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
+    }
+    glEnd();
 
-      glPopName();
-      glPopName();
+    glPopName();
+    glPopName();
 }
 
 void GLScene::draw_surface(int surface_id)
