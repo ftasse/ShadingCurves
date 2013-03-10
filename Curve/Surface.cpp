@@ -133,11 +133,13 @@ void Surface::recompute(cv::Mat dt)
         bspline_vertexIds.push_back(addVertex(Point3d(point.x(), point.y(), point.z())));
     }
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,);
+    QPointF tmpShape(.4f,.0f);
+
+    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,tmpShape);
 
     if(bspline.is_slope) {
         // find points on the other side
-        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,true);
+        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,tmpShape);
 
         // set end points to zero
         vertices[points[1][0]].setZ(0);
@@ -223,12 +225,12 @@ void Surface::recompute(cv::Mat dt)
         }
     }
 
-    /*std::ofstream ofs("debug_surface.off");
+    std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);
-    ofs.close();*/
+    ofs.close();
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward,QPoint shapeAtr)
+QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward,QPointF& shapeAtr)
 {
     float cT = 90; // threshold for curvature (in degrees)
     int dir = 0;
@@ -296,7 +298,6 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
                 QLineF thisL = QLineF(thisCP,new_cpt);
                 float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
                 if(angle>cT) {
-//                    shape_controlpoints.insert(shape_controlpoints.begin()+k, addVertex(prevCP1));
                     original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1, z));
                     QPointF tangent = thisCP-prevCP1;
                     normal = QPointF(-tangent.y(),tangent.x());
@@ -311,21 +312,19 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
 
                     translated_cpts_ids.push_back(addVertex(tmp));
 
-                    QPointF tmpAtr = bspline.pointAt(k).attributes[dir].shapePointAtr;
-                    int newId = addVertex(tmp*tmpAtr.x(),z*tmpAtr.y());
+                    normal = tmp-lp.at(k);
+                    int newId = addVertex(lp.at(k)+normal*shapeAtr.x(),z*shapeAtr.y());
                     shape_controlpoints.push_back(newId);
                 }
             }
 
             int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
             translated_cpts_ids.push_back(vertexId);
-            qDebug() << "got here";
 
             // add shape point
-            QPointF shapeAtr = bspline.pointAt(k).attributes[dir].shapePointAtr;
-            vertexId = addVertex(new_cpt*shapeAtr.x(),z*shapeAtr.y());
+            normal = new_cpt-lp.at(k);
+            vertexId = addVertex(lp.at(k)+normal*shapeAtr.x(),z*shapeAtr.y());
             shape_controlpoints.push_back(vertexId);
-qDebug() << "got here";
         }
     }
 
