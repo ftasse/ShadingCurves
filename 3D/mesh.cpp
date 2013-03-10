@@ -370,7 +370,7 @@ void Mesh::build(void)
         vert = &my_vertices[i];
         vert->isOnBoundary = false; // init all to false
         vert->my_valency = vert->my_faceIndices.size();
-        if (vert->my_valency == 1) // fix for vertices of valency 1
+        if (vert->my_valency == 1 || vert->my_valency == 0) // fix for vertices of valency 1 and 0
         {
             vert->isOnBoundary = true;
         }
