@@ -20,7 +20,7 @@ typedef struct Attribute
     NormalDirection direction; //0 for inward point along the normal,    1 for outward point along the normal
     float extent;
     float height;
-    QPointF barycentricCoords;
+    QPointF shapePointAtr;
 } Attribute;
 
 class ControlPoint : public Point3d
@@ -34,6 +34,14 @@ public:
     int num_splines()
     {
         return splineRefs.size();
+    }
+
+    Attribute& attribute(NormalDirection dir)
+    {
+        if (dir == INWARD_DIRECTION)
+            return attributes[0];
+        else
+            return attributes[2];
     }
 
     void useDefaultAttributes();

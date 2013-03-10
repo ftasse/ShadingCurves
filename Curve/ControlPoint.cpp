@@ -17,14 +17,14 @@ ControlPoint::ControlPoint(QPointF val):
 void ControlPoint::useDefaultAttributes()
 {
     attributes[0].direction = INWARD_DIRECTION;
-    attributes[1].extent = 50.0;
-    attributes[1].height = 50.0;
-    attributes[1].barycentricCoords = QPointF(0.0f, 0.0f);
+    attributes[0].extent = 50.0;
+    attributes[0].height = 50.0;
+    attributes[0].shapePointAtr = QPointF(0.4f, 0.0f);
 
-    attributes[0].direction = OUTWARD_DIRECTION;
+    attributes[1].direction = OUTWARD_DIRECTION;
     attributes[1].extent = 50.0;
     attributes[1].height = -50.0;
-    attributes[1].barycentricCoords = QPointF(0.0f, 0.0f);
+    attributes[1].shapePointAtr = QPointF(0.4f, 0.0f);
 }
 
 BSpline& ControlPoint::splineAt(int index)
