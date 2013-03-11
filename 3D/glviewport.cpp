@@ -291,7 +291,8 @@ void GLviewport::setRotXp(void)
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-	glRotatef(rotIncr, 1, 0, 0);
+//	glRotatef(rotIncr, 1, 0, 0);
+    glTranslatef(10 * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
@@ -303,7 +304,8 @@ void GLviewport::setRotXm(void)
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-	glRotatef(-rotIncr, 1, 0, 0);
+//	glRotatef(-rotIncr, 1, 0, 0);
+    glTranslatef(-10 * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
@@ -316,44 +318,48 @@ void GLviewport::setRotYp(void)
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-	glRotatef(rotIncr, 0, 1, 0);
+//	glRotatef(rotIncr, 0, 1, 0);
+    glTranslatef(0, 10 * my_scale, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
 
 void GLviewport::setRotYm(void)
 {
-	// Pre-multiply by rotation matrix
-	GLdouble currentMatrix[16] = {0};
-	makeCurrent();
-	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
-	glLoadIdentity();
-	glRotatef(-rotIncr, 0, 1, 0);
-	glMultMatrixd(currentMatrix);
-	updateGL();
+    // Pre-multiply by rotation matrix
+    GLdouble currentMatrix[16] = {0};
+    makeCurrent();
+    glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
+    glLoadIdentity();
+//	glRotatef(-rotIncr, 0, 1, 0);
+    glTranslatef(0, -10 * my_scale, 0);
+    glMultMatrixd(currentMatrix);
+    updateGL();
 }
 
 
 void GLviewport::setRotZp(void)
 {
-	// Pre-multiply by rotation matrix
-	GLdouble currentMatrix[16] = {0};
-	makeCurrent();
-	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
-	glLoadIdentity();
-	glRotatef(rotIncr, 0, 0, 1);
-	glMultMatrixd(currentMatrix);
-	updateGL();
+//	// Pre-multiply by rotation matrix
+//	GLdouble currentMatrix[16] = {0};
+//	makeCurrent();
+//	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
+//	glLoadIdentity();
+////	glRotatef(rotIncr, 0, 0, 1);
+//    glTranslatef(0, 0, 10 * my_scale);
+//	glMultMatrixd(currentMatrix);
+//	updateGL();
 }
 
 void GLviewport::setRotZm(void)
 {
-	// Pre-multiply by rotation matrix
-	GLdouble currentMatrix[16] = {0};
-	makeCurrent();
-	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
-	glLoadIdentity();
-	glRotatef(-rotIncr, 0, 0, 1);
-	glMultMatrixd(currentMatrix);
-	updateGL();
+//	// Pre-multiply by rotation matrix
+//	GLdouble currentMatrix[16] = {0};
+//	makeCurrent();
+//	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
+//	glLoadIdentity();
+////	glRotatef(-rotIncr, 0, 0, 1);
+//    glTranslatef(0, 0, -10 * my_scale);
+//	glMultMatrixd(currentMatrix);
+//	updateGL();
 }

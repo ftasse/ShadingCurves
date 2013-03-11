@@ -100,6 +100,7 @@ private:
 	QAction *aboutAct;
 	QAction *fullScreenAct;
     QAction *sub1Act, *tool1aAct, *tool2aAct, *darkAct;
+    QAction *panxpAct, *panxmAct, *panypAct, *panymAct;
 
     QSplitter	*horWidget;
 

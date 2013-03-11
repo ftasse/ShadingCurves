@@ -54,8 +54,18 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
     addAction(tool2aAct);
     addAction(darkAct);
 
+    addAction(panxpAct);
+    addAction(panxmAct);
+    addAction(panypAct);
+    addAction(panymAct);
+
     glwidget1->addAction(tool1aAct);
     glwidget2->addAction(tool2aAct);
+
+    glwidget1->addAction(panxpAct);
+    glwidget1->addAction(panxmAct);
+    glwidget1->addAction(panypAct);
+    glwidget1->addAction(panymAct);
 
 	vline = new QFrame();
 	vline->setFrameShape(QFrame::VLine);
@@ -871,6 +881,26 @@ void MainWindow3D::createActions()
     darkAct = new QAction(this);
     darkAct->setShortcut(QKeySequence(tr("D")));
     connect(darkAct, SIGNAL(triggered()), this, SLOT(dark()));
+
+    panxpAct = new QAction(tr("Pan x+"), this);
+    panxpAct->setShortcuts(QKeySequence::SelectNextChar);
+    connect(panxpAct, SIGNAL(triggered()), glwidget1, SLOT(setRotXp()));
+    connect(panxpAct, SIGNAL(triggered()), glwidget2, SLOT(setRotXp()));
+
+    panxmAct = new QAction(tr("Pan x-"), this);
+    panxmAct->setShortcuts(QKeySequence::SelectPreviousChar);
+    connect(panxmAct, SIGNAL(triggered()), glwidget1, SLOT(setRotXm()));
+    connect(panxmAct, SIGNAL(triggered()), glwidget2, SLOT(setRotXm()));
+
+    panypAct = new QAction(tr("Pan y+"), this);
+    panypAct->setShortcuts(QKeySequence::SelectPreviousLine);
+    connect(panypAct, SIGNAL(triggered()), glwidget1, SLOT(setRotYp()));
+    connect(panypAct, SIGNAL(triggered()), glwidget2, SLOT(setRotYp()));
+
+    panymAct = new QAction(tr("Pan y-"), this);
+    panymAct->setShortcuts(QKeySequence::SelectNextLine);
+    connect(panymAct, SIGNAL(triggered()), glwidget1, SLOT(setRotYm()));
+    connect(panymAct, SIGNAL(triggered()), glwidget2, SLOT(setRotYm()));
 }
 
 void MainWindow3D::sub1()

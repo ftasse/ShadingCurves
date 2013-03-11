@@ -286,8 +286,8 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 	sliderYw->setLayout(sliderYl);
 	sliderZl->addWidget(zLabel);
 	sliderZl->addWidget(sliderZ);
-	sliderZl->addWidget(zmButton);
-	sliderZl->addWidget(zpButton);
+//	sliderZl->addWidget(zmButton);
+//	sliderZl->addWidget(zpButton);
     sliderZl->setContentsMargins(11,0,11,0);
 	sliderZw->setLayout(sliderZl);
 
