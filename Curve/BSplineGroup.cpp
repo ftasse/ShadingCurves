@@ -92,7 +92,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
 
     //Change position of the junction control point to the the limit point
     ControlPoint& junction = bspline.pointAt(cptPos);
-    Point3d junctionCoords = (Point3d) junction;
+    ControlPoint junctionCoords = junction;
     QPointF limitPoint = 0.1667*bspline.pointAt(cptPos-1)+0.667*bspline.pointAt(cptPos)+0.1667*bspline.pointAt(cptPos+1);
     junction.setX(limitPoint.x());
     junction.setY(limitPoint.y());
@@ -121,10 +121,10 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
     int spline2_size = newSpline.num_cpts();
     if (spline1_size > 1)
     {
-        Point3d secondPoint = bspline.pointAt(bspline.num_cpts()-2);
+        ControlPoint secondPoint = bspline.pointAt(bspline.num_cpts()-2);
 
         ControlPoint& cpt1 = bspline.pointAt(bspline.num_cpts()-2);
-        QPointF newPosition1 = 0.33*secondPoint+0.667*junctionCoords;
+        ControlPoint newPosition1 = 0.33*secondPoint+0.667*junctionCoords;
 
         if (spline1_size == 2)
         {
@@ -142,7 +142,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
 
         if (spline1_size > 2)
         {
-            QPointF newPosition2 = 0.667*secondPoint+0.33*bspline.pointAt(bspline.num_cpts()-3);
+            ControlPoint newPosition2 = 0.667*secondPoint+0.33*bspline.pointAt(bspline.num_cpts()-3);
             int newCptRef = addControlPoint(newPosition2, secondPoint.z());
             ControlPoint& cpt2 = controlPoint(newCptRef);
             for (int k=0; k<2; ++k)
@@ -153,7 +153,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
     }
     if (spline2_size > 1)
     {
-        Point3d secondPoint = newSpline.pointAt(1);
+        ControlPoint secondPoint = newSpline.pointAt(1);
 
         ControlPoint& cpt1 = newSpline.pointAt(1);
         QPointF newPosition1 = 0.33*secondPoint+0.667*junctionCoords;
@@ -174,7 +174,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
 
         if (spline2_size > 2)
         {
-            QPointF newPosition2 = 0.667*secondPoint+0.33*newSpline.pointAt(2);
+            ControlPoint newPosition2 = 0.667*secondPoint+0.33*newSpline.pointAt(2);
             int newCptRef = addControlPoint(newPosition2, secondPoint.z());
             ControlPoint& cpt2 = controlPoint(newCptRef);
             for (int k=0; k<2; ++k)

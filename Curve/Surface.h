@@ -12,7 +12,7 @@ public:
     Surface();
 
     void recompute(cv::Mat dt);
-    QVector<QVector<int> > setSurfaceCP(BSpline& bspline, cv::Mat dt, float z, float width, bool inward, QPointF& shapeAtr);
+    QVector<QVector<int> > setSurfaceCP(QVector<ControlPoint> controlPoints, cv::Mat dt, bool inward);
     QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width);
 
     // HENRIK: find the closest highest value in neighbourhood
@@ -41,9 +41,6 @@ public:
     QVector<Point3d> vertices;
     QVector<int> sharpCorners;
     QVector< QVector<int> > controlMesh;
-
-private:
-    QVector<int> bspline_vertexIds;
 };
 
 #endif // SURFACE_H

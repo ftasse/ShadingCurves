@@ -23,4 +23,14 @@ private:
     
 };
 
+inline Point3d operator+(Point3d p1, Point3d p2)
+{
+  return Point3d(p1.x()+p2.x(), p1.y()+p2.y(), p1.z()+p2.z());
+}
+
+inline Point3d operator*(qreal a, Point3d p2)
+{
+  return Point3d(a*p2.x(), a*p2.y(), a*p2.z());
+}
+
 #endif // POINT3D_H

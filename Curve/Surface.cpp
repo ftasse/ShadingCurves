@@ -34,31 +34,31 @@ QVector<QVector<int> > Surface::getFaceIndices()
     QVector<QVector<int> > faceIndices;
 
     //Compute faces indices
-    bool flip_face = true;
-    for (int k=1; k<controlMesh.size(); ++k)
+    //bool flip_face = true;
+    for (int k=0; k<controlMesh.size()-1; ++k)
     {
-        for (int l=0; l<controlMesh[0].size()-1; ++l)
+        for (int l=0; l<controlMesh[k].size()-1; ++l)
         {
             QVector<int> indices;
 
-            indices.push_back(controlMesh[0][l]);
-            if (controlMesh[0][l+1] != indices.back())
-                indices.push_back(controlMesh[0][l+1]);
-
+            indices.push_back(controlMesh[k][l]);
             if (controlMesh[k][l+1] != indices.back())
                 indices.push_back(controlMesh[k][l+1]);
 
-            if (controlMesh[k][l] != indices.back() && controlMesh[k][l] != indices.front())
-                indices.push_back(controlMesh[k][l]);
+            if (controlMesh[k+1][l+1] != indices.back())
+                indices.push_back(controlMesh[k+1][l+1]);
 
-            if (flip_face)
+            if (controlMesh[k+1][l] != indices.back() && controlMesh[k+1][l] != indices.front())
+                indices.push_back(controlMesh[k+1][l]);
+
+            /*if (flip_face)
             {
                 std::reverse(indices.begin(), indices.end());
-            }
+            }*/
 
             faceIndices.push_back(indices);
         }
-        flip_face = !flip_face;
+        //flip_face = !flip_face;
     }
 
     return faceIndices;
@@ -97,6 +97,8 @@ bool Surface::writeOFF(std::ostream &ofs)
     {
         ofs << sharpCorners[i] << std::endl;
     }
+
+    return true;
 }
 
 void Surface::recompute(cv::Mat dt)
@@ -105,40 +107,19 @@ void Surface::recompute(cv::Mat dt)
     vertices.clear();
     sharpCorners.clear();
     controlMesh.clear();
-    bspline_vertexIds.clear();
-
 
     bool inward = (direction == INWARD_DIRECTION);
-
-    /* FLORA: z and width should not be hardcoded, but obtained from the control points */
-    int z;
-    if (inward)
-    {
-        z = -50;
-    }
-    else
-    {
-        z = 50;
-    }
-    float width = 50.0;
-    QPointF tmpShape(.4f,.0f);
 
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
     // HENRIK: what's the point of this? Can't we just pass a QList<QPointF> to setSurface?
-    QVector<QPointF> subdivided_points = bspline.getPoints();
-    for (int i=0; i<subdivided_points .size(); ++i)
-    {
-        //FLORA: May be the z value, instead of 0.0f, should be the height in cpt attribute ? maybe via some interpolation in the subdivision
-        Point3d point(subdivided_points[i].x(), subdivided_points[i].y(), 0.0f);
-        bspline_vertexIds.push_back(addVertex(Point3d(point.x(), point.y(), point.z())));
-    }
+    QVector<ControlPoint> subdivided_points = bspline.getPoints();
 
-    QVector<QVector<int> > points = setSurfaceCP(bspline,dt,z,width,inward,tmpShape);
+    QVector<QVector<int> > points = setSurfaceCP(subdivided_points,dt,inward);
 
     if(bspline.is_slope) {
         // find points on the other side
-        QVector<QVector<int> > points2 = setSurfaceCP(bspline,dt,z,width,!inward,tmpShape);
+        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points,dt,!inward);
 
         // set end points to zero
         vertices[points[1][0]].setZ(0);
@@ -146,67 +127,79 @@ void Surface::recompute(cv::Mat dt)
         vertices[points[1][points[1].size()-1]].setZ(0);
         vertices[points2[1][points2[1].size()-1]].setZ(0);
 
-        // add additional point at end points
-        QPointF cp = vertices[points[1][0]]; // end control point
-        QPointF cp1 = vertices[points[2][0]]; // first translated point
-        QPointF cp2 = vertices[points2[2][0]]; // second translated point (on the other side)
+        // add additional point at end points (Note that points.first() are the translated points and points.last() are the original points)
+        QVector<QPointF> shapeAtrs = subdivided_points.first().attributes[0].shapePointAtr;
+        float extent = subdivided_points.first().attributes[0].extent;
+        QPointF cp = vertices[points.last().first()]; // end control point
+        QPointF cp1 = vertices[points.first().first()]; // first translated point
+        QPointF cp2 = vertices[points2.first().first()]; // second translated point (on the other side)
         QPointF tangent = cp1-cp2;
         QPointF normal = QPointF(-tangent.y(),tangent.x());
         float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
         if (norm > EPSILON)
             normal /= norm;
-        QLineF normalL(cp,cp + normal*width);
+        QLineF normalL(cp,cp + normal*extent);
         QPointF tmp = cp+normal*2;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-        tmp = traceDT(dt,cp,current,normalL,width);
+        tmp = traceDT(dt,cp,current,normalL,extent);
+        normal = tmp-cp;
 
         // add first point?
         int id_cp = addVertex(cp);
-        points[0].prepend(id_cp);
-        id_cp = addVertex(vertices[points[1][0]]);
-        points[1].prepend(id_cp);
+        points.last().prepend(id_cp);
+        for (int i=0; i<shapeAtrs.size(); ++i) {
+            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
+            points[i+1].prepend(id_cp);
+        }
         id_cp = addVertex(tmp);
-        points[2].prepend(id_cp);
+        points.first().prepend(id_cp);
 
         // close the loop
         id_cp = addVertex(cp);
-        points2[0].prepend(id_cp);
-        id_cp = addVertex(vertices[points[1][0]]);
-        points2[1].prepend(id_cp);
+        points2.last().prepend(id_cp);
+        for (int i=0; i<shapeAtrs.size(); ++i) {
+            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
+            points2[i+1].prepend(id_cp);
+        }
         id_cp = addVertex(tmp);
-        points2[2].prepend(id_cp);
+        points2.first().prepend(id_cp);
 
         // do something similar on the other side
-        cp = vertices[points[1][points[0].size()-1]];
-        cp1 = vertices[points[2][points[2].size()-1]];
-        cp2 = vertices[points2[2][points[2].size()-1]];
+        shapeAtrs = subdivided_points.last().attributes[0].shapePointAtr;
+        extent = subdivided_points.last().attributes[0].extent;
+        cp = vertices[points.last().last()];
+        cp1 = vertices[points.first().last()];
+        cp2 = vertices[points2.first().last()];
         tangent = cp2-cp1;
         normal = QPointF(-tangent.y(),tangent.x());
         norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
         if (norm > EPSILON)
             normal /= norm;
-        normalL = QLineF(cp,cp + normal*width);
+        normalL = QLineF(cp,cp + normal*extent);
         tmp = cp+normal*2;
         current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-        tmp = traceDT(dt,cp,current,normalL,width);
+        tmp = traceDT(dt,cp,current,normalL,extent);
+        normal = tmp-cp;
 
         // add middle point
         id_cp = addVertex(cp);
-        points[0].append(id_cp);
-        id_cp = addVertex(vertices[points[1][points[1].size()-1]]);
-        points[1].append(id_cp);
+        points.last().append(id_cp);
+        for (int i=0; i<shapeAtrs.size(); ++i) {
+            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
+            points[i+1].append(id_cp); qDebug() << id_cp;
+        }
         id_cp = addVertex(tmp);
-        points[2].append(id_cp);
+        points.first().append(id_cp);
 
         // merge the two grids
         for(int i=0;i<points2.size();i++)
             for(int j=points2[i].size()-1;j>=0;j--)
                 points[i].push_back(points2[i][j]);
+
     }
 
-    controlMesh.append(points.at(0));
-    controlMesh.append(points.at(1));
-    controlMesh.append(points.at(2));
+    for (int k=0; k<points.size(); ++k)
+        controlMesh.append(points.at(k));
 
     // is this correct?
     for (int k=0; k<controlMesh.size(); ++k)
@@ -230,79 +223,85 @@ void Surface::recompute(cv::Mat dt)
     ofs.close();
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z,float width,bool inward,QPointF& shapeAtr)
+QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, cv::Mat dt, bool inward)
 {
     float cT = 90; // threshold for curvature (in degrees)
+    NormalDirection direction = inward?INWARD_DIRECTION:OUTWARD_DIRECTION;
 
-    QVector<int> shape_controlpoints; // the set of control points that define the shape
+    QVector< QVector<int> > shape_controlpoints(controlPoints[0].attribute(direction).shapePointAtr.size()); // the set of control points that define the shape
     QVector<int> translated_cpts_ids;
     QVector<int> original_cpts_ids;
 
-    for (int k=0; k<bspline_vertexIds.size(); ++k)
+    for (int k=0; k<controlPoints.size(); ++k)
     {
-        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve. HENRIK: why should this happen here, and not before?
+        /*if (k == bspline_vertexIds.size()-1 && controlPoints.has_loop()) //if closed curve. HENRIK: why should this happen here, and not before?
         {
-            if (!bspline.has_uniform_subdivision)
-                original_cpts_ids.push_back(original_cpts_ids[0]);
-            else
-                original_cpts_ids.push_back(original_cpts_ids[0]); //FLORA, found out what this should be
+            original_cpts_ids.push_back(original_cpts_ids[0]);
         } else
         {
             Point3d new_cpt = vertices[bspline_vertexIds[k]];
             new_cpt.setZ(z);
             int vertexId = addVertex(new_cpt);
             original_cpts_ids.push_back(vertexId);
-        }
+        }*/
+
+        original_cpts_ids.push_back( addVertex(controlPoints[k]) );
     }
 
     // get limit points for the control points
-    QVector<QPointF> lp = limitPoints(bspline.getPoints());
+    QVector<QPointF> lp = limitPoints(controlPoints);
 
     // loop through all control points for the given spline curve
-    for (int k=0; k<bspline_vertexIds.size(); ++k)
+    for (int k=0; k<controlPoints.size(); ++k)
     {
-        if (k == bspline_vertexIds.size()-1 && bspline.has_loop()) //if closed curve
+        /*if (k == bspline_vertexIds.size()-1 && controlPoints.has_loop()) //if closed curve
         {
-            if (!bspline.has_uniform_subdivision)
+            if (!controlPoints.has_uniform_subdivision)
                  translated_cpts_ids.push_back( translated_cpts_ids[0]);
             else
                  translated_cpts_ids.push_back( translated_cpts_ids[0]); //FLORA, found out what this should be
-        } else
+        } else*/
         {
-            QPointF normal = bspline.inward_normal(k, true);
+            QPointF normal = getNormal(controlPoints, k);
+            float extent = controlPoints[k].attribute(direction).extent;
+            QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
             if(!inward)
                 normal = -normal;
-            QLineF normalL(lp.at(k),lp.at(k) + normal*width);
+            QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
             QPointF tmp = lp.at(k)+normal*2;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-            QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,width);
+            QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent);
 
             // curvature check: add point if angle is above cT
             if(k>0) {
-                QPointF prevCP1 = QPointF(vertices[original_cpts_ids.at(k-1)].x(),vertices[original_cpts_ids.at(k-1)].y());
-                QPointF prevCP2 = QPointF(vertices[translated_cpts_ids.last()].x(),vertices[translated_cpts_ids.last()].y());
+                Point3d prevCP1 = vertices[original_cpts_ids.at(k-1)];
+                Point3d  prevCP2 = vertices[translated_cpts_ids.last()];
                 QLineF previousL = QLineF(prevCP1,prevCP2);
-                QPointF thisCP = QPointF(vertices[original_cpts_ids.at(k)].x(),vertices[original_cpts_ids.at(k)].y());
+                Point3d thisCP = vertices[original_cpts_ids.at(k)];
                 QLineF thisL = QLineF(thisCP,new_cpt);
                 float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
                 if(angle>cT) {
-                    original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1, z));
+                    original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1));
                     QPointF tangent = thisCP-prevCP1;
                     normal = QPointF(-tangent.y(),tangent.x());
                     if(!inward) normal = -normal;
                     float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
                     if (norm > EPSILON)
                         normal /= norm;
-                    normalL = QLineF(lp.at(k),lp.at(k) + normal*width);
+                    normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
                     tmp = lp.at(k)+normal*5;
                     current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-                    tmp = traceDT(dt,lp.at(k),current,normalL,width);
+                    tmp = traceDT(dt,lp.at(k),current,normalL,extent);
 
                     translated_cpts_ids.push_back(addVertex(tmp));
 
                     normal = tmp-lp.at(k);
-                    int newId = addVertex(lp.at(k)+normal*shapeAtr.x(),z*shapeAtr.y());
-                    shape_controlpoints.push_back(newId);
+
+                    for (int l=0; l<shapeAtrs.size(); ++l)
+                    {
+                        int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),controlPoints[k].z()*shapeAtrs[l].y());
+                        shape_controlpoints[l].push_back(newId);
+                    }
                 }
             }
 
@@ -311,15 +310,20 @@ QVector<QVector<int> > Surface::setSurfaceCP(BSpline& bspline,cv::Mat dt,float z
 
             // add shape point
             normal = new_cpt-lp.at(k);
-            vertexId = addVertex(lp.at(k)+normal*shapeAtr.x(),z*shapeAtr.y());
-            shape_controlpoints.push_back(vertexId);
+            for (int l=0; l<shapeAtrs.size(); ++l)
+            {
+                vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),controlPoints[k].z()*shapeAtrs[l].y());
+                shape_controlpoints[l].push_back(vertexId);
+            }
         }
     }
-
     QVector<QVector<int> > points;
-    points.append(shape_controlpoints);
-    points.append(original_cpts_ids);
     points.append(translated_cpts_ids);
+    for (int l = 0; l<shape_controlpoints.size(); ++l)
+    {
+        points.append(shape_controlpoints[l]);
+    }
+    points.append(original_cpts_ids);
     return points;
 }
 

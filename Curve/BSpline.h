@@ -25,8 +25,8 @@ public:
     QPointF inward_normal(int index, bool subdivided = true);
 
     //Utilites
-    QVector<QPointF> getPoints(); // HENRIK: return list of control points
-    QVector<QPointF> getControlPoints();
+    QVector<ControlPoint> getPoints(); // HENRIK: return list of control points
+    QVector<ControlPoint> getControlPoints();
     ControlPoint& pointAt(int index);
     Surface& surfaceAt(int index);
 
@@ -58,7 +58,7 @@ public:
     bool has_inward_surface;
     bool has_outward_surface;
 
-    QVector<QPointF> subdivided_points;
+    QVector<ControlPoint> subdivided_points;
 };
 
 #endif // BSPLINE_H

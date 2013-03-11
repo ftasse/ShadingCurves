@@ -75,8 +75,18 @@ QPointF BSpline::inward_normal(int index, bool subdivided)
 
 void BSpline::recompute()
 {
-    QVector<QPointF> points = getControlPoints();
+    QVector<ControlPoint> points = getControlPoints();
     subdivided_points.clear();
+
+    if (points.size() <=1)  return;
+    //TODO Remove this right away
+    for (int i=0; i<points.size(); ++i)
+    {
+        points[i].setZ(i*20+20);
+        points[i].attributes[0].extent = 5*i+20;
+        //points[i].print();
+    }
+    //printf("*****************************************\n");
 
     if (points.size() > 1)
         subdivided_points = subDivide(points, 2, has_uniform_subdivision);
@@ -85,6 +95,11 @@ void BSpline::recompute()
         subdivided_points.pop_back();
         subdivided_points.pop_front();
     }
+
+    /*for (int i = 0; i<subdivided_points.size(); ++i)
+    {
+        subdivided_points[i].print();
+    }*/
 }
 
 void BSpline::computeSurfaces(cv::Mat dt)
@@ -141,7 +156,7 @@ void BSpline::fix_orientation()
     if (cptRefs.size()>0 && has_loop())
     {
         //Check if current orientation is correct
-        QPointF inside_point = getPoints().front() + 5*inward_normal(0, true);
+        QPointF inside_point = (QPointF)getPoints().front() + 5*inward_normal(0, true);
         std::vector<cv::Point> contour;
         for (int i=0; i<getPoints().size(); ++i)
         {
@@ -154,9 +169,9 @@ void BSpline::fix_orientation()
     }
 }
 
-QVector<QPointF> BSpline::getControlPoints()
+QVector<ControlPoint> BSpline::getControlPoints()
 {
-    QVector<QPointF> points;
+    QVector<ControlPoint> points;
     for (int i=0; i< cptRefs.size(); ++i)
     {
         points.push_back(pointAt(i));
@@ -169,7 +184,7 @@ QVector<QPointF> BSpline::getControlPoints()
     return points;
 }
 
-QVector<QPointF> BSpline::getPoints()
+QVector<ControlPoint> BSpline::getPoints()
 {
     if (subdivided_points.size() == 0)
     {

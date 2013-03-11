@@ -6,9 +6,9 @@
 
 #include "Curve/BSpline.h"
 
-QVector<QPointF> subDivide(QVector<QPointF> spline, int steps=2, bool closed = false);
-QVector<QPointF> limitPoints(QVector<QPointF> spline);
+QVector<ControlPoint> subDivide(QVector<ControlPoint> spline, int steps=2, bool closed = false);
+QVector<QPointF> limitPoints(QVector<ControlPoint> spline);
 
-QPointF getNormal(QVector<QPointF> points, int index);
+QPointF getNormal(QVector<ControlPoint> points, int index);
 
 #endif // SURFACEUTILS_H

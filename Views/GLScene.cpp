@@ -551,8 +551,8 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         glColor3d(0.0, 0.0, 0.0);
     }
 
-    QVector<QPointF> points = bspline.getControlPoints();
-    QVector<QPointF> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
+    QVector<ControlPoint> points = bspline.getControlPoints();
+    QVector<ControlPoint> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
     if (bspline.has_uniform_subdivision && points.size() >= 4) {
         subDividePts.pop_back();
         subDividePts.pop_front();
@@ -781,7 +781,7 @@ void GLScene::subdivide_current_spline(){
     {
         BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
 
-        QVector<QPointF> org_points, new_points;
+        QVector<ControlPoint> org_points, new_points;
 
         for (int i=0; i<spline.cptRefs.size(); ++i)
             org_points.push_back(m_splineGroup.controlPoint(spline.cptRefs[i]));

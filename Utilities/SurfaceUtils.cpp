@@ -1,11 +1,11 @@
 #include "SurfaceUtils.h"
 #include <QDebug>
 
-QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
+QVector<ControlPoint> subDivide(QVector<ControlPoint> spline, int steps, bool closed)
 {
     if(steps==0)
         return spline;
-    QVector<QPointF> newVec;
+    QVector<ControlPoint> newVec;
     if(!closed||spline.count()<4)
         newVec.append(spline.first());
 
@@ -28,8 +28,8 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
 
     for(int i = 1;i<spline.count()-1;i++)
     {
-        QPointF new1 = 0.5*spline.at(i-1)+0.5*spline.at(i);
-        QPointF new2 = 0.125*spline.at(i-1)+0.75*spline.at(i)+0.125*spline.at(i+1);
+        ControlPoint new1 = 0.5*spline.at(i-1)+0.5*spline.at(i);
+        ControlPoint new2 = 0.125*spline.at(i-1)+0.75*spline.at(i)+0.125*spline.at(i+1);
         newVec.append(new1);
         newVec.append(new2);
     }
@@ -43,7 +43,7 @@ QVector<QPointF> subDivide(QVector<QPointF> spline, int steps, bool closed)
     return newVec;
 }
 
-QVector<QPointF> limitPoints(QVector<QPointF> spline)
+QVector<QPointF> limitPoints(QVector<ControlPoint> spline)
 {
     QVector<QPointF> newVec;
     newVec.append(spline.first());
@@ -57,7 +57,7 @@ QVector<QPointF> limitPoints(QVector<QPointF> spline)
     return newVec;
 }
 
-QPointF getNormal(QVector<QPointF> points, int index)
+QPointF getNormal(QVector<ControlPoint> points, int index)
 {
     QPointF tangent;
     if (index > 0 && index < points.size()-1) tangent = points[index+1] - points[index-1];

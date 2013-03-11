@@ -83,7 +83,7 @@ public:
             {
                 normal = -normal;
             }
-            QPointF pixelPoint = bspline.getPoints()[1] + 5*normal;
+            QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
             cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
             surface_strings[i] =  surface(i).surfaceToOFF(color);
 
