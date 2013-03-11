@@ -838,6 +838,7 @@ void GLviewsubd::drawPoiBound()
 
 void GLviewsubd::drawFrame()
 {
+    int     z;
 //    Point_3D    p0, p1, p2, p3;
 
 //    glDisable(GL_TEXTURE_1D);
@@ -891,6 +892,15 @@ void GLviewsubd::drawFrame()
 //    glEnable(GL_POLYGON_OFFSET_FILL);
 //    glPolygonOffset(10, 10);
 
+    if (offScreen)
+    {
+        z = -200;
+    }
+    else
+    {
+        z = 0;
+    }
+
     glLineWidth(4);
     glBegin(GL_QUADS);
 //        glColor3fv(col_dead);
@@ -898,19 +908,19 @@ void GLviewsubd::drawFrame()
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(0, 1);
-        glVertex3f(0, 0, -200);
+        glVertex3f(0, 0, z);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(1, 1);
-        glVertex3f(super * imageWidth, 0, -200);
+        glVertex3f(super * imageWidth, 0, z);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(1, 0);
-        glVertex3f(super * imageWidth, super * imageHeight, -200);
+        glVertex3f(super * imageWidth, super * imageHeight, z);
 
         glNormal3f(0, 0, 1);
         glTexCoord2i(0, 0);
-        glVertex3f(0, super * imageHeight, -200);
+        glVertex3f(0, super * imageHeight, z);
     glEnd();
 
 //    //draw rectangle
