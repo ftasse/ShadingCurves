@@ -61,7 +61,23 @@ QPointF getNormal(QVector<ControlPoint> points, int index)
 {
     QPointF tangent;
     if (index > 0 && index < points.size()-1) tangent = points[index+1] - points[index-1];
-    else if (points.front() == points.back()) tangent = points[1] - points[points.size() - 2]; // junction point
+    else if (points.front() == points.back()) { // junction point
+        QPointF vec1 = points[1] - points[0];
+        QPointF vec2 = points[points.size()-2] - points[0];
+        float d1 = sqrt(vec1.x()*vec1.x() + vec1.y()*vec1.y());
+        float d2 = sqrt(vec2.x()*vec2.x() + vec2.y()*vec2.y());
+        QPointF p1,p2;
+        if(d1<d2) {
+            p1 = points[1];
+            vec2 /= d2;
+            p2 = points[0] + d1*vec2;
+        } else {
+            vec1 /= d1;
+            p1 = points[0] + d2*vec1;
+            p2 = points[points.size()-2];
+        }
+        tangent = p1-p2;
+    }
     else if (index == 0)    tangent = points[index+1] - points[index];
     else    tangent = points[index] - points[index-1];
 
