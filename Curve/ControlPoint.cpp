@@ -26,16 +26,16 @@ ControlPoint::ControlPoint(float x, float y, float z, Attribute _attributes[2]):
 void ControlPoint::useDefaultAttributes()
 {
     attributes[0].direction = INWARD_DIRECTION;
-    attributes[0].extent = 50.0;
+    attributes[0].extent = 20.0;
     attributes[0].height = 50.0;
-    attributes[0].shapePointAtr.push_back(QPointF(0.6f, 0.0f) );
-    attributes[0].shapePointAtr.push_back(QPointF(.5f, .9f) );
+    attributes[0].shapePointAtr.push_back(QPointF(0.4f, 0.0f) );
+//    attributes[0].shapePointAtr.push_back(QPointF(.5f, .9f) );
 
     attributes[1].direction = OUTWARD_DIRECTION;
     attributes[1].extent = 50.0;
     attributes[1].height = -50.0;
-    attributes[1].shapePointAtr.push_back(QPointF(0.6f, 0.0f));
-    attributes[1].shapePointAtr.push_back(QPointF(.5f, .9f));
+    attributes[1].shapePointAtr.push_back(QPointF(0.4f, 0.0f));
+//    attributes[1].shapePointAtr.push_back(QPointF(.5f, .9f));
 
 }
 

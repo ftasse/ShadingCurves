@@ -112,9 +112,7 @@ void Surface::recompute(cv::Mat dt)
 
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
-    // HENRIK: what's the point of this? Can't we just pass a QList<QPointF> to setSurface?
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
-
     QVector<QVector<int> > points = setSurfaceCP(subdivided_points,dt,inward);
 
     if(bspline.is_slope) {
@@ -245,7 +243,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             original_cpts_ids.push_back(vertexId);
         }*/
 
-        original_cpts_ids.push_back( addVertex(controlPoints[k]) );
+        original_cpts_ids.push_back( addVertex(controlPoints[k],controlPoints[k].attribute(direction).height) );
     }
 
     // get limit points for the control points
@@ -264,6 +262,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         {
             QPointF normal = getNormal(controlPoints, k);
             float extent = controlPoints[k].attribute(direction).extent;
+            float height = controlPoints[k].attribute(direction).height;
             QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
             if(!inward)
                 normal = -normal;
@@ -299,7 +298,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
                     for (int l=0; l<shapeAtrs.size(); ++l)
                     {
-                        int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),controlPoints[k].z()*shapeAtrs[l].y());
+                        int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
                         shape_controlpoints[l].push_back(newId);
                     }
                 }
@@ -312,7 +311,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             normal = new_cpt-lp.at(k);
             for (int l=0; l<shapeAtrs.size(); ++l)
             {
-                vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),controlPoints[k].z()*shapeAtrs[l].y());
+                vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
                 shape_controlpoints[l].push_back(vertexId);
             }
         }
@@ -330,8 +329,8 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width)
 {
     // thresholds
-    float Td = .75f; // for distance
-    float Ta = 1.0f; // for angle
+    float Td = 0.1f; // for distance 0.75
+    float Ta = 1.0f; // for angle 1.0
 
 
     float currentD = 0;

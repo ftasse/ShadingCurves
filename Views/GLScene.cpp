@@ -771,7 +771,7 @@ void GLScene::delete_all()
     curSplineRef() = -1;
     selectedObjects.clear();
 
-    //TODO We may want to not load a new blank image
+    //TODO We may want to not load a new blank image. HENRIK: yes, we do.
     openImage(imageLocationWithID("blank.png"));
     update();
 }

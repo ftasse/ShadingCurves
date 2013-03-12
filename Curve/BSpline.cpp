@@ -82,8 +82,9 @@ void BSpline::recompute()
     //TODO Remove this right away
     for (int i=0; i<points.size(); ++i)
     {
-        points[i].setZ(i*20+20);
-        points[i].attributes[0].extent = 5*i+20;
+//        points[i].setZ(i*20+20);
+        points[i].attributes[0].extent = 200;
+        points[i].attributes[1].extent = 200;
         //points[i].print();
     }
     //printf("*****************************************\n");
