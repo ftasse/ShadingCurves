@@ -3,9 +3,6 @@ add window for shading profile
 zooming
 deal with junctions
 
-other (bonuses):
-weighted distance transform?
-
 Henrik:
 -
 
@@ -13,6 +10,10 @@ Flora:
 High priority:
 add shape window (quadratics)
 merge surfaces
+connect surface width (or extent) slider to control points (Flora: We have such a slider in the shape window. Is there a need to that with the slider as well?)
+
+BUGS:
+- do not interpolate any control point when its a slope or uniform curve
 
 Mid priority:
 
@@ -25,3 +26,6 @@ update region colouring on open curve (solved)
 zooming (scroll the mouse wheel)
 Panning (Use navigation keys or drag while pressing the right button) (Press SPACE to center the image)
 toggle between image/blank image/result (Press T)
+
+- subdivide selected curve does not work with closed curves (both uniform and non-uniform subdivision)
+- joining curves does not work with closed curves (uniform only) (Check if we should convert it to non-uniform as it is now or use a different subdivision

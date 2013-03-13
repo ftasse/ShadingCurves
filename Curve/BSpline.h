@@ -33,7 +33,7 @@ public:
 
     bool has_loop()
     {
-        return (num_cpts()>0 && cptRefs.front() == cptRefs.back());
+        return (num_cpts()>1 && cptRefs.front() == cptRefs.back());
     }
 
     int num_cpts()

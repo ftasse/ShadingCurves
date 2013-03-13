@@ -903,29 +903,30 @@ void GLScene::delete_all()
     curSplineRef() = -1;
     selectedObjects.clear();
 
-    //TODO We may want to not load a new blank image
     resetImage();
+    update();
 }
 
 void GLScene::subdivide_current_spline(){
     if (m_curSplineIdx >=0 &&  m_curSplineIdx<m_splineGroup.num_splines() ) //Check validity
     {
         BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
+        bool has_uniform_subd = spline.has_uniform_subdivision;
 
         QVector<ControlPoint> org_points, new_points;
+        org_points = spline.getControlPoints();
 
-        for (int i=0; i<spline.cptRefs.size(); ++i)
-            org_points.push_back(m_splineGroup.controlPoint(spline.cptRefs[i]));
-
-        new_points = subDivide(org_points,1);
+        new_points = subDivide(org_points,1, has_uniform_subd);
 
         while (spline.cptRefs.size() > 0)
             m_splineGroup.removeControlPoint(spline.cptRefs[0]);
 
+
         for (int i=0; i<new_points.size(); ++i)
         {
             int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0);
-            m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id);
+            if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id))
+                break;
         }
         spline.recompute();
         m_splineGroup.garbage_collection();
@@ -1122,7 +1123,7 @@ void GLScene::resetImage()
 {
     m_scale = 1.0f;
     m_translation = QPointF(0.0, 0.0);
-    QSize prevSize(m_curImage.cols, m_curImage.rows);
+    QSize prevSize(m_curImage.rows, m_curImage.cols);
 
     std::string blankImagePath = imageLocationWithID("blank.png");
     m_curImage = loadImage(blankImagePath);
