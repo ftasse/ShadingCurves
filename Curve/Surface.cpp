@@ -329,13 +329,17 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width)
 {
     // thresholds
-    float Td = 0.1f; // for distance 0.75
-    float Ta = 1.0f; // for angle 1.0
-
+    float a = setThresholds(normalL);
+    float Td = a*0.75f+(1-a)*0.6;
+//    float Td = 0.1f; // for distance 0.75
+//    float Ta = 0.75f; // for angle 1.0
+    float Ta = a*0.1f+(1-a)*0.75f;
+    Td = 0.75f;
 
     float currentD = 0;
     QPointF new_cpt;
     QList<QPoint> visited;
+    float counter = 0;
 
     while(true) {
         float oldD = currentD;
@@ -344,13 +348,14 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
         // check lines
         QLineF currentL(limit,m);
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT) {
+        if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT || counter>width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
             break;
         } else {
             visited.append(current);
             current = m;
+            counter++;
         }
     }
 
@@ -411,4 +416,22 @@ QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QLi
 
     *oldD = m;
     return winner;
+}
+
+// TODO: rename
+float Surface::setThresholds(QLineF normal)
+{
+    QLineF X(.0f,.0f,1.0f,.0f);
+    float angle = std::min(normal.angleTo(X),X.angleTo(normal));
+    float d;
+    if(angle<45.0f)
+        d = 1-angle/45;
+    else if(angle>=45.0f&&angle<90.0f)
+        d = (angle-45.0f)/45.0f;
+    else if(angle>=90.0f&&angle<135.0f)
+        d = 1-(angle-90.0f)/45.0f;
+    else
+        d = (angle-135.0f)/45.0f;
+
+    return d;
 }

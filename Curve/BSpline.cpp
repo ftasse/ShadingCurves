@@ -83,8 +83,8 @@ void BSpline::recompute()
     for (int i=0; i<points.size(); ++i)
     {
 //        points[i].setZ(i*20+20);
-        points[i].attributes[0].extent = 200;
-        points[i].attributes[1].extent = 200;
+        points[i].attributes[0].extent = 30;
+        points[i].attributes[1].extent = 30;
         //points[i].print();
     }
     //printf("*****************************************\n");

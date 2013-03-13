@@ -17,6 +17,7 @@ public:
 
     // HENRIK: find the closest highest value in neighbourhood
     QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta);
+    float setThresholds(QLineF normal);
 
     int addVertex(Point3d vertex);
     int addVertex(QPointF point, float z = 0.0f);
