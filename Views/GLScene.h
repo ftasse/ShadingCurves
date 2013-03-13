@@ -8,6 +8,7 @@
 #include <QGraphicsItemGroup>
 #include <QTime>
 #include <QLabel>
+#include "ShadingProfileView.h"
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
 
@@ -200,6 +201,8 @@ public slots:
     void subdivide_current_spline();
     void toggleShowCurrentCurvePoints(bool status);
 
+    void updateConnectedSurfaces(int cptRef);
+
 
 private:
     cv::Mat m_curImage;
@@ -219,6 +222,7 @@ private:
 
     QVector<Ellipse> ellipses;
     QGraphicsItemGroup *ellipseGroup;
+    ShadingProfileView *shadingProfileView;
 
 public:
     BSplineGroup m_splineGroup;

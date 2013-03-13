@@ -54,10 +54,17 @@ GLScene::GLScene(QObject *parent) :
 
     displayModeLabel = new QLabel ();
     displayModeLabel->setAutoFillBackground(false);
-    displayModeLabel->setGeometry(10, 10, 85, 20);
+    displayModeLabel->setGeometry(10, 10, 90, 20);
     displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
     QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    shadingProfileView = new ShadingProfileView ();
+    shadingProfileView->setVisible(false);
+    addWidget(shadingProfileView);
+    shadingProfileView->setGeometry(0, 0, 300, 400);
+
+    connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
 }
 
 GLScene:: ~GLScene()
@@ -232,6 +239,16 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 currentSplineChanged();
             }
         }
+
+        if (nodeId == CPT_NODE_ID)
+        {
+            shadingProfileView->setControlPoint(controlPoint(targetId));
+            shadingProfileView->setVisible(true);
+        } else
+        {
+            shadingProfileView->setVisible(false);
+        }
+
         event->accept();
 
     }  else if (event->button() == Qt::RightButton)
@@ -254,6 +271,9 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         int cptRef = registerPointAtScenePos(event->scenePos());
         if (cptRef < 0)
             return;
+
+        shadingProfileView->setControlPoint(controlPoint(cptRef));
+        shadingProfileView->setVisible(true);
 
         if (m_curSplineIdx < 0)
         {
@@ -387,6 +407,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
             }
 
+            shadingProfileView->setVisible(false);
             selectedObjects.clear();
             m_splineGroup.garbage_collection();
             recomputeAllSurfaces();
@@ -457,6 +478,11 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     transform.scale(scaling.x(), scaling.y());
     ellipseGroup->setTransform(transform);
 
+    QRect geom = shadingProfileView->geometry();
+    if (geom.x() != width()-geom.width() || geom.y() != height()-geom.height())
+    {
+        shadingProfileView->setGeometry(width()-geom.width(), height()-geom.height(), geom.width(), geom.height());
+    }
 }
 
 void GLScene::display(bool only_show_splines)
@@ -933,6 +959,22 @@ void GLScene::subdivide_current_spline(){
 
         recomputeAllSurfaces();
     }
+}
+
+void GLScene::updateConnectedSurfaces(int cptRef)
+{
+    /*cv::Mat curvesGrayIm = curvesImage();
+    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
+    cv::Mat dt;
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
+
+    ControlPoint& cpt = controlPoint(cptRef);
+    for (int k=0; k<cpt.num_splines(); ++k)
+    {
+        spline(cpt.splineRefs[k]).recompute();
+        spline(cpt.splineRefs[k]).computeSurfaces(dt);
+    }
+    update();8/
 }
 
 void GLScene::toggleShowCurrentCurvePoints(bool status)
