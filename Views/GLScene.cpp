@@ -980,7 +980,7 @@ void GLScene::updateConnectedSurfaces(int cptRef)
         spline(cpt.splineRefs[k]).recompute();
         spline(cpt.splineRefs[k]).computeSurfaces(dt);
     }
-    update();8/
+    update();*/
 }
 
 void GLScene::toggleShowCurrentCurvePoints(bool status)
