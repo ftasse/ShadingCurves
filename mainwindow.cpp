@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     scene = new GLScene ();
     ui->graphicsView->setScene(scene);
+    ui->graphicsView->setMouseTracking(false);
 
     ui->graphicsView->setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);

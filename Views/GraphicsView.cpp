@@ -11,7 +11,6 @@
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
-    setMouseTracking(true);
     superSampling = 1;
     imgShowAll = false;
     imgWriteAll = true;
@@ -117,7 +116,10 @@ void GraphicsView::changeResolution()
 {
     GLScene *my_scene = (GLScene *) scene();
     std::stringstream dss;
-    dss << my_scene->currentImage().cols << " " << my_scene->currentImage().rows;
+    if (my_scene->targetImage().cols > 0)
+        dss << my_scene->targetImage().cols << " " << my_scene->targetImage().rows;
+    else
+        dss << my_scene->currentImage().cols << " " << my_scene->currentImage().rows;
 
     bool ok;
     QString text = QInputDialog::getText(this, tr("New image resolution"),

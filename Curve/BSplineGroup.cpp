@@ -265,6 +265,15 @@ void BSplineGroup::scale(float xs, float ys)
         controlPoint(i).setY(ys*controlPoint(i).y());
     }
 
+    for (int i=0; i<colorMapping.size(); ++i)
+    {
+
+        QPoint prev = colorMapping[i].first;
+        float nx = xs*prev.x();
+        float ny = ys*prev.y();
+        colorMapping[i].first = QPointF(nx, ny).toPoint();
+    }
+
     for (int i=0; i<num_splines(); ++i)
     {
         spline(i).recompute();

@@ -3,9 +3,28 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsEllipseItem>
-#include <QCheckBox>
+#include <QGraphicsSceneWheelEvent>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsItemGroup>
+#include <QTime>
+#include <QLabel>
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
+
+typedef struct Ellipse
+{
+    QPointF center;
+    float size;
+    QBrush brush;
+
+    Ellipse(){}
+    Ellipse(QPointF _center, float _size, QBrush _brush)
+    {
+        center = _center;
+        size = _size;
+        brush = _brush;
+    }
+} Ellipse;
 
 class GLScene : public QGraphicsScene
 {
@@ -22,6 +41,7 @@ public:
     virtual ~GLScene();
 
     //IO functions
+    void resetImage();
     bool openImage(std::string fname);
     void saveImage(std::string fname);
     bool openCurves(std::string fname);
@@ -44,6 +64,7 @@ public:
     void draw_control_point(int point_id);
     void draw_spline(int spline_id, bool only_show_splines = false, bool transform = true);
     void draw_surface(int surface_id);
+    void draw_ellipse(QPointF center, float size, QBrush brush);
 
     void changeResolution(int resWidth, int resHeight);
     void adjustDisplayedImageSize();
@@ -100,6 +121,11 @@ public:
         return m_curImage;
     }
 
+    cv::Mat& targetImage()
+    {
+        return m_targetImage;
+    }
+
     SketchMode& sketchmode()
     {
         return m_sketchmode;
@@ -116,13 +142,50 @@ public:
         return &m_curImage;
     }
 
+    cv::Mat* displayImage()
+    {
+        if (curDisplayMode == 1)
+        {
+            if (m_targetImage.cols>0)
+            {
+                return &m_targetImage;
+            }
+            else
+                curDisplayMode = (curDisplayMode+1)%3;
+            changeDisplayModeText();
+        }
+
+        if (curDisplayMode == 2)
+        {
+            if (surfaceImg.cols>0)
+            {
+                return &surfaceImg;
+            }
+            else
+                curDisplayMode = (curDisplayMode+1)%3;
+            changeDisplayModeText();
+        }
+
+        return &m_curImage;
+    }
+
+    void changeDisplayModeText()
+    {
+        if (curDisplayMode == 0)
+            displayModeLabel->setText("Blank Image");
+        else if (curDisplayMode == 1)
+            displayModeLabel->setText("Target Image");
+        else
+            displayModeLabel->setText("Surface Image");
+    }
+
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void wheelEvent(QWheelEvent* event);
+    void wheelEvent(QGraphicsSceneWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 signals:
@@ -140,13 +203,23 @@ public slots:
 
 private:
     cv::Mat m_curImage;
+    cv::Mat m_targetImage;
     int m_curSplineIdx;
     bool hasMoved;
+    int curDisplayMode; //0 for blank image, 1 for target image, 2 for surface image
 
     SketchMode m_sketchmode;
     double  m_modelview [16];
     double  m_projection [16];
     QList<std::pair<uint, uint> > selectedObjects;
+
+    float m_scale;
+    QPointF m_translation;
+    bool inPanMode;
+
+    QVector<Ellipse> ellipses;
+    QGraphicsItemGroup *ellipseGroup;
+
 public:
     BSplineGroup m_splineGroup;
     float pointSize;
@@ -162,6 +235,8 @@ public:
     bool discreteB;
 
     QSizeF imSize;
+    QLabel *displayModeLabel;
+
 };
 
 void nurbsError(uint errorCode);

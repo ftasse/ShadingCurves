@@ -44,6 +44,20 @@ GLScene::GLScene(QObject *parent) :
     brushSize = 10;
     freehand = false;
     discreteB = false;
+
+    m_scale = 1.0f;
+    m_translation = QPointF(0.0,0.0);
+    inPanMode = false;
+
+    ellipseGroup = new QGraphicsItemGroup ();
+    addItem(ellipseGroup);
+
+    displayModeLabel = new QLabel ();
+    displayModeLabel->setAutoFillBackground(false);
+    displayModeLabel->setGeometry(10, 10, 85, 20);
+    displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
+    QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
+    proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 }
 
 GLScene:: ~GLScene()
@@ -52,10 +66,16 @@ GLScene:: ~GLScene()
 
 void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    int val;
+    QGraphicsScene::mouseMoveEvent(event);
+    if (event->isAccepted()) return;
 
-    //if (event->button() == Qt::LeftButton)
-    if(brush){
+    if (event->buttons() == Qt::NoButton)
+    {
+        event->accept();
+        return;
+    }
+
+    if(!inPanMode && brush){
         Qt::BrushStyle style;
 
         int val = 255;
@@ -109,13 +129,24 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
 
         QPointF pos = event->scenePos();
-        addEllipse(pos.x()-brushSize/2,pos.y()-brushSize/2,brushSize,brushSize,Qt::NoPen,
-                   QBrush(c,style));
+        //ellipses.push_back(Ellipse(sceneToImageCoords(pos), brushSize/m_scale, QBrush(c,style)));
 
+        QPointF center =  pos - m_translation;
+        float size = brushSize*m_scale;
+        ellipseGroup->addToGroup(addEllipse(center.x()-size/2,center.y()-size/2,size,size,Qt::NoPen,
+                   QBrush(c,style)));
+
+        event->accept();
+        update();
         return;
     }
     else {
-        if (selectedObjects.size() > 0)
+        if (inPanMode)
+        {
+            m_translation += event->scenePos() - event->lastScenePos();
+            event->accept();
+            update();
+        } else if (selectedObjects.size() > 0)
         {
             std::set<int> cpt_ids;
             QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
@@ -147,20 +178,19 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if (cpt_ids.size() > 0)
                 hasMoved = true;
 
+            event->accept();
             update();
             return;
-        }   else
-        {
-            /*QPointF tmp2 = mapToS (event->pos());
-            QPointF tmp = tmp2-mapToScene(previous_point);
-            translate(tmp.x(),tmp.y());*/
-            QGraphicsScene::mouseMoveEvent(event);
         }
     }
 }
 
 void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsScene::mouseReleaseEvent(event);
+    if (event->isAccepted()) return;
+
+    inPanMode = false;
     if (hasMoved)
     {
         for (int i=0; i<num_splines(); ++i)
@@ -170,22 +200,27 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
         recomputeAllSurfaces();
         hasMoved = false;
+        event->accept();
         update();
-    } else
-    {
-        QGraphicsScene::mouseReleaseEvent(event);
     }
 }
 
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsScene::mousePressEvent(event);
+    if (event->isAccepted()) return;
+
     uint nodeId, targetId;
 
-    if(brush)
-        return mouseMoveEvent(event);
-
-    if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
+    if(event->button() == Qt::LeftButton && brush)
     {
+        event->accept();
+        return; //mouseMoveEvent(event);
+    }
+
+    if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
+    {
+        inPanMode  = false;
         if (!(event->modifiers() & Qt::ControlModifier))
             selectedObjects.clear();
         if (nodeId != IMAGE_NODE_ID)
@@ -197,7 +232,12 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 currentSplineChanged();
             }
         }
+        event->accept();
 
+    }  else if (event->button() == Qt::RightButton)
+    {
+        inPanMode = true;
+        event->accept();
     }
 
     update();
@@ -205,8 +245,12 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (m_sketchmode == ADD_CURVE_MODE)
+    QGraphicsScene::mouseDoubleClickEvent(event);
+    if (event->isAccepted()) return;
+
+    if (event->button() == Qt::LeftButton && m_sketchmode == ADD_CURVE_MODE)
     {
+        event->accept();
         int cptRef = registerPointAtScenePos(event->scenePos());
         if (cptRef < 0)
             return;
@@ -231,10 +275,11 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     } else
     {
         uint nodeId, targetId;
-        if (pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
+        if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
         {
+            event->accept();
             QPoint seed = sceneToImageCoords(event->scenePos().toPoint()).toPoint();
-            cv::Vec3b bgrPixel = m_curImage.at<cv::Vec3b>(seed.y(), seed.x());
+            cv::Vec3b bgrPixel = displayImage()->at<cv::Vec3b>(seed.y(), seed.x());
             QColor image_color(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
 
             QColor color = QColorDialog::getColor(image_color, (QWidget*)this->activeWindow());
@@ -243,33 +288,41 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
                 update_region_coloring();
             }
-        } else
-            QGraphicsScene::mouseDoubleClickEvent(event);
+        }
     }
 }
 
-void GLScene::wheelEvent(QWheelEvent* event)    //FLORA, this does not work
+void GLScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-    //Scale the view ie. do the zoom
-    double scaleFactor = 1.15; //How fast we zoom
-    if(event->delta() > 0) {
-        //Zoom in
-        changeResolution(currentImage().cols*scaleFactor, currentImage().rows*scaleFactor);
+    QGraphicsScene::wheelEvent(event);
+    if (event->isAccepted()) return;
 
-    } else {
-        //Zooming out
-        changeResolution(currentImage().cols/scaleFactor, currentImage().rows/scaleFactor);
-    }
+    if (event->delta() > 0)
+        m_scale *= 1.2f;
+    else
+        m_scale /= 1.2f;
+    adjustDisplayedImageSize();
+    event->accept();
+    update();
 }
 
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
-   if (event->key() == Qt::Key_W)
-    {
+    if (event->key() == Qt::Key_T)
+     {
+         curDisplayMode = (curDisplayMode+1)%3;
+         changeDisplayModeText();
+         adjustDisplayedImageSize();
+         update();
+         return;
+
+     } else if (event->key() == Qt::Key_W)
+     {
         //Reset blank image
         m_curImage = cv::Scalar(255,255,255);
         m_splineGroup.colorMapping.clear();
         update();
+        return;
 
     } else if (event->key() == Qt::Key_R)
    {
@@ -277,7 +330,36 @@ void GLScene::keyPressEvent(QKeyEvent *event)
        m_curImage = cv::Scalar(255,255,255);
        update_region_coloring();
        update();
+       return;
    }
+
+    if (event->key() == Qt::Key_Up)
+    {
+        m_translation.setY(m_translation.y() + 5.0f);
+        update();
+        return;
+    } else if (event->key() == Qt::Key_Down)
+    {
+        m_translation.setY(m_translation.y() - 5.0f);
+        update();
+        return;
+    } else if (event->key() == Qt::Key_Left)
+    {
+        m_translation.setX(m_translation.x() + 5.0f);
+        update();
+        return;
+    } else if (event->key() == Qt::Key_Right)
+    {
+        m_translation.setX(m_translation.x() - 5.0f);
+        update();
+        return;
+    } else if (event->key() == Qt::Key_Space)
+    {
+        m_translation = QPointF(0.0, 0.0);
+        update();
+        return;
+
+    }
 
     if (event->key() == Qt::Key_Delete)
     {
@@ -333,14 +415,13 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 
 void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    if (painter->paintEngine()->type()
-                    != QPaintEngine::OpenGL) {
-                /*qWarning("OpenGLScene: drawBackground needs a "
-                         "QGLWidget to be set as viewport on the "
-                         "graphics view");
-                return;*/
-            }
+    /*if (painter->paintEngine()->type() != QPaintEngine::OpenGL && painter->paintEngine()->type() != QPaintEngine::OpenGL2)
+    {
+        qWarning("OpenGLScene: drawBackground needs a QGLWidget to be set as viewport on the graphics view");
+        return;
+    }*/
 
+    //GLEW initialization
     static bool initialized = false;
     if (!initialized)
     {
@@ -353,6 +434,7 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
         initialized = true;
     }
 
+    //Setup OpenGL view
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -366,20 +448,37 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     glRenderMode(GL_RENDER);
     display();
 
-    glGetDoublev(GL_MODELVIEW_MATRIX, m_modelview);
-    glGetDoublev(GL_PROJECTION_MATRIX, m_projection);
+    QTransform transform;
+    QPointF scaling(imSize.width()/(float)m_curImage.cols,
+                    imSize.height()/(float)m_curImage.rows);
+    QPointF full_translation = QPointF(width()/2.0 - imSize.width()/2.0,
+                                       height()/2.0 - imSize.height()/2.0) + m_translation;
+    transform.translate(full_translation.x(), full_translation.y());
+    transform.scale(scaling.x(), scaling.y());
+    ellipseGroup->setTransform(transform);
+
 }
 
 void GLScene::display(bool only_show_splines)
 {
+    glPushMatrix();
+    glTranslatef(m_translation.x(), m_translation.y(), 0.0f);
+
     glInitNames();
     glEnable(GL_POINT_SMOOTH);
     glPointSize(pointSize);
 
-    if (m_curImage.cols > 0)
+
+    if (displayImage()->cols > 0)
     {
         glColor3d(1.0, 1.0, 1.0);
-        draw_image(m_curImage);
+        draw_image(*displayImage());
+    }
+
+    if (!only_show_splines)
+    for (int i=0; i<ellipses.size(); ++i)
+    {
+        draw_ellipse(ellipses[i].center, ellipses[i].size, ellipses[i].brush);
     }
 
     if (!showCurves)
@@ -411,6 +510,8 @@ void GLScene::display(bool only_show_splines)
         else
             draw_spline(i, only_show_splines);
     }
+
+    glPopMatrix();
 }
 
 void GLScene::draw_image(cv::Mat& image)
@@ -425,8 +526,8 @@ void GLScene::draw_image(cv::Mat& image)
         glBindTexture(GL_TEXTURE_2D, texId);
 
         // Set texture interpolation methods for minification and magnification
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Set texture clamping method
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -452,8 +553,7 @@ void GLScene::draw_image(cv::Mat& image)
 
         //glBindTexture(GL_TEXTURE_2D, texture[index]);
         glPushMatrix();
-        glLoadIdentity();
-        glTranslated(width()/2.0 - tex_width/2.0, height()/2.0 - tex_height/2.0, -0.5f);
+        glTranslated(width()/2.0 - tex_width/2.0, height()/2.0 - tex_height/2.0, -100.0f);
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 1.0f);
         glVertex2f(0.0f, tex_height);
@@ -473,6 +573,8 @@ void GLScene::draw_image(cv::Mat& image)
 
         glPopName();
         glPopName();
+
+        glPopMatrix();
 }
 
 void GLScene::draw_control_point(int point_id)
@@ -617,18 +719,43 @@ void GLScene::draw_surface(int surface_id)
     glPopName();
 }
 
+void GLScene::draw_ellipse(QPointF center, float size, QBrush brush)
+{
+    //FLORA: This is not used at the moment
+
+    glPointSize(size*m_scale);
+    glEnable(GL_POINT_SMOOTH);
+    QColor color = brush.color();
+    glColor4i(color.red(), color.green(), color.red(), color.alpha());
+
+    /*GLuint objectID;
+    glGenTextures(1, &objectID);
+    glBindTexture(GL_TEXTURE_2D, objectID);
+    GLenum inputColourFormat;
+    #ifdef GL_BGR
+        inputColourFormat = GL_BGR;
+    #else
+        #ifdef GL_BGR_EXT
+            inputColourFormat = GL_BGR_EXT;
+        #else
+            #define GL_BGR 0x80E0
+            inputColourFormat = GL_BGR;
+        #endif
+    #endif
+    glTexImage2D(GL_TEXTURE_2D, 0, 3,image.cols, image.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, image.data);*/
+
+    //glEnable(GL_POINT_SPRITE);
+    //glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+
+    QPointF pos = imageToSceneCoords(center);
+    glBegin(GL_POINTS);
+    glVertex3d(pos.x(), pos.y(), 0.5f);
+    glEnd();
+}
+
 void GLScene::adjustDisplayedImageSize()
 {
-    cv::Mat& image = currentImage();
-    imSize = QSizeF(image.cols, image.rows);
-    /*if (imSize.width() > width())
-    {
-        imSize = QSizeF(width(), (width() * image.rows)/image.cols);
-    }
-    if (imSize.height() > height())
-    {
-        imSize = QSizeF((height() * image.cols)/image.rows, height());
-    }*/
+    imSize = m_scale*QSizeF(displayImage()->cols, displayImage()->rows);
 }
 
 void GLScene::changeResolution(int resWidth, int resHeight)
@@ -644,6 +771,7 @@ void GLScene::changeResolution(int resWidth, int resHeight)
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 {
     QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    topLeft += m_translation;
     QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
     QPointF imgPos = scenePos - topLeft;
     imgPos.setX(imgPos.x()/scaling.x());
@@ -654,6 +782,7 @@ QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 QPointF GLScene::imageToSceneCoords(QPointF imgPos)
 {
     QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    topLeft += m_translation;
     QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
     QPointF scenePos = imgPos;
     scenePos.setX(scenePos.x()*scaling.x());
@@ -665,6 +794,9 @@ QPointF GLScene::imageToSceneCoords(QPointF imgPos)
 bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
            unsigned int& _targetIdx, QPointF* _hitPointPtr )
 {
+    glGetDoublev(GL_MODELVIEW_MATRIX, m_modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, m_projection);
+
     GLint w = width(), h = height(), x = _mousePos.x(), y = h - _mousePos.y();
     GLint viewport[4] = {0,0,w,h};
     GLuint selectionBuffer[ SELECTION_BUFFER_SIZE ], nameBuffer[ NAME_STACK_SIZE ];
@@ -772,8 +904,7 @@ void GLScene::delete_all()
     selectedObjects.clear();
 
     //TODO We may want to not load a new blank image
-    openImage(imageLocationWithID("blank.png"));
-    update();
+    resetImage();
 }
 
 void GLScene::subdivide_current_spline(){
@@ -862,7 +993,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.0);
+    glLineWidth(1.5);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
@@ -907,8 +1038,8 @@ void GLScene::update_region_coloring()
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
     //cv::imshow("Closed Curves", curv_img);
 
-    cv::Mat mask(m_curImage.cols+2, m_curImage.rows+2, curv_img.type(), cv::Scalar(0));
-    cv::Mat mask_vals = mask(cv::Rect(0, 0, m_curImage.cols, m_curImage.rows));
+    cv::Mat mask(m_curImage.rows+2, m_curImage.cols+2, curv_img.type(), cv::Scalar(0));
+    cv::Mat mask_vals(mask, cv::Range(0, m_curImage.rows), cv::Range(0, m_curImage.cols));
     curv_img.copyTo(mask_vals);
     //cv::imshow("Mask", mask);
 
@@ -928,7 +1059,7 @@ void GLScene::update_region_coloring()
     cv::findContours( mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
     //Randomly set colors
-    if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
+    /*if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
     {
         int idx = 0;
         cv::RNG rng(12345);
@@ -938,13 +1069,14 @@ void GLScene::update_region_coloring()
             cv::drawContours( result, contours, idx, color, 2, 8, hierarchy, 0, cv::Point() );
             cv::drawContours( result, contours, idx, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
         }
-    }
+    }*/
 
     std::vector<bool> marked(contours.size()+1, false);
+    std::vector<cv::Scalar> colors(contours.size());
     for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
     {
         QPoint seed = m_splineGroup.colorMapping[i].first;
-        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.rows || seed.y() >= m_curImage.cols)
+        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.cols || seed.y() >= m_curImage.rows)
             continue;
 
         QColor qcolor = m_splineGroup.colorMapping[i].second;
@@ -957,17 +1089,27 @@ void GLScene::update_region_coloring()
             {
                 if (!marked[k])
                 {
-                    cv::drawContours( result, contours, k, color, 2, 8, hierarchy, 0, cv::Point() );
-                    cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
+                    //cv::drawContours( result, contours, k, color, 2, 8, hierarchy, 0, cv::Point() );
+                    //cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
                     marked[k] = true;
+                    colors[k] = color;
                 }
                 break;
             }
         }
         if (k == contours.size() && !marked[k])   //Point lies in the background
         {
-            cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color);
+            cv::floodFill(result, cv::Point2i(seed.x(),seed.y()),color);
             marked[k] = true;
+        }
+    }
+
+    for( int k=0; k< contours.size(); k++ )
+    {
+        if (marked[k])
+        {
+            //cv::drawContours( result, contours, k, colors[k], 2, 8, hierarchy, 0, cv::Point() );
+            cv::drawContours( result, contours, k, colors[k], CV_FILLED, 8, hierarchy, 0, cv::Point() );
         }
     }
 
@@ -976,6 +1118,22 @@ void GLScene::update_region_coloring()
 }
 
 //Public Slots
+void GLScene::resetImage()
+{
+    m_scale = 1.0f;
+    m_translation = QPointF(0.0, 0.0);
+    QSize prevSize(m_curImage.cols, m_curImage.rows);
+
+    std::string blankImagePath = imageLocationWithID("blank.png");
+    m_curImage = loadImage(blankImagePath);
+    if (prevSize.width() > 0)
+        cv::resize(m_curImage, m_curImage, cv::Size(prevSize.height(), prevSize.width()));
+
+    curDisplayMode = 0;
+    changeDisplayModeText();
+    adjustDisplayedImageSize();
+    update();
+}
 
 bool GLScene::openImage(std::string fname)
 {
@@ -984,7 +1142,9 @@ bool GLScene::openImage(std::string fname)
     //Test if image was loaded
     if (image.cols > 0)
     {
-        m_curImage = image;
+        m_targetImage = image;
+        curDisplayMode = 1;
+        changeDisplayModeText();
         adjustDisplayedImageSize();
 
         update();
@@ -1003,6 +1163,8 @@ void GLScene::saveImage(std::string fname)
 
 bool GLScene::openCurves(std::string fname)
 {
+    if (fname.size() > 0)
+        delete_all();
     if (m_splineGroup.load(fname))
     {
         update_region_coloring();

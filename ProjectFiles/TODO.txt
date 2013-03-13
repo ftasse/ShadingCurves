@@ -15,13 +15,13 @@ add shape window (quadratics)
 merge surfaces
 
 Mid priority:
-update region colouring on open curve (solved?)
-zooming
-toggle between image/blank image/result
 
 Low priority:
 add cubics to shape window
 
-pseudo code for splitting a curve at CP_i
-define new end points at the limit point: 0.1667*CP_i-1 + 0.667*CP_i + 0.1667*CP_i+1
-define second CP for each new curve: 0.33*CP_i-1+0.667*CP_i (same for the other point)
+
+Done
+update region colouring on open curve (solved)
+zooming (scroll the mouse wheel)
+Panning (Use navigation keys or drag while pressing the right button) (Press SPACE to center the image)
+toggle between image/blank image/result (Press T)

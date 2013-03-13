@@ -202,21 +202,21 @@ void Surface::recompute(cv::Mat dt)
         controlMesh.append(points.at(k));
 
     // is this correct?
-    for (int k=0; k<controlMesh.size(); ++k)
+    /*for (int k=0; k<controlMesh.size(); ++k)
     {
         int start_pt_id = controlMesh[k][0];
         int end_pt_id = controlMesh[k][controlMesh[k].size()-1];
         sharpCorners.push_back(start_pt_id);
-
+    */
         /*
          * This only set sharp corners on the control points with non-zero depth.
          * Remove "fabs(vertices[end_pt_id].z())<1.0" to set all appropriate corners (with depth or not)
          */
-        if (start_pt_id != end_pt_id && fabs(vertices[end_pt_id].z())<1.0)
+   /*     if (start_pt_id != end_pt_id && fabs(vertices[end_pt_id].z())>0.0)
         {
             sharpCorners.push_back(end_pt_id);
         }
-    }
+    }*/
 
     std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);

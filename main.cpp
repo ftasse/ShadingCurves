@@ -9,8 +9,7 @@ int main(int argc, char *argv[])
 
     w.setWindowTitle("2D Image lighting and shading");
     w.showMaximized();
-    w.scene->openImage(imageLocationWithID("blank.png"));
+    w.scene->resetImage();
 
     return a.exec();
-    //displayImageWithID("bartsimpson.jpg");
 }
