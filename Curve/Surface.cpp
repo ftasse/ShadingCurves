@@ -120,14 +120,15 @@ void Surface::recompute(cv::Mat dt)
         QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points,dt,!inward);
 
         // set end points to zero
-        vertices[points[1][0]].setZ(0);
+/*        vertices[points[1][0]].setZ(0);
         vertices[points2[1][0]].setZ(0);
         vertices[points[1][points[1].size()-1]].setZ(0);
         vertices[points2[1][points2[1].size()-1]].setZ(0);
-
+*/
         // add additional point at end points (Note that points.first() are the translated points and points.last() are the original points)
         QVector<QPointF> shapeAtrs = subdivided_points.first().attributes[0].shapePointAtr;
         float extent = subdivided_points.first().attributes[0].extent;
+        float height = subdivided_points.first().attributes[0].height;
         QPointF cp = vertices[points.last().first()]; // end control point
         QPointF cp1 = vertices[points.first().first()]; // first translated point
         QPointF cp2 = vertices[points2.first().first()]; // second translated point (on the other side)
@@ -143,7 +144,7 @@ void Surface::recompute(cv::Mat dt)
         normal = tmp-cp;
 
         // add first point?
-        int id_cp = addVertex(cp);
+        int id_cp = addVertex(cp,height);
         points.last().prepend(id_cp);
         for (int i=0; i<shapeAtrs.size(); ++i) {
             id_cp = addVertex(cp+normal*shapeAtrs[i].x());
@@ -153,7 +154,7 @@ void Surface::recompute(cv::Mat dt)
         points.first().prepend(id_cp);
 
         // close the loop
-        id_cp = addVertex(cp);
+        id_cp = addVertex(cp,height);
         points2.last().prepend(id_cp);
         for (int i=0; i<shapeAtrs.size(); ++i) {
             id_cp = addVertex(cp+normal*shapeAtrs[i].x());
@@ -165,6 +166,7 @@ void Surface::recompute(cv::Mat dt)
         // do something similar on the other side
         shapeAtrs = subdivided_points.last().attributes[0].shapePointAtr;
         extent = subdivided_points.last().attributes[0].extent;
+        height = subdivided_points.last().attributes[0].height;
         cp = vertices[points.last().last()];
         cp1 = vertices[points.first().last()];
         cp2 = vertices[points2.first().last()];
@@ -180,7 +182,7 @@ void Surface::recompute(cv::Mat dt)
         normal = tmp-cp;
 
         // add middle point
-        id_cp = addVertex(cp);
+        id_cp = addVertex(cp,height);
         points.last().append(id_cp);
         for (int i=0; i<shapeAtrs.size(); ++i) {
             id_cp = addVertex(cp+normal*shapeAtrs[i].x());
@@ -271,13 +273,20 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));
             QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent);
 
-            // curvature check: add point if angle is above cT
+            // curvature check: add point if angle is above cT and check intersection with previous CP
             if(k>0) {
                 Point3d prevCP1 = vertices[original_cpts_ids.at(k-1)];
                 Point3d  prevCP2 = vertices[translated_cpts_ids.last()];
                 QLineF previousL = QLineF(prevCP1,prevCP2);
                 Point3d thisCP = vertices[original_cpts_ids.at(k)];
                 QLineF thisL = QLineF(thisCP,new_cpt);
+                QPointF intersP;
+                QLineF::IntersectType inters = thisL.intersect(previousL,&intersP);
+                if(inters==QLineF::BoundedIntersection) {
+                    vertices[translated_cpts_ids.last()].setX(intersP.x());
+                    vertices[translated_cpts_ids.last()].setY(intersP.y());
+                    new_cpt = intersP;
+                }
                 float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
                 if(angle>cT) {
                     original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1));
@@ -316,6 +325,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             }
         }
     }
+
     QVector<QVector<int> > points;
     points.append(translated_cpts_ids);
     for (int l = 0; l<shape_controlpoints.size(); ++l)
@@ -331,10 +341,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
     // thresholds
     float a = setThresholds(normalL);
     float Td = a*0.75f+(1-a)*0.6;
-//    float Td = 0.1f; // for distance 0.75
-//    float Ta = 0.75f; // for angle 1.0
     float Ta = a*0.1f+(1-a)*0.75f;
-    Td = 0.75f;
 
     float currentD = 0;
     QPointF new_cpt;
@@ -345,6 +352,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
         float oldD = currentD;
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
                             ,&currentD,normalL,visited,Td,Ta);
+
         // check lines
         QLineF currentL(limit,m);
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));

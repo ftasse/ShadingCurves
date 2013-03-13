@@ -278,7 +278,13 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
         {
             event->accept();
-            QPoint seed = sceneToImageCoords(event->scenePos().toPoint()).toPoint();
+            QPointF topLeft = QPointF(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0) + m_translation;
+            QPointF scaling(imSize.width()/(float)displayImage()->cols, imSize.height()/(float)displayImage()->rows);
+            QPointF imgPos = event->scenePos().toPoint() - topLeft;
+            imgPos.setX(imgPos.x()/scaling.x());
+            imgPos.setY(imgPos.y()/scaling.y());
+            QPoint seed = imgPos.toPoint();
+
             cv::Vec3b bgrPixel = displayImage()->at<cv::Vec3b>(seed.y(), seed.x());
             QColor image_color(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
 
