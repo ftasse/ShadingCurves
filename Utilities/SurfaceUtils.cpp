@@ -76,8 +76,10 @@ QPointF getNormal(QVector<ControlPoint> points, int index)
         }
         tangent = p1-p2;
     }
-    else if (index == 0)    tangent = points[index+1] - points[index];
-    else    tangent = points[index] - points[index-1];
+    else if (index == 0)
+        tangent = points[index+1] - points[index];
+    else
+        tangent = points[index] - points[index-1];
 
     float norm = sqrt(tangent.x()*tangent.x() + tangent.y()*tangent.y());
     if (norm > 1e-5)

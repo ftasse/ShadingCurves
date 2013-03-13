@@ -15,6 +15,7 @@ connect surface width (or extent) slider to control points
 BUGS:
 - subdivide selected curve does not work with closed curves (both uniform and non-uniform subdivision)
 - joining curves does not work with closed curves (uniform only)
+- do not interpolate any control point when its a slope or uniform curve
 
 Mid priority:
 update region colouring on open curve (solved?)
