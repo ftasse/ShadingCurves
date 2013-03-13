@@ -80,13 +80,13 @@ void BSpline::recompute()
 
     if (points.size() <=1)  return;
     //TODO Remove this right away
-    for (int i=0; i<points.size(); ++i)
+/*    for (int i=0; i<points.size(); ++i)
     {
 //        points[i].setZ(i*20+20);
-        points[i].attributes[0].extent = 30;
-        points[i].attributes[1].extent = 30;
+        points[i].attributes[0].extent = 60;
+        points[i].attributes[1].extent = 60;
         //points[i].print();
-    }
+    }*/
     //printf("*****************************************\n");
 
     if (points.size() > 1)

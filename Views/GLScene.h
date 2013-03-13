@@ -12,20 +12,21 @@
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
 
-typedef struct Ellipse
+// HENRIK: had to rename it since Windows already has a definition of Ellipse
+typedef struct Ellipse_b
 {
     QPointF center;
     float size;
     QBrush brush;
 
-    Ellipse(){}
-    Ellipse(QPointF _center, float _size, QBrush _brush)
+    Ellipse_b(){}
+    Ellipse_b(QPointF _center, float _size, QBrush _brush)
     {
         center = _center;
         size = _size;
         brush = _brush;
     }
-} Ellipse;
+} Ellipse_b;
 
 class GLScene : public QGraphicsScene
 {
@@ -220,7 +221,7 @@ private:
     QPointF m_translation;
     bool inPanMode;
 
-    QVector<Ellipse> ellipses;
+    QVector<Ellipse_b> ellipses;
     QGraphicsItemGroup *ellipseGroup;
     ShadingProfileView *shadingProfileView;
 
