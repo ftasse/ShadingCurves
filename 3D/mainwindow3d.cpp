@@ -1112,12 +1112,12 @@ void MainWindow3D::connectAll()
             glwidget1, 			  SLOT(setShowFeatureLines(bool)));
     connect(ctrlWidget1->checkLine, 	SIGNAL(toggled(bool)),
             glwidget1, 			  SLOT(setShowLine(bool)));
-	connect(ctrlWidget1->radioCtrlShaded, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowShadedCtrl(bool)));
-	connect(ctrlWidget1->radioCtrlEdges, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowEdgedCtrl(bool)));
-	connect(ctrlWidget1->radioCtrlCulled, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowCulledCtrl(bool)));
+//	connect(ctrlWidget1->radioCtrlShaded, 	SIGNAL(toggled(bool)),
+//			glwidget1, 			  SLOT(setShowShadedCtrl(bool)));
+//	connect(ctrlWidget1->radioCtrlEdges, 	SIGNAL(toggled(bool)),
+//			glwidget1, 			  SLOT(setShowEdgedCtrl(bool)));
+//	connect(ctrlWidget1->radioCtrlCulled, 	SIGNAL(toggled(bool)),
+//			glwidget1, 			  SLOT(setShowCulledCtrl(bool)));
 	connect(ctrlWidget1->checkFull, 		SIGNAL(toggled(bool)),
 			this, 				  SLOT(toggleMyLayout1(bool)));
 	connect(glwidget1, 			SIGNAL(doubleClicked()),
@@ -1131,13 +1131,13 @@ void MainWindow3D::connectAll()
             glwidget2, 			  SLOT(setShowFeatureLines(bool)));
     connect(ctrlWidget2->checkLine, 	SIGNAL(toggled(bool)),
             glwidget2, 			  SLOT(setShowLine(bool)));
-	connect(ctrlWidget2->radioCtrlShaded, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowShadedCtrl(bool)));
-	connect(ctrlWidget2->radioCtrlEdges, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowEdgedCtrl(bool)));
-	connect(ctrlWidget2->radioCtrlCulled, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowCulledCtrl(bool)));
-	connect(ctrlWidget2->checkFull, 		SIGNAL(toggled(bool)),
+//	connect(ctrlWidget2->radioCtrlShaded, 	SIGNAL(toggled(bool)),
+//			glwidget2, 			  SLOT(setShowShadedCtrl(bool)));
+//	connect(ctrlWidget2->radioCtrlEdges, 	SIGNAL(toggled(bool)),
+//			glwidget2, 			  SLOT(setShowEdgedCtrl(bool)));
+//	connect(ctrlWidget2->radioCtrlCulled, 	SIGNAL(toggled(bool)),
+//			glwidget2, 			  SLOT(setShowCulledCtrl(bool)));
+    connect(ctrlWidget2->checkFull, 		SIGNAL(toggled(bool)),
 			this, 				  SLOT(toggleMyLayout2(bool)));
 	connect(glwidget2, 			SIGNAL(doubleClicked()),
 			ctrlWidget2->checkFull, 		  SLOT(toggle()));
