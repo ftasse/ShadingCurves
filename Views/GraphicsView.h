@@ -50,6 +50,7 @@ public slots:
     void setSuper1();
     void setSuper2();
     void setSuper4();
+    void setSurfSubdLevel(int);
     void setImgShowAll(bool b);
     void setImgWriteAll(bool b);
 
@@ -60,7 +61,7 @@ private:
     MainWindow3D    *glw;
     GLviewsubd      *glvs;
 
-    int superSampling;
+    int superSampling, surfSubdLevel;
     bool imgShowAll, imgWriteAll;
 };
 

@@ -12,6 +12,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     superSampling = 1;
+    surfSubdLevel = 4;
     imgShowAll = false;
     imgWriteAll = true;
 }
@@ -351,7 +352,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->super = superSampling; //supersampling (1, 2, or 4)
     glvs->showImg = showImg;
     glvs->writeImg = writeImg;
-    glvs->setSubdivLevel(4); // calls updateGL
+    glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
 
     my_scene->surfaceImg = glvs->img.clone();
 
@@ -424,4 +425,9 @@ void GraphicsView::setImgShowAll(bool b)
 void GraphicsView::setImgWriteAll(bool b)
 {
     imgWriteAll = b;
+}
+
+void GraphicsView::setSurfSubdLevel(int level)
+{
+    surfSubdLevel = level;
 }

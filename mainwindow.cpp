@@ -67,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->super1, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper1()));
     connect(ui->super2, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper2()));
     connect(ui->super4, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper4()));
+    connect(ui->spinBoxSubd, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setSurfSubdLevel(int)));
     connect(ui->imgShowAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgShowAll(bool)));
     connect(ui->imgWriteAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgWriteAll(bool)));
 }

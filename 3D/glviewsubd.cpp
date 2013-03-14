@@ -2221,7 +2221,7 @@ void GLviewsubd::buffer2img()
 {
     offScreen = true;
 
-    emit subdivToLevel(4);
+//    emit subdivToLevel(4);
 
     updateGL();
 }
