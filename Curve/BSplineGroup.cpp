@@ -78,7 +78,7 @@ bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
         }
     }
 
-    if (controlPoint(cpt_id).num_splines() == 1 && controlPoint(cpt_id).splineRefs.front()!=spline_id)
+    if (controlPoint(cpt_id).num_splines() > 0 && controlPoint(cpt_id).splineRefs.front()!=spline_id)    //
         splitCurveAt(controlPoint(cpt_id).splineRefs.front(), cpt_id);
     m_splines[spline_id].cptRefs.push_back(cpt_id);
     m_cpts[cpt_id].splineRefs.push_back(spline_id);
@@ -96,7 +96,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
     bool has_uniform_subdivision = bspline.has_uniform_subdivision;
     bool has_loop = bspline.has_loop();
 
-    if ((!has_uniform_subdivision || !has_loop) && (bspline.cptRefs.front() == cptRef || bspline.cptRefs.back() == cptRef))
+    if ((!has_loop) && (bspline.cptRefs.front() == cptRef || bspline.cptRefs.back() == cptRef))
         return splineRef;
 
     int cptPos = -1;
@@ -113,7 +113,7 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
 
     //FLORA: Is this correct? We are moving the start of the control points in the spline
     //We probably just need to create new points differently for uniform subdivision
-    if (has_uniform_subdivision && has_loop)
+    if (has_loop && cptPos!=0 && bspline.pointAt(0).num_splines() <= 3)
     {
         QVector<int> new_cpts_refs;
         new_cpts_refs.push_back(bspline.cptRefs[cptPos]);
@@ -128,36 +128,65 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
         new_cpts_refs.push_back(new_cpts_refs.front());
 
         bspline.cptRefs = new_cpts_refs;
-        if (has_uniform_subdivision)
-            bspline.has_uniform_subdivision = false;
+        //if (has_uniform_subdivision)
+        //    bspline.has_uniform_subdivision = false;
         bspline.recompute();
-        return splineRef;
+        //return splineRef;
+
+        cptPos = -1;
+        for (int k=0; k<bspline.num_cpts(); ++k)
+        {
+            if (bspline.cptRefs[k] == cptRef)
+            {
+                cptPos = k;
+                break;
+            }
+        }
     }
 
     //Change position of the junction control point to the the limit point
+    QVector<ControlPoint> points = bspline.getControlPoints();
     ControlPoint& junction = bspline.pointAt(cptPos);
     ControlPoint junctionCoords = junction;
-    QPointF limitPoint = 0.1667*bspline.pointAt(cptPos-1)+0.667*bspline.pointAt(cptPos)+0.1667*bspline.pointAt(cptPos+1);
+    QPointF limitPoint;
+    int left = cptPos>0?cptPos-1:points.size()-1;
+    limitPoint= 0.1667*points[left]+0.667*points[cptPos]+0.1667*points[(cptPos+1)%points.size()];
     junction.setX(limitPoint.x());
     junction.setY(limitPoint.y());
 
+    //if (has_loop)  return bspline.ref;
+
     //Create a new curve and move control points on the right to this new spline
-    int newSplineRef = addBSpline();
-    BSpline& newSpline = spline(newSplineRef);
-    junction.splineRefs.push_back(newSplineRef);
-    newSpline.cptRefs.push_back(junction.ref);
-    while (cptPos+1 < bspline.num_cpts())
+    int newSplineRef = bspline.ref;
+    if (cptPos != 0 && cptPos != bspline.num_cpts()-1)
     {
-        ControlPoint& cpt = bspline.pointAt(cptPos+1);
-        newSpline.cptRefs.push_back(cpt.ref);
-        for (int k=0; k<cpt.num_splines(); ++k)
+        newSplineRef = addBSpline();
+    }
+    BSpline& newSpline = spline(newSplineRef);
+    if (newSplineRef != splineRef)
+    {
+        if (has_loop && has_uniform_subdivision)
         {
-            if (cpt.splineRefs[k] == splineRef)
-            {
-                cpt.splineRefs[k] = newSplineRef;
-            }
+            ControlPoint& start = bspline.pointAt(0);
+            limitPoint = 0.1667*points.last()+0.667*points[0]+0.1667*points[(1)%points.size()];
+            start.setX(limitPoint.x());
+            start.setY(limitPoint.y());
         }
-        bspline.cptRefs.erase(bspline.cptRefs.begin() + cptPos+1);
+        junction.splineRefs.push_back(newSplineRef);
+        newSpline.cptRefs.push_back(junction.ref);
+        while (cptPos+1 < bspline.num_cpts())
+        {
+            ControlPoint& cpt = bspline.pointAt(cptPos+1);
+            newSpline.cptRefs.push_back(cpt.ref);
+            for (int k=0; k<cpt.num_splines(); ++k)
+            {
+                if (cpt.splineRefs[k] == splineRef)
+                {
+                    cpt.splineRefs[k] = newSplineRef;
+                }
+            }
+            bspline.cptRefs.erase(bspline.cptRefs.begin() + cptPos+1);
+        }
     }
 
     //Modify the second control points for each curve from the junction
@@ -228,11 +257,11 @@ int BSplineGroup::splitCurveAt(int splineRef, int cptRef)
         }
     }
 
-    /*if (has_loop)
+    if (has_loop && (bspline.ref != newSpline.ref))
     {
         bspline.has_uniform_subdivision = false;
         newSpline.has_uniform_subdivision = false;
-    }*/
+    }
 
     return newSplineRef;
 }

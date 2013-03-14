@@ -413,7 +413,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
             }
 
-            shadingProfileView->setVisible(false);
+            if (shadingProfileView != NULL) shadingProfileView->setEnabled(false);
             selectedObjects.clear();
             m_splineGroup.garbage_collection();
             recomputeAllSurfaces();
