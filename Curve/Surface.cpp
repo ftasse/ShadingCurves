@@ -113,11 +113,11 @@ void Surface::recompute(cv::Mat dt)
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
-    QVector<QVector<int> > points = setSurfaceCP(subdivided_points,dt,inward);
+    QVector<QVector<int> > points = setSurfaceCP(subdivided_points, bspline.getNormals(inward), dt,inward);
 
     if(bspline.is_slope) {
         // find points on the other side
-        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points,dt,!inward);
+        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward);
 
         // set end points to zero
 /*        vertices[points[1][0]].setZ(0);
@@ -223,7 +223,7 @@ void Surface::recompute(cv::Mat dt)
     ofs.close();
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, cv::Mat dt, bool inward)
+QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward)
 {
     float cT = 90; // threshold for curvature (in degrees)
     NormalDirection direction = inward?INWARD_DIRECTION:OUTWARD_DIRECTION;
@@ -262,12 +262,11 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
                  translated_cpts_ids.push_back( translated_cpts_ids[0]); //FLORA, found out what this should be
         } else*/
         {
-            QPointF normal = getNormal(controlPoints, k);
+            QPointF normal = normals[k];
             float extent = controlPoints[k].attribute(direction).extent;
             float height = controlPoints[k].attribute(direction).height;
             QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
-            if(!inward)
-                normal = -normal;
+
             QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
             QPointF tmp = lp.at(k)+normal*2;
             QPoint current(qRound(tmp.x()),qRound(tmp.y()));

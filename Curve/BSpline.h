@@ -48,6 +48,13 @@ public:
         return surfaceRefs.size();
     }
 
+    QVector<QPointF> getNormals(bool is_inward)
+    {
+        if (inward_subdivided_normals.size() == 0)  computeControlPointNormals();
+        if (is_inward)  return inward_subdivided_normals;
+        else    return outward_subdivided_normals;
+    }
+
 public:
     BSplineGroup *m_splineGroup;
     QVector<int> cptRefs;
