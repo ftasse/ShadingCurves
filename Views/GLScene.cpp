@@ -59,12 +59,13 @@ GLScene::GLScene(QObject *parent) :
     QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
-    shadingProfileView = new ShadingProfileView ();
+    shadingProfileView = NULL;
+    /*shadingProfileView = new ShadingProfileView ();
     shadingProfileView->setVisible(false);
     addWidget(shadingProfileView);
     shadingProfileView->setGeometry(0, 0, 300, 400);
 
-    connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
+    connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));*/
 }
 
 GLScene:: ~GLScene()
@@ -197,6 +198,18 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mouseReleaseEvent(event);
     if (event->isAccepted()) return;
 
+    if (shadingProfileView != NULL)
+    {
+        bool showShadingProfile = false;
+        for (int k=0; k<selectedObjects.size(); ++k)
+            if (selectedObjects[k].first == CPT_NODE_ID)
+            {
+                shadingProfileView->setControlPoint(controlPoint(selectedObjects[k].second));
+                showShadingProfile = true;
+            }
+        shadingProfileView->setVisible(showShadingProfile);
+    }
+
     inPanMode = false;
     if (hasMoved)
     {
@@ -239,16 +252,6 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 currentSplineChanged();
             }
         }
-
-        if (nodeId == CPT_NODE_ID)
-        {
-            shadingProfileView->setControlPoint(controlPoint(targetId));
-            shadingProfileView->setVisible(true);
-        } else
-        {
-            shadingProfileView->setVisible(false);
-        }
-
         event->accept();
 
     }  else if (event->button() == Qt::RightButton)
@@ -271,9 +274,6 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         int cptRef = registerPointAtScenePos(event->scenePos());
         if (cptRef < 0)
             return;
-
-        shadingProfileView->setControlPoint(controlPoint(cptRef));
-        shadingProfileView->setVisible(true);
 
         if (m_curSplineIdx < 0)
         {
@@ -484,10 +484,13 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     transform.scale(scaling.x(), scaling.y());
     ellipseGroup->setTransform(transform);
 
-    QRect geom = shadingProfileView->geometry();
-    if (geom.x() != width()-geom.width() || geom.y() != height()-geom.height())
+    if (shadingProfileView !=NULL)
     {
-        shadingProfileView->setGeometry(width()-geom.width(), height()-geom.height(), geom.width(), geom.height());
+        QRect geom = shadingProfileView->geometry();
+        if (geom.x() != width()-geom.width() || geom.y() != height()-geom.height())
+        {
+            shadingProfileView->setGeometry(width()-geom.width(), height()-geom.height(), geom.width(), geom.height());
+        }
     }
 }
 
@@ -645,18 +648,31 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
     if (!only_show_splines) {
         // Display normals
-        glColor3f(0.5, 0.5, 0.0);
         glBegin(GL_LINES);
-        if (!only_show_splines)
+        if (!only_show_splines && (!showCurrentCurvePoints || m_curSplineIdx == spline_id))
+        {
+            glColor3f(0.0, 1.0, 0.0);
             for (int i = 0; i < bspline.getPoints().size(); ++i)
             {
                 QPointF curvPos = bspline.getPoints()[i];
                 QPointF scenePos = imageToSceneCoords(curvPos);
                 glVertex2f(scenePos.x(), scenePos.y());
 
-                QPointF normal = imageToSceneCoords(curvPos + bspline.inward_normal(i, true)*5.0);
+                QPointF normal = imageToSceneCoords(curvPos + bspline.get_normal(i, true, true)*5.0);
                 glVertex2f(normal.x(), normal.y());
             }
+
+            glColor3f(1.0, 0.0, 0.0);
+            for (int i = 0; i < bspline.getPoints().size(); ++i)
+            {
+                QPointF curvPos = bspline.getPoints()[i];
+                QPointF scenePos = imageToSceneCoords(curvPos);
+                glVertex2f(scenePos.x(), scenePos.y());
+
+                QPointF normal = imageToSceneCoords(curvPos + bspline.get_normal(i, true, false)*5.0);
+                glVertex2f(normal.x(), normal.y());
+            }
+        }
         glEnd();
 
         /*
@@ -969,7 +985,7 @@ void GLScene::subdivide_current_spline(){
 
 void GLScene::updateConnectedSurfaces(int cptRef)
 {
-    /*cv::Mat curvesGrayIm = curvesImage();
+    cv::Mat curvesGrayIm = curvesImage();
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
@@ -980,7 +996,7 @@ void GLScene::updateConnectedSurfaces(int cptRef)
         spline(cpt.splineRefs[k]).recompute();
         spline(cpt.splineRefs[k]).computeSurfaces(dt);
     }
-    update();*/
+    update();
 }
 
 void GLScene::toggleShowCurrentCurvePoints(bool status)

@@ -22,11 +22,13 @@ public:
     void change_bspline_type(bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
 
     //Normal at the (index)th control point
-    QPointF inward_normal(int index, bool subdivided = true);
+    QPointF get_normal(int index, bool subdivided = true, bool is_inward = true);
 
     //Utilites
     QVector<ControlPoint> getPoints(); // HENRIK: return list of control points
     QVector<ControlPoint> getControlPoints();
+    void computeControlPointNormals();
+
     ControlPoint& pointAt(int index);
     Surface& surfaceAt(int index);
 
@@ -59,6 +61,8 @@ public:
     bool has_outward_surface;
 
     QVector<ControlPoint> subdivided_points;
+    QVector<QPointF> inward_subdivided_normals, outward_subdivided_normals;
+    QVector<QPointF> inward_normals, outward_normals;
 };
 
 #endif // BSPLINE_H

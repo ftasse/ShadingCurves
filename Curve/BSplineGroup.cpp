@@ -82,7 +82,11 @@ bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
         splitCurveAt(controlPoint(cpt_id).splineRefs.front(), cpt_id);
     m_splines[spline_id].cptRefs.push_back(cpt_id);
     m_cpts[cpt_id].splineRefs.push_back(spline_id);
-    m_splines[spline_id].recompute();
+
+    for (int k=0; k<m_cpts[cpt_id].num_splines(); ++k)
+    {
+        m_splines[m_cpts[cpt_id].splineRefs[k]].recompute();
+    }
     return true;
 }
 

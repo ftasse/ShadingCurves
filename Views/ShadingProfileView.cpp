@@ -34,15 +34,17 @@ ShadingProfileView::ShadingProfileView()
 
 void ShadingProfileView::updatePath()
 {
+    graphicsView->scene()->clear();
+
     ControlPoint cpt;
     if (m_controlPoint != NULL) cpt = *m_controlPoint;
+    else return;
 
     inwardExtentWidget->setValue(cpt.attributes[0].extent);
     outwardExtentWidget->setValue(cpt.attributes[1].extent);
     inwardHeightWidget->setValue(cpt.attributes[0].height);
     outwardHeightWidget->setValue(cpt.attributes[1].height);
 
-    graphicsView->scene()->clear();
     QRectF rect = QRectF(5,5, 190, 190); // graphicsView->scene()->sceneRect();
     QPointF top(rect.x() + rect.width()/2, rect.y()),
             bottom(rect.x() + rect.width()/2, rect.y()+rect.height()),
@@ -81,12 +83,12 @@ void ShadingProfileView::updateControlPointParameters()
 {
     if (m_controlPoint != NULL)
     {
-        m_controlPoint->attributes[0].extent = inwardExtentWidget->value();
+        /*m_controlPoint->attributes[0].extent = inwardExtentWidget->value();
         m_controlPoint->attributes[1].extent = outwardExtentWidget->value();
 
         m_controlPoint->attributes[0].height = inwardHeightWidget->value();
         m_controlPoint->attributes[1].height = outwardHeightWidget->value();
 
-        emit controlPointAttributesChanged(m_controlPoint->ref);
+        emit controlPointAttributesChanged(m_controlPoint->ref);*/
     }
 }
