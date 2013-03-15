@@ -227,7 +227,7 @@ void BSpline::computeControlPointNormals()
         QPointF in_normal = getNormal(cpts, i);
         QPointF out_normal = -in_normal;
 
-        if ((i == 0 || i==cpts.size()-1) &&  cpts[i].num_splines() > 1)
+        if ((i == 0 || i==num_cpts()-1) &&  cpts[i].num_splines() > 1 && !(cpts[i].num_splines()==2 && has_loop()))
         {
             QVector<QLineF>  otherSplinesLines;
             for (int k=0; k<cpts[i].num_splines(); ++k)
@@ -316,20 +316,21 @@ void BSpline::computeControlPointNormals()
         QPointF in_normal = getNormal(points, i);  if (inverse) in_normal = -in_normal;
         QPointF out_normal = -in_normal;
 
-        if (i==0)
+        if (!has_uniform_subdivision)   //Note: a curve has a uniform subdivision, it cannot have a junction point
         {
-            in_normal = inward_normals.first();
-            out_normal = outward_normals.first();
-        } else if (i==points.size()-1)
-        {
-            in_normal = inward_normals.last();
-            out_normal = outward_normals.last();
+            if (i==0)
+            {
+                in_normal = inward_normals.first();
+                out_normal = outward_normals.first();
+            } else if (i==points.size()-1)
+            {
+                in_normal = inward_normals.last();
+                out_normal = outward_normals.last();
+            }
         }
 
         inward_subdivided_normals.push_back(unit(in_normal));
         outward_subdivided_normals.push_back(unit(out_normal));
 
     }
-    //inward_subdivided_normals = subDivide(inward_normals, 2, has_uniform_subdivision);
-    //outward_subdivided_normals = subDivide(outward_normals, 2, has_uniform_subdivision);
 }

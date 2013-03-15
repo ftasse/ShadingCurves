@@ -355,6 +355,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
 
     my_scene->surfaceImg = glvs->img.clone();
+    my_scene->resultImg = glvs->imgFillShaded.clone();
 
 //    cv::imshow("Shaded img 4 Henrik", glvs->img);
 

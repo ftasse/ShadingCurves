@@ -12,6 +12,10 @@
 #include "../Utilities/ImageUtils.h"
 #include "../Curve/BSplineGroup.h"
 
+#define NUM_DISPLAY_MODES 4
+
+static QString displayModesList[NUM_DISPLAY_MODES] = {"Blank Image", "Target Image", "Surface Image", "Result Image"};
+
 // HENRIK: had to rename it since Windows already has a definition of Ellipse
 typedef struct Ellipse_b
 {
@@ -150,7 +154,7 @@ public:
                 return &m_targetImage;
             }
             else
-                curDisplayMode = (curDisplayMode+1)%3;
+                curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
             changeDisplayModeText();
         }
 
@@ -161,21 +165,28 @@ public:
                 return &surfaceImg;
             }
             else
-                curDisplayMode = (curDisplayMode+1)%3;
+                curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
             changeDisplayModeText();
         }
+
+        if (curDisplayMode == 3)
+        {
+            if (resultImg.cols>0)
+            {
+                return &resultImg;
+            }
+            else
+                curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
+            changeDisplayModeText();
+        }
+
 
         return &m_curImage;
     }
 
     void changeDisplayModeText()
     {
-        if (curDisplayMode == 0)
-            displayModeLabel->setText("Blank Image");
-        else if (curDisplayMode == 1)
-            displayModeLabel->setText("Target Image");
-        else
-            displayModeLabel->setText("Surface Image");
+        displayModeLabel->setText(displayModesList[curDisplayMode]);
     }
 
 protected:
@@ -205,6 +216,7 @@ public slots:
 private:
     cv::Mat m_curImage;
     cv::Mat m_targetImage;
+
     int m_curSplineIdx;
     bool hasMoved;
     int curDisplayMode; //0 for blank image, 1 for target image, 2 for surface image
@@ -234,6 +246,7 @@ public:
     float brushSize;
     bool freehand;
     cv::Mat surfaceImg;
+    cv::Mat resultImg;
     bool discreteB;
 
     QSizeF imSize;

@@ -54,7 +54,7 @@ GLScene::GLScene(QObject *parent) :
 
     displayModeLabel = new QLabel ();
     displayModeLabel->setAutoFillBackground(false);
-    displayModeLabel->setGeometry(10, 10, 90, 20);
+    displayModeLabel->setGeometry(10, 10, 100, 20);
     displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
     QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -336,13 +336,21 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_T)
      {
-         curDisplayMode = (curDisplayMode+1)%3;
+         curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
          changeDisplayModeText();
          adjustDisplayedImageSize();
          update();
          return;
 
-     } else if (event->key() == Qt::Key_W)
+     } if (event->key() == Qt::Key_U)
+    {
+        curDisplayMode = (curDisplayMode-1); if (curDisplayMode < 0)    curDisplayMode = NUM_DISPLAY_MODES-1;
+        changeDisplayModeText();
+        adjustDisplayedImageSize();
+        update();
+        return;
+
+    } else if (event->key() == Qt::Key_W)
      {
         //Reset blank image
         m_curImage = cv::Scalar(255,255,255);
@@ -353,7 +361,6 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_R)
    {
        recomputeAllSurfaces();
-       m_curImage = cv::Scalar(255,255,255);
        update_region_coloring();
        update();
        return;
@@ -946,6 +953,7 @@ void GLScene::delete_all()
     {
         m_splineGroup.removeSpline(i);
     }
+    m_splineGroup.colorMapping.clear();
     m_splineGroup.garbage_collection();
 
     curSplineRef() = -1;
@@ -1058,10 +1066,10 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.5);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
+    glLineWidth(1.0);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_BLEND);
+    //glEnable(GL_LINE_SMOOTH);
 
     for (int i=0; i<num_splines(); ++i)
     {
@@ -1091,53 +1099,135 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
-    cv::cvtColor(img, img, CV_RGB2GRAY);   // cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
 }
 
 
 void GLScene::update_region_coloring()
 {
+    m_curImage = cv::Scalar(255,255,255);
+
     cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
+
     //cv::imshow("Closed Curves", curv_img);
 
     cv::Mat mask(m_curImage.rows+2, m_curImage.cols+2, curv_img.type(), cv::Scalar(0));
-    cv::Mat mask_vals(mask, cv::Range(0, m_curImage.rows), cv::Range(0, m_curImage.cols));
+    cv::Mat mask_vals(mask, cv::Range(1, m_curImage.rows+1), cv::Range(1, m_curImage.cols+1));
     curv_img.copyTo(mask_vals);
     //cv::imshow("Mask", mask);
+    cv::imwrite("mask.png", mask);
 
     cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
 
     //Use cv::floodfill (this should be faster)
-    /*for (int i=0; i<m_splineGroup.colorMapping.size(); ++i)
+    for (int l=m_splineGroup.colorMapping.size()-1; l>=0; --l)
     {
-        QPoint seed = m_splineGroup.colorMapping[i].first;
-        QColor color = m_splineGroup.colorMapping[i].second;
-        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),cv::Scalar(color.blue(), color.green(), color.red()));
-    }*/
+        QPoint seed = m_splineGroup.colorMapping[l].first;
+        QColor qcolor = m_splineGroup.colorMapping[l].second;
+        cv::Scalar color(qcolor.blue(), qcolor.green(), qcolor.red());
+        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color);
+
+        QVector<QPoint> neighbours;
+        for (int i=0; i<result.rows; ++i)
+            {
+                for (int j=0; j<result.cols; ++j)
+                {
+                    if (mask.at<uchar>(i+1,j+1) > 128)
+                    {
+                        bool neighbouring = false;
+
+                        for (int m=-1; m<=1; ++m)
+                        {
+                            for (int n=-1; n<=1; ++n)
+                            {
+
+                                if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
+                                {
+                                    cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
+                                    if (current[0] == color[0] && current[1] == color[1] && current[2] == color[2])
+                                    {
+                                        neighbouring = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (neighbouring)   break;
+                        }
+                        if (neighbouring)
+                        {
+                           neighbours.push_back(QPoint(i,j));
+                           mask.at<uchar>(i+1,j+1) = 0;
+                        }
+                    }
+                }
+            }
+        for (int i=0; i<neighbours.size(); ++i)
+        {
+            for (int k=0; k<3; ++k) result.at<cv::Vec3b>(neighbours[i].x(), neighbours[i].y())[k] = color[k];
+        }
+    }
 
     //Alternatively, use cv::drawContours
-    std::vector<std::vector<cv::Point> > contours;
+    /*std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
-    cv::findContours( mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+    cv::findContours(curv_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
-    //Randomly set colors
-    /*if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
+    srand(time(NULL));
+    for(uint k = 0; k< contours.size(); k++ )
     {
-        int idx = 0;
-        cv::RNG rng(12345);
-        for( ; idx >= 0; idx = hierarchy[idx][0] )
+        cv::Point centroid;
+        for (int l=0; l<contours[k].size(); ++l)
         {
-            cv::Scalar color( rand()&255, rand()&255, rand()&255 );
-            cv::drawContours( result, contours, idx, color, 2, 8, hierarchy, 0, cv::Point() );
-            cv::drawContours( result, contours, idx, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
+            centroid += contours[k][l];
+        }
+        centroid.x /= contours[k].size();
+        centroid.y /= contours[k].size();
+        cv::Vec3b bgrPixel = result.at<cv::Vec3b>(centroid.x, centroid.y);
+
+        cv::Scalar color( bgrPixel );
+
+        cv::drawContours( result, contours, k, color, 1, 8);
+    }*/
+
+    /*QVector<int> bsplineRefs;
+    for (int i=0; i<num_splines(); ++i) if (spline(i).num_cpts() > 1) bsplineRefs.push_back(spline(i).ref);
+
+    for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
+    {
+        QPoint seed = m_splineGroup.colorMapping[i].first;
+        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.cols || seed.y() >= m_curImage.rows)
+            continue;
+
+        QColor qcolor = m_splineGroup.colorMapping[i].second;
+        cv::Scalar color = cv::Scalar(qcolor.blue(), qcolor.green(), qcolor.red());
+        for (int k=0; k<bsplineRefs.size(); ++k)
+        {
+            QVector<ControlPoint> points =
+            cv::pointPolygonTest(contours[k], cv::Point2f(seed.x(), seed.y()), false) > 1e-5
         }
     }*/
 
-    std::vector<bool> marked(contours.size()+1, false);
-    std::vector<cv::Scalar> colors(contours.size());
+    /**/
+
+    //Randomly set colors
+    /*
+    srand(time(NULL));
+    if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
+    {
+        int idx = 0;
+        for( ; idx >= 0; idx = hierarchy[idx][0] )
+        {
+            cv::Scalar color( rand()&255, rand()&255, rand()&255 );
+            cv::drawContours( result, contours, idx, color, CV_FILLED, 8, hierarchy, 0);
+            qDebug("Idx: %d", idx);
+        }
+    }*/
+
+    /*std::vector<bool> marked(contours.size()+1, false);
+
     for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
     {
         QPoint seed = m_splineGroup.colorMapping[i].first;
@@ -1154,10 +1244,8 @@ void GLScene::update_region_coloring()
             {
                 if (!marked[k])
                 {
-                    //cv::drawContours( result, contours, k, color, 2, 8, hierarchy, 0, cv::Point() );
-                    //cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
+                    cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
                     marked[k] = true;
-                    colors[k] = color;
                 }
                 break;
             }
@@ -1167,16 +1255,7 @@ void GLScene::update_region_coloring()
             cv::floodFill(result, cv::Point2i(seed.x(),seed.y()),color);
             marked[k] = true;
         }
-    }
-
-    for( int k=0; k< contours.size(); k++ )
-    {
-        if (marked[k])
-        {
-            //cv::drawContours( result, contours, k, colors[k], 2, 8, hierarchy, 0, cv::Point() );
-            cv::drawContours( result, contours, k, colors[k], CV_FILLED, 8, hierarchy, 0, cv::Point() );
-        }
-    }
+    }*/
 
     m_curImage = result.clone();
     update();
@@ -1222,7 +1301,10 @@ bool GLScene::openImage(std::string fname)
 
 void GLScene::saveImage(std::string fname)
 {
-    cv::imwrite(fname, m_curImage);
+    if (resultImg.cols > 0)
+        cv::imwrite(fname, resultImg);
+    else
+        cv::imwrite(fname, m_curImage);
 }
 
 
