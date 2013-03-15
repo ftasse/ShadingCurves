@@ -5,7 +5,7 @@
 #include "Utilities/SurfaceUtils.h"
 
 #define EPSILON .00001f
-#define angleT  35.0f
+#define angleT  90.0f
 
 
 Surface::Surface():
@@ -113,89 +113,23 @@ void Surface::recompute(cv::Mat dt)
     BSpline& bspline = m_splineGroup->spline(splineRef);
 
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
-    QVector<QVector<int> > points = setSurfaceCP(subdivided_points, bspline.getNormals(inward), dt,inward);
+    QVector<QPointF> normals = bspline.getNormals(inward);
+
+    QVector<QVector<int> > points = setSurfaceCP(subdivided_points, normals, dt,inward,bspline.has_loop());
 
     if(bspline.is_slope) {
         // find points on the other side
-        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward);
-
-        // set end points to zero
-/*        vertices[points[1][0]].setZ(0);
-        vertices[points2[1][0]].setZ(0);
-        vertices[points[1][points[1].size()-1]].setZ(0);
-        vertices[points2[1][points2[1].size()-1]].setZ(0);
-*/
-        // add additional point at end points (Note that points.first() are the translated points and points.last() are the original points)
-        QVector<QPointF> shapeAtrs = subdivided_points.first().attributes[0].shapePointAtr;
-        float extent = subdivided_points.first().attributes[0].extent;
-        float height = subdivided_points.first().attributes[0].height;
-        QPointF cp = vertices[points.last().first()]; // end control point
-        QPointF cp1 = vertices[points.first().first()]; // first translated point
-        QPointF cp2 = vertices[points2.first().first()]; // second translated point (on the other side)
-        QPointF tangent = cp1-cp2;
-        QPointF normal = QPointF(-tangent.y(),tangent.x());
-        float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
-        if (norm > EPSILON)
-            normal /= norm;
-        QLineF normalL(cp,cp + normal*extent);
-        QPointF tmp = cp+normal*2;
-        QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-        tmp = traceDT(dt,cp,current,normalL,extent);
-        normal = tmp-cp;
-
-        // add first point?
-        int id_cp = addVertex(cp,height);
-        points.last().prepend(id_cp);
-        for (int i=0; i<shapeAtrs.size(); ++i) {
-            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
-            points[i+1].prepend(id_cp);
-        }
-        id_cp = addVertex(tmp);
-        points.first().prepend(id_cp);
-
-        // close the loop
-        id_cp = addVertex(cp,height);
-        points2.last().prepend(id_cp);
-        for (int i=0; i<shapeAtrs.size(); ++i) {
-            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
-            points2[i+1].prepend(id_cp);
-        }
-        id_cp = addVertex(tmp);
-        points2.first().prepend(id_cp);
-
-        // do something similar on the other side
-        shapeAtrs = subdivided_points.last().attributes[0].shapePointAtr;
-        extent = subdivided_points.last().attributes[0].extent;
-        height = subdivided_points.last().attributes[0].height;
-        cp = vertices[points.last().last()];
-        cp1 = vertices[points.first().last()];
-        cp2 = vertices[points2.first().last()];
-        tangent = cp2-cp1;
-        normal = QPointF(-tangent.y(),tangent.x());
-        norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
-        if (norm > EPSILON)
-            normal /= norm;
-        normalL = QLineF(cp,cp + normal*extent);
-        tmp = cp+normal*2;
-        current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-        tmp = traceDT(dt,cp,current,normalL,extent);
-        normal = tmp-cp;
-
-        // add middle point
-        id_cp = addVertex(cp,height);
-        points.last().append(id_cp);
-        for (int i=0; i<shapeAtrs.size(); ++i) {
-            id_cp = addVertex(cp+normal*shapeAtrs[i].x());
-            points[i+1].append(id_cp); qDebug() << id_cp;
-        }
-        id_cp = addVertex(tmp);
-        points.first().append(id_cp);
+        normals = bspline.getNormals(inward);
+        normals.pop_back();
+        normals.pop_front();
+        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false);
 
         // merge the two grids
-        for(int i=0;i<points2.size();i++)
-            for(int j=points2[i].size()-1;j>=0;j--)
+        for(int i=0;i<points2.size()-1;i++)
+            for(int j=points2[i].size()-2;j>=0;j--)
                 points[i].push_back(points2[i][j]);
-
+        for(int j=points.last().size()-2;j>=0;j--)
+            points.last().push_back(points.last()[j]);
     }
 
     for (int k=0; k<points.size(); ++k)
@@ -223,8 +157,18 @@ void Surface::recompute(cv::Mat dt)
     ofs.close();
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward)
+QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward, bool loop)
 {
+    QVector<ControlPoint> endPoints;
+    if(!loop) {
+        endPoints.append(controlPoints.first());
+        endPoints.append(controlPoints.last());
+        controlPoints.pop_back();
+        controlPoints.pop_front();
+        normals.pop_back();
+        normals.pop_front();
+    }
+
     float cT = 90; // threshold for curvature (in degrees)
     NormalDirection direction = inward?INWARD_DIRECTION:OUTWARD_DIRECTION;
 
@@ -233,20 +177,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     QVector<int> original_cpts_ids;
 
     for (int k=0; k<controlPoints.size(); ++k)
-    {
-        /*if (k == bspline_vertexIds.size()-1 && controlPoints.has_loop()) //if closed curve. HENRIK: why should this happen here, and not before?
-        {
-            original_cpts_ids.push_back(original_cpts_ids[0]);
-        } else
-        {
-            Point3d new_cpt = vertices[bspline_vertexIds[k]];
-            new_cpt.setZ(z);
-            int vertexId = addVertex(new_cpt);
-            original_cpts_ids.push_back(vertexId);
-        }*/
-
         original_cpts_ids.push_back( addVertex(controlPoints[k],controlPoints[k].attribute(direction).height) );
-    }
 
     // get limit points for the control points
     QVector<QPointF> lp = limitPoints(controlPoints);
@@ -254,74 +185,58 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     // loop through all control points for the given spline curve
     for (int k=0; k<controlPoints.size(); ++k)
     {
-        /*if (k == bspline_vertexIds.size()-1 && controlPoints.has_loop()) //if closed curve
-        {
-            if (!controlPoints.has_uniform_subdivision)
-                 translated_cpts_ids.push_back( translated_cpts_ids[0]);
-            else
-                 translated_cpts_ids.push_back( translated_cpts_ids[0]); //FLORA, found out what this should be
-        } else*/
-        {
-            QPointF normal = normals[k];
-            float extent = controlPoints[k].attribute(direction).extent;
-            float height = controlPoints[k].attribute(direction).height;
-            QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
+        QPointF normal = normals[k];
+        float extent = controlPoints[k].attribute(direction).extent;
+        float height = controlPoints[k].attribute(direction).height;
+        QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
 
-            QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
-            QPointF tmp = lp.at(k)+normal*2;
-            QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-            QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent);
+        QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
+        QPointF tmp = lp.at(k)+normal*2;
+        QPoint current(qRound(tmp.x()),qRound(tmp.y()));
+        QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent,false);
 
-            // curvature check: add point if angle is above cT and check intersection with previous CP
-            if(k>0) {
-                Point3d prevCP1 = vertices[original_cpts_ids.at(k-1)];
-                Point3d  prevCP2 = vertices[translated_cpts_ids.last()];
-                QLineF previousL = QLineF(prevCP1,prevCP2);
-                Point3d thisCP = vertices[original_cpts_ids.at(k)];
-                QLineF thisL = QLineF(thisCP,new_cpt);
-                QPointF intersP;
-                QLineF::IntersectType inters = thisL.intersect(previousL,&intersP);
-                if(inters==QLineF::BoundedIntersection) {
-                    vertices[translated_cpts_ids.last()].setX(intersP.x());
-                    vertices[translated_cpts_ids.last()].setY(intersP.y());
-                    new_cpt = intersP;
-                }
-                float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
-                if(angle>cT) {
-                    original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1));
-                    QPointF tangent = thisCP-prevCP1;
-                    normal = QPointF(-tangent.y(),tangent.x());
-                    if(!inward) normal = -normal;
-                    float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
-                    if (norm > EPSILON)
-                        normal /= norm;
-                    normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
-                    tmp = lp.at(k)+normal*5;
-                    current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-                    tmp = traceDT(dt,lp.at(k),current,normalL,extent);
+        // curvature check: add point if angle is above cT and check intersection with previous CP
+        if(k>0) {
+            Point3d prevCP1 = vertices[original_cpts_ids.at(k-1)];
+            Point3d  prevCP2 = vertices[translated_cpts_ids.last()];
+            QLineF previousL = QLineF(prevCP1,prevCP2);
+            Point3d thisCP = vertices[original_cpts_ids.at(k)];
+            QLineF thisL = QLineF(thisCP,new_cpt);
+            float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
+            if(angle>cT) {
+                original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1));
+                QPointF tangent = thisCP-prevCP1;
+                normal = QPointF(-tangent.y(),tangent.x());
+                if(!inward) normal = -normal;
+                float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
+                if (norm > EPSILON)
+                    normal /= norm;
+                normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
+                tmp = lp.at(k)+normal*5;
+                current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
+                tmp = traceDT(dt,lp.at(k),current,normalL,extent,true);
 
-                    translated_cpts_ids.push_back(addVertex(tmp));
+                translated_cpts_ids.push_back(addVertex(tmp));
 
-                    normal = tmp-lp.at(k);
+                normal = tmp-lp.at(k);
 
-                    for (int l=0; l<shapeAtrs.size(); ++l)
-                    {
-                        int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
-                        shape_controlpoints[l].push_back(newId);
-                    }
+                for (int l=0; l<shapeAtrs.size(); ++l)
+                {
+                    int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
+                    shape_controlpoints[l].push_back(newId);
                 }
             }
+        }
 
-            int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
-            translated_cpts_ids.push_back(vertexId);
+        int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
+        translated_cpts_ids.push_back(vertexId);
 
-            // add shape point
-            normal = new_cpt-lp.at(k);
-            for (int l=0; l<shapeAtrs.size(); ++l)
-            {
-                vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
-                shape_controlpoints[l].push_back(vertexId);
-            }
+        // add shape point
+        normal = new_cpt-lp.at(k);
+        for (int l=0; l<shapeAtrs.size(); ++l)
+        {
+            vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
+            shape_controlpoints[l].push_back(vertexId);
         }
     }
 
@@ -332,15 +247,54 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         points.append(shape_controlpoints[l]);
     }
     points.append(original_cpts_ids);
+
+    if(!loop) {
+        // add first point
+        vertices[points.last().first()].setZ(0);
+        QPointF second = vertices[points.last().first()];
+        QPointF endP = (QPointF)endPoints.first();
+        QPointF normal = endP-second;
+        int id_cp = addVertex(endP);
+        points.last().prepend(points.last().first());
+        points.first().prepend(id_cp);
+        QVector<QPointF> shapeAtrs = controlPoints.first().attribute(direction).shapePointAtr;
+        for (int i=0; i<shapeAtrs.size(); ++i){
+            int vertexId = addVertex(second+normal*shapeAtrs[i].x());
+            vertices[points[i+1].first()].setZ(0);
+            points[i+1].prepend(vertexId);
+        }
+
+        // add last point
+        vertices[points.last().last()].setZ(0);
+        second = vertices[points.last().last()];
+        endP = (QPointF)endPoints.last();
+        normal = endP-second;
+        id_cp = addVertex(endP);
+        points.last().append(points.last().last());
+        points.first().append(id_cp);
+        shapeAtrs = controlPoints.last().attribute(direction).shapePointAtr;
+        for (int i=0; i<shapeAtrs.size(); ++i){
+            int vertexId = addVertex(second+normal*shapeAtrs[i].x());
+            vertices[points[i+1].last()].setZ(0);
+            points[i+1].append(vertexId);
+        }
+    }
+
     return points;
 }
 
-QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width)
+QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width,bool normal)
 {
     // thresholds
-    float a = setThresholds(normalL);
-    float Td = a*0.75f+(1-a)*0.6;
-    float Ta = a*0.1f+(1-a)*0.75f;
+    float Td = .000001f;
+    float Ta = .000001f;
+    if(normal) { // trace along the normal direction by setting the thresholds
+ //       a = setThresholds(normalL);
+ //       Td = a*0.75f+(1-a)*0.6;
+ //       Ta = a*0.1f+(1-a)*0.75f;
+        Td = .8f;
+        Ta = 1.0f;
+    }
 
     float currentD = 0;
     QPointF new_cpt;
@@ -358,11 +312,12 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
         if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT || counter>width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
+            qDebug() << currentD;
             break;
         } else {
             visited.append(current);
             current = m;
-            counter++;
+ //           counter++;
         }
     }
 
