@@ -13,7 +13,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
 {
     superSampling = 1;
     surfSubdLevel = 4;
-    imgShowAll = false;
+    imgShowAll = true;
     imgWriteAll = true;
 }
 
