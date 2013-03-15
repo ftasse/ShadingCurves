@@ -208,6 +208,16 @@ void BSpline::computeControlPointNormals()
     bool inverse = false;
     QVector<ControlPoint> cpts = getControlPoints();
 
+    for (int i=0; i<m_splineGroup->junctionInfos.size();)
+    {
+        CurveJunctionInfo& junctionInfo = m_splineGroup->junctionInfos[i];
+        if (junctionInfo.splineRef1 == ref)
+            m_splineGroup->junctionInfos.erase(m_splineGroup->junctionInfos.begin() + i);
+        else
+            ++i;
+    }
+    QVector<CurveJunctionInfo> junctionInfos;
+
     if (cptRefs.size()>0 && has_loop())
     {
         QPointF inside_point = (QPointF)cpts.front() + 5*getNormal(cpts, 0);
@@ -230,6 +240,7 @@ void BSpline::computeControlPointNormals()
         if ((i == 0 || i==num_cpts()-1) &&  cpts[i].num_splines() > 1 && !(cpts[i].num_splines()==2 && has_loop()))
         {
             QVector<QLineF>  otherSplinesLines;
+            QVector<int>  otherSplinesRefs;
             for (int k=0; k<cpts[i].num_splines(); ++k)
             {
                 if (cpts[i].splineRefs[k] != ref)
@@ -252,6 +263,7 @@ void BSpline::computeControlPointNormals()
                     else    lineOther = QLineF(spline.pointAt(j-1), spline.pointAt(j));
                     lineOther = lineOther.unitVector();
                     otherSplinesLines.push_back(lineOther);
+                    otherSplinesRefs.push_back(spline.ref);
                 }
             }
 
@@ -287,15 +299,51 @@ void BSpline::computeControlPointNormals()
                     rightIndex = tmp;
                 }
 
+                CurveJunctionInfo junctionInfo[2];
+
                 QLineF line2 = otherSplinesLines[leftIndex];
                 QPointF tangent = QPointF(line.dx(), line.dy()) - QPointF(line2.dx(), line2.dy());
                 if (i == 0) tangent = -tangent;
                 in_normal = QPointF(-tangent.y(), tangent.x());
 
+                if (ref < otherSplinesRefs[leftIndex])
+                {
+                    junctionInfo[0].cptRef = pointAt(i).ref;
+                    junctionInfo[0].splineRef1 = ref;
+                    junctionInfo[0].splineRef2 = otherSplinesRefs[leftIndex];
+                    junctionInfo[0].spline1Inward = true;
+                    junctionInfos.push_back(junctionInfo[0]);
+                } else
+                {
+                    for (int l=0; l<m_splineGroup->junctionInfos.size(); ++l)
+                    {
+                        CurveJunctionInfo& junction  = m_splineGroup->junctionInfos[l];
+                        if (junction.splineRef1==otherSplinesRefs[leftIndex] && junction.splineRef2 == ref)
+                            junction.spline2Inward = true;
+                    }
+                }
+
                 line2 = otherSplinesLines[rightIndex];
                 tangent = -QPointF(line.dx(), line.dy()) + QPointF(line2.dx(), line2.dy());
                 if (i == 0) tangent = -tangent;
                 out_normal = QPointF(-tangent.y(), tangent.x());
+
+                if (ref < otherSplinesRefs[rightIndex])
+                {
+                    junctionInfo[1].cptRef = pointAt(i).ref;
+                    junctionInfo[1].splineRef1 = ref;
+                    junctionInfo[1].splineRef2 = otherSplinesRefs[rightIndex];
+                    junctionInfo[1].spline1Inward = false;
+                    junctionInfos.push_back(junctionInfo[1]);
+                } else
+                {
+                    for (int l=0; l<m_splineGroup->junctionInfos.size(); ++l)
+                    {
+                        CurveJunctionInfo& junction  = m_splineGroup->junctionInfos[l];
+                        if (junction.splineRef1==otherSplinesRefs[rightIndex] && junction.splineRef2 == ref)
+                            junction.spline2Inward = false;
+                    }
+                }
             }
         }
 
@@ -308,6 +356,9 @@ void BSpline::computeControlPointNormals()
             inward_normals.push_back(out_normal);
             outward_normals.push_back(in_normal);
         }
+
+        for (int k=0; k<junctionInfos.size(); ++k)
+            m_splineGroup->junctionInfos.push_back(junctionInfos[k]);
     }
 
     QVector<ControlPoint> points = getPoints();
