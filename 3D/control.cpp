@@ -73,6 +73,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     subdLevelSpinbox->setRange(0, 5);
 	subdLevelSpinbox->setSingleStep(1);
 	subdLevelSpinbox->setValue(0);
+    subdLevelSpinbox->setPrefix("Subd. level:   ");
 //    subdLevelSpinbox->setFixedWidth(50);
 
     lapSmButton1 = new QPushButton("LS 1x", this);
@@ -274,14 +275,14 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 	QHBoxLayout *sliderC2l = new QHBoxLayout;
 	sliderXl->addWidget(xLabel);
 	sliderXl->addWidget(sliderX);
-	sliderXl->addWidget(xmButton);
-	sliderXl->addWidget(xpButton);
+//	sliderXl->addWidget(xmButton);
+//	sliderXl->addWidget(xpButton);
     sliderXl->setContentsMargins(11,0,11,0);
 	sliderXw->setLayout(sliderXl);
 	sliderYl->addWidget(yLabel);
 	sliderYl->addWidget(sliderY);
-	sliderYl->addWidget(ymButton);
-	sliderYl->addWidget(ypButton);
+//	sliderYl->addWidget(ymButton);
+//	sliderYl->addWidget(ypButton);
     sliderYl->setContentsMargins(11,0,11,0);
 	sliderYw->setLayout(sliderYl);
 	sliderZl->addWidget(zLabel);
@@ -312,6 +313,10 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     toolBara->addWidget(sliderYw);
 //	slidLayout->addStretch(1);
     toolBara->addWidget(sliderZw);
+    toolBara->addWidget(xmButton);
+    toolBara->addWidget(xpButton);
+    toolBara->addWidget(ymButton);
+    toolBara->addWidget(ypButton);
 
     slidLayout->setContentsMargins(0,0,0,0);
     slidWidget->setContentsMargins(0,0,0,0);
@@ -367,10 +372,10 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //    QVBoxLayout *restLayout = new QVBoxLayout;
 //    restWidget = new QWidget;
 //    toolBar->addSeparator();
-    toolBara->addWidget(sliderSmw);
-    toolBara->addWidget(sliderRldw);
-    toolBara->addWidget(sliderC1w);
-    toolBara->addWidget(sliderC2w);
+//    toolBara->addWidget(sliderSmw);
+//    toolBara->addWidget(sliderRldw);
+//    toolBara->addWidget(sliderC1w);
+//    toolBara->addWidget(sliderC2w);
 
 //    toolBara->addWidget(checkFull);
     toolBara->addWidget(barWidget);

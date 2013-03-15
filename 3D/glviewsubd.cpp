@@ -429,12 +429,12 @@ void GLviewsubd::paintGL(void)
         cv::flip(imgFill, imgFill, 0);
         cv::flip(img, img, 0);
 
-        if (showImg)
-        {
-            cv::imshow("Img: Original", imgShaded);
-            cv::imshow("Img: Fill " + to_string(super), imgFill);
-            cv::imshow("Img: LumDif " + to_string(super), img);
-        }
+//        if (showImg)
+//        {
+//            cv::imshow("Img: Original", imgShaded);
+//            cv::imshow("Img: Fill " + to_string(super), imgFill);
+//            cv::imshow("Img: LumDif " + to_string(super), img);
+//        }
 
         if (writeImg)
         {
@@ -494,10 +494,10 @@ void GLviewsubd::paintGL(void)
 
             //convert back to BGR
             cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
-            if (showImg)
-            {
-                cv::imshow("Img: Shaded result", imgShaded);
-            }
+//            if (showImg)
+//            {
+//                cv::imshow("Img: Shaded result", imgShaded);
+//            }
 
             //extra stuff for FILL image
             imgFill.copyTo(imgFillShaded);
@@ -528,8 +528,11 @@ void GLviewsubd::paintGL(void)
             {
             }
             //show always
-            cv::imshow("Img: Lum Dif", img);
-            cv::imshow("Img: Filled and shaded result", imgFillShaded);
+            if (showImg)
+            {
+                cv::imshow("Img: Lum Dif", img);
+                cv::imshow("Img: Filled and shaded result", imgFillShaded);
+            }
 
             img *= 255;
             img.convertTo(img, CV_8UC3);
@@ -889,8 +892,8 @@ void GLviewsubd::drawFrame()
     glBindTexture(GL_TEXTURE_2D, textID[6]);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-//    glEnable(GL_POLYGON_OFFSET_FILL);
-//    glPolygonOffset(10, 10);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(10, 10);
 
     if (offScreen)
     {
