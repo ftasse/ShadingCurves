@@ -16,6 +16,7 @@ class QCheckBox;
 class QLineEdit;
 class QScrollArea;
 class QToolBar;
+class QGridLayout;
 
 class ControlW : public QWidget
 {
@@ -56,7 +57,9 @@ public:
 
     QLineEdit       *numV, *numF, *numVsub, *numFsub;
 
-    QWidget         *slidWidget, *barWidget, *numWidget, *numSWidget, *restWidget;
+    QWidget         *slidWidget, *barWidget, *numWidget, *numSWidget, *restWidget, *gridW;
+
+    QGridLayout     *gridL;
 };
 
 #endif

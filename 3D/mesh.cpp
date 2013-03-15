@@ -1201,7 +1201,7 @@ void Mesh::getRingsV(MeshVertex *vert, unsigned int r,
 //Catmull-Clark subdivision
 void Mesh::CatmullClark(Mesh *smesh)
 {
-    unsigned int 				i, j, k, cnt, num, numCorners;
+    unsigned int 				i, j, k, cnt, num, numCorners, bndCnt;
     MeshFacet 					*facet, face;
     MeshVertex					*vertex, vert, *prev0, *prev1, *next0, *next1;
     MeshCorner					*cencrn, *prevcrn, *crn;
@@ -1260,7 +1260,6 @@ void Mesh::CatmullClark(Mesh *smesh)
     times("Edge average loop");
 
     // compute new vertex-points
-
     #pragma omp parallel for default(none) private(i,j,vertex,Vpoi,crn,next0,next1,prev0,prev1,cencrn,Favrg,Eavrg)
     for (i = 0 ; i < my_numV ; i++)
     {
@@ -1273,43 +1272,63 @@ void Mesh::CatmullClark(Mesh *smesh)
             {
                 Vpoi = vertex->my_point;
             }
-            else if (vertex->my_valency == 2)
+            else //if (vertex->my_valency == 2)
             {
                 Vpoi = 6 * vertex->my_point;
-                crn = findCorner(vertex, vertex->my_facets[0]);
-                next0 = crn->my_nextCorner->my_vertex;
-                for (j = 0 ; j < vertex->my_facets[0]->my_valency - 1 ; j++)
-                {
-                    crn = crn->my_nextCorner;
-                }
-                prev0 = crn->my_vertex;
 
-                crn = findCorner(vertex, vertex->my_facets[1]);
-                next1 = crn->my_nextCorner->my_vertex;
-                for (j = 0 ; j < vertex->my_facets[1]->my_valency - 1 ; j++)
-                {
-                    crn = crn->my_nextCorner;
-                }
-                prev1 = crn->my_vertex;
+                std::vector<MeshVertex*> vertices;
+                getEdgeConnectedV(vertex, &vertices);
 
-                if (next0->my_index == prev1->my_index)
+                bndCnt = 0;
+                for (j = 0 ; j < vertices.size() ; j ++)
                 {
-                    Vpoi += prev0->my_point + next1->my_point;
+                    if (vertices[j]->isOnBoundary)
+                    {
+                        Vpoi += vertices[j]->my_point;
+                        bndCnt++;
+                    }
                 }
-                else
+                //              assert(bndCnt == 2);
+                if (bndCnt != 2)
                 {
-                    Vpoi += prev1->my_point + next0->my_point;
+                    cout << "Warning: bndCnt != 2" << endl;
                 }
                 Vpoi *= 0.125;
-            }
-            else
-            {
-//                cout << "Something is wrong at the boundary!" << endl;
-//                assert(false); // something is wrong at the boundary!
 
-                // instead of crashing, interpolate the point
-                Vpoi = vertex->my_point;
+                //old code that does not hadle EVs at boundary correctly
+//                Vpoi = 6 * vertex->my_point;
+//                crn = findCorner(vertex, vertex->my_facets[0]);
+//                next0 = crn->my_nextCorner->my_vertex;
+//                for (j = 0 ; j < vertex->my_facets[0]->my_valency - 1 ; j++)
+//                {
+//                    crn = crn->my_nextCorner;
+//                }
+//                prev0 = crn->my_vertex;
+
+//                crn = findCorner(vertex, vertex->my_facets[1]);
+//                next1 = crn->my_nextCorner->my_vertex;
+//                for (j = 0 ; j < vertex->my_facets[1]->my_valency - 1 ; j++)
+//                {
+//                    crn = crn->my_nextCorner;
+//                }
+//                prev1 = crn->my_vertex;
+
+//                if (next0->my_index == prev1->my_index)
+//                {
+//                    Vpoi += prev0->my_point + next1->my_point;
+//                }
+//                else
+//                {
+//                    Vpoi += prev1->my_point + next0->my_point;
+//                }
+//                Vpoi *= 0.125;
             }
+//            else
+//            {
+//                //something unexpected!!!
+//                cout << "Unexpected boundary vertex!!!" << endl;
+//                Vpoi = vertex->my_point;
+//            }
         }
         else
         {
@@ -1660,5 +1679,34 @@ void Mesh::times (const char *which) {
         cpu = last_cpu-cpu;
         cout << which << " time = " << wall << "s , CPU = " << cpu << "s" << endl;
 //        printf("%s time = %.2f seconds, CPU = %.2f seconds\n",which,wall,cpu);
+    }
+}
+
+void Mesh::getEdgeConnectedV(MeshVertex *vert, std::vector< MeshVertex* > *Vs)
+{
+    std::set<unsigned int> set_vertices;
+    std::set<unsigned int>::iterator	it;
+    unsigned int    i, j;
+    MeshFacet       *facet;
+    MeshCorner      *crn;
+
+    set_vertices.clear();
+
+    for (i = 0 ; i < vert->my_valency ; i++)
+    {
+        facet = vert->my_facets[i];
+        crn = findCorner(vert, facet);
+        set_vertices.insert(crn->my_nIndex);
+        for (j = 0 ; j < facet->my_valency - 1 ; j++)
+        {
+            crn = crn->my_nextCorner;
+        }
+        set_vertices.insert(crn->my_vIndex);
+    }
+
+    Vs->clear();
+    for (it = set_vertices.begin() ; it != set_vertices.end() ; it++)
+    {
+        Vs->push_back(&(my_vertices[*it]));
     }
 }

@@ -141,6 +141,8 @@ public:
 					 std::vector< std::vector <unsigned int> > *ring_facets,
 					 std::vector< std::vector <unsigned int> > *ring_vertices);
 
+    void getEdgeConnectedV(MeshVertex *vert, std::vector< MeshVertex* > *Vs);
+
     void CatmullClark(Mesh *mesh);
 
     void LaplacianSmooth(int lapSmvalue);

@@ -135,7 +135,6 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     toolBara->addWidget(subdLevelSpinbox);
     toolBara->addWidget(laplGroupBox);
 //    toolBara->addWidget(sliderLap);
-    toolBara->addWidget(colorMenu);
 //    miscL->addStretch(1);
 
 /////////////////////////////////////////
@@ -313,10 +312,24 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     toolBara->addWidget(sliderYw);
 //	slidLayout->addStretch(1);
     toolBara->addWidget(sliderZw);
-    toolBara->addWidget(xmButton);
-    toolBara->addWidget(xpButton);
-    toolBara->addWidget(ymButton);
-    toolBara->addWidget(ypButton);
+
+    gridL = new QGridLayout;
+    gridW = new QWidget;
+
+    gridL->addWidget(xmButton, 2, 1);
+    gridL->addWidget(xpButton, 2, 3);
+    gridL->addWidget(ymButton, 3, 2);
+    gridL->addWidget(ypButton, 1, 2);
+    gridL->addWidget(zerButton, 2, 2);
+    gridW->setLayout(gridL);
+
+    toolBara->addWidget(gridW);
+
+//    toolBara->addWidget(xmButton);
+//    toolBara->addWidget(xpButton);
+//    toolBara->addWidget(ymButton);
+//    toolBara->addWidget(ypButton);
+//    toolBara->addWidget(zerButton);
 
     slidLayout->setContentsMargins(0,0,0,0);
     slidWidget->setContentsMargins(0,0,0,0);
@@ -378,6 +391,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //    toolBara->addWidget(sliderC2w);
 
 //    toolBara->addWidget(checkFull);
+    toolBara->addWidget(colorMenu);
     toolBara->addWidget(barWidget);
 //    toolBara->addWidget(numWidget);
 //    toolBara->addWidget(numSWidget);
