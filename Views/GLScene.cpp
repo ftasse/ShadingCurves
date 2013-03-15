@@ -941,6 +941,15 @@ void GLScene::recomputeAllSurfaces()
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
     for (int i=0; i<num_splines(); ++i)
+        if (spline(i).num_cpts() > 1 && spline(i).inward_subdivided_normals.size() == 0)
+            spline(i).computeControlPointNormals();
+
+    if (m_splineGroup.junctionInfos.size()>0)
+    {
+        qDebug("Num of merges: %d", m_splineGroup.junctionInfos.size());
+    }
+
+    for (int i=0; i<num_splines(); ++i)
     {
         spline(i).computeSurfaces(dt);
     }

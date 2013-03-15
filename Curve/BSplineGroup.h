@@ -7,6 +7,21 @@
 #include "../Curve/Surface.h"
 #include "../Utilities/ImageUtils.h"
 
+typedef struct CurveJunctionInfo
+{
+    int cptRef;
+    int splineRef1;
+    int splineRef2;
+    bool spline1Inward;
+    bool spline2Inward;
+
+    CurveJunctionInfo()
+    {
+        cptRef = splineRef1 = splineRef2 = -1;
+        spline1Inward = spline2Inward = false;
+    }
+} CurveJunctionInfo;
+
 class BSplineGroup
 {
 public:
@@ -81,6 +96,7 @@ public:
 
 public:
     std::vector< std::pair<QPoint, QColor> > colorMapping;
+    QVector<CurveJunctionInfo> junctionInfos;
 
 private:
     QList<Surface> m_surfaces;

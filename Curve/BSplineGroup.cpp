@@ -279,6 +279,14 @@ void BSplineGroup::removeControlPoint(int cpt_id)
         }
         spline.recompute();
     }
+
+    for (int i=0; i<junctionInfos.size();)
+    {
+        if (junctionInfos[i].cptRef == cpt_id)
+            junctionInfos.erase(junctionInfos.begin() + i);
+        else
+            ++i;
+    }
     cpt.splineRefs.clear();
 }
 
@@ -304,6 +312,14 @@ void BSplineGroup::removeSpline(int spline_id)
     {
         Surface& surf = surface(bspline.surfaceRefs[0]);
         removeSurface(surf.ref);
+    }
+
+    for (int i=0; i<junctionInfos.size();)
+    {
+        if (junctionInfos[i].splineRef1 == spline_id || junctionInfos[i].splineRef2 == spline_id)
+            junctionInfos.erase(junctionInfos.begin() + i);
+        else
+            ++i;
     }
 
     bspline.cptRefs.clear();
@@ -365,6 +381,8 @@ void BSplineGroup::garbage_collection()
     std::map<int, int> new_spline_indices;
     std::map<int, int> new_surface_indices;
     std::vector<int> remove_cpt_ids, remove_spline_ids, remove_surface_ids;
+
+    junctionInfos.clear();
 
     for (int i=0; i<num_surfaces(); ++i)
     {
