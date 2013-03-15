@@ -312,7 +312,6 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
         if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT || counter>width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
-            qDebug() << currentD;
             break;
         } else {
             visited.append(current);
