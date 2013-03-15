@@ -126,10 +126,12 @@ void Surface::recompute(cv::Mat dt)
 
         // merge the two grids
         for(int i=0;i<points2.size()-1;i++)
-            for(int j=points2[i].size()-2;j>=0;j--)
+            for(int j=points2[i].size()-2;j>=1;j--)
                 points[i].push_back(points2[i][j]);
-        for(int j=points.last().size()-2;j>=0;j--)
+        for(int j=points.last().size()-2;j>=1;j--)
             points.last().push_back(points.last()[j]);
+        for(int i=0;i<points.size();i++)
+            points[i].append(points[i].first());
     }
 
     for (int k=0; k<points.size(); ++k)
