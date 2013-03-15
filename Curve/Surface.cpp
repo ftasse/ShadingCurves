@@ -161,6 +161,7 @@ void Surface::recompute(cv::Mat dt)
 
 QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward, bool loop)
 {
+    // remove points from the tracing   (In the case of merging surfaces, we do this if the surfaces have an opposite)
     QVector<ControlPoint> endPoints;
     if(!loop) {
         endPoints.append(controlPoints.first());
@@ -364,7 +365,7 @@ QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QLi
     }
 
     // pick max candidate
-    QPoint winner;
+    QPoint winner(sx+1,sy+1);
     m = -1;
     for (int i = 0;i<cand.count();i++) {
         if(angles.at(i)<sa+Ta) {
