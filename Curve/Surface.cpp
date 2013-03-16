@@ -331,7 +331,6 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
     return new_cpt;
 }
 
-// HENRIK: find max value in I, in neighbourhood N
 QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta)
 {
     int sx = N.x;
@@ -360,17 +359,20 @@ QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QLi
 
     // find smallest angle
     float sa = 360; // smallest angle
+    int index;
     QList<float> angles;
     for (int i = 0;i<cand.count();i++) {
         QLineF currentL(normalL.p1(),cand.at(i));
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
         angles.append(angle);
-        if(angle<sa)
+        if(angle<sa) {
             sa = angle;
+            index = i;
+        }
     }
 
     // pick max candidate
-    QPoint winner(sx+1,sy+1);
+    QPoint winner = cand[index];
     m = -1;
     for (int i = 0;i<cand.count();i++) {
         if(angles.at(i)<sa+Ta) {
