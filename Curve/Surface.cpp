@@ -132,8 +132,8 @@ void Surface::recompute(cv::Mat dt)
         for(int i=0;i<points2.size()-1;i++)
             for(int j=points2[i].size()-2;j>=1;j--)
                 points[i].push_back(points2[i][j]);
-        for(int j=points.last().size()-2;j>=1;j--)
-            points.last().push_back(points.last()[j]);
+        for(int j=points2.last().size()-2;j>=1;j--)     //for(int j=points.last().size()-2;j>=1;j--)
+            points.last().push_back(points2.last()[j]); //  points.last().push_back(points.last()[j]);
         for(int i=0;i<points.size();i++)
             points[i].append(points[i].first());
     }
@@ -182,13 +182,14 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
     QVector< QVector<int> > shape_controlpoints(controlPoints[0].attribute(direction).shapePointAtr.size()); // the set of control points that define the shape
     QVector<int> translated_cpts_ids;
-    QVector<int> original_cpts_ids;
+    QVector<int> original_cpts_ids;     int extra_curvature_vertices_count = 0;
 
     for (int k=0; k<controlPoints.size(); ++k)
         original_cpts_ids.push_back( addVertex(controlPoints[k],controlPoints[k].attribute(direction).height) );
 
     // get limit points for the control points
     QVector<QPointF> lp = limitPoints(controlPoints);
+
 
     // loop through all control points for the given spline curve
     for (int k=0; k<controlPoints.size(); ++k)
@@ -205,14 +206,14 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
         // curvature check: add point if angle is above cT and check intersection with previous CP
         if(k>0) {
-            Point3d prevCP1 = vertices[original_cpts_ids.at(k-1)];
+            Point3d prevCP1 = vertices[original_cpts_ids.at(k-1+extra_curvature_vertices_count)];
             Point3d  prevCP2 = vertices[translated_cpts_ids.last()];
             QLineF previousL = QLineF(prevCP1,prevCP2);
-            Point3d thisCP = vertices[original_cpts_ids.at(k)];
+            Point3d thisCP = vertices[original_cpts_ids.at(k+extra_curvature_vertices_count)];
             QLineF thisL = QLineF(thisCP,new_cpt);
             float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
             if(angle>cT) {
-                original_cpts_ids.insert(original_cpts_ids.begin()+k, addVertex(prevCP1));
+                original_cpts_ids.insert(original_cpts_ids.begin()+k+extra_curvature_vertices_count, addVertex(prevCP1)); ++extra_curvature_vertices_count;
                 QPointF tangent = thisCP-prevCP1;
                 normal = QPointF(-tangent.y(),tangent.x());
                 if(!inward) normal = -normal;
