@@ -679,24 +679,26 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         if (!only_show_splines && (!showCurrentCurvePoints || m_curSplineIdx == spline_id))
         {
             glColor3f(0.0, 1.0, 0.0);
+            QVector<QPointF> normals = bspline.getNormals(true);
             for (int i = 0; i < bspline.getPoints().size(); ++i)
             {
                 QPointF curvPos = bspline.getPoints()[i];
                 QPointF scenePos = imageToSceneCoords(curvPos);
                 glVertex2f(scenePos.x(), scenePos.y());
 
-                QPointF normal = imageToSceneCoords(curvPos + bspline.get_normal(i, true, true)*5.0);
+                QPointF normal = imageToSceneCoords(curvPos + normals[i]*5.0);
                 glVertex2f(normal.x(), normal.y());
             }
 
             glColor3f(1.0, 0.0, 0.0);
+            normals = bspline.getNormals(false);
             for (int i = 0; i < bspline.getPoints().size(); ++i)
             {
                 QPointF curvPos = bspline.getPoints()[i];
                 QPointF scenePos = imageToSceneCoords(curvPos);
                 glVertex2f(scenePos.x(), scenePos.y());
 
-                QPointF normal = imageToSceneCoords(curvPos + bspline.get_normal(i, true, false)*5.0);
+                QPointF normal = imageToSceneCoords(curvPos + normals[i]*5.0);
                 glVertex2f(normal.x(), normal.y());
             }
         }
@@ -1095,7 +1097,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.0);
+    glLineWidth(1.2);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glEnable(GL_BLEND);
     //glEnable(GL_LINE_SMOOTH);

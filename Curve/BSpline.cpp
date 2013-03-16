@@ -208,6 +208,13 @@ void BSpline::computeControlPointNormals()
     bool inverse = false;
     QVector<ControlPoint> cpts = getControlPoints();
 
+    if (has_uniform_subdivision)
+    {
+        cpts.pop_back();
+        cpts.pop_back();
+        cpts.pop_back();
+    }
+
     for (int i=0; i<m_splineGroup->junctionInfos.size();)
     {
         CurveJunctionInfo& junctionInfo = m_splineGroup->junctionInfos[i];
