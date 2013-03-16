@@ -1288,12 +1288,12 @@ void Mesh::CatmullClark(Mesh *smesh)
                         bndCnt++;
                     }
                 }
-                //              assert(bndCnt == 2);
+//                              assert(bndCnt == 2);
                 if (bndCnt != 2)
                 {
                     cout << "Warning: bndCnt != 2" << endl;
                 }
-                Vpoi *= 0.125;
+                Vpoi *= 1.0 / (6.0 + (double)bndCnt);
 
                 //old code that does not hadle EVs at boundary correctly
 //                Vpoi = 6 * vertex->my_point;
