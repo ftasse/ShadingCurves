@@ -323,10 +323,30 @@ void GLScene::wheelEvent(QGraphicsSceneWheelEvent *event)
     QGraphicsScene::wheelEvent(event);
     if (event->isAccepted()) return;
 
+    QPointF imgCoords = sceneToImageCoords(event->scenePos());
+
+    QPointF beforeScaling = imageToSceneCoords(imgCoords);
+    float old_scale = m_scale;
+
     if (event->delta() > 0)
         m_scale *= 1.2f;
     else
         m_scale /= 1.2f;
+    adjustDisplayedImageSize();
+
+    /*if (imSize.width() < width() && imSize.height() < height())
+    {
+        m_scale = old_scale;
+    } else*/
+    {
+        QPointF afterScaling = imageToSceneCoords(imgCoords);
+
+        //if (imSize.width() > width() && imSize.height() > height())
+        {
+            m_translation -= (afterScaling-beforeScaling);
+
+        } //else   m_translation  = QPointF(0.0,0.0);
+    }
     adjustDisplayedImageSize();
     event->accept();
     update();
