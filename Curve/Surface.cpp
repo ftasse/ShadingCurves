@@ -17,7 +17,7 @@ int Surface::addVertex(Point3d vertex)
 {
     for (int k=0; k<vertices.size(); ++k)
     {
-        if (vertices[k].toPoint() == vertex.toPoint())
+        if (vertices[k].toPoint() == vertex.toPoint() && ((int)vertices[k].z()) == ((int)vertex.z()))
             return k;
     }
     vertices.push_back(vertex);
