@@ -15,6 +15,11 @@ Surface::Surface():
 
 int Surface::addVertex(Point3d vertex)
 {
+    for (int k=0; k<vertices.size(); ++k)
+    {
+        if (vertices[k].toPoint() == vertex.toPoint())
+            return k;
+    }
     vertices.push_back(vertex);
     return vertices.size()-1;
 }
@@ -56,7 +61,8 @@ QVector<QVector<int> > Surface::getFaceIndices()
                 std::reverse(indices.begin(), indices.end());
             }*/
 
-            faceIndices.push_back(indices);
+            if (indices.size() > 2)
+                faceIndices.push_back(indices);
         }
         //flip_face = !flip_face;
     }
