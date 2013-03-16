@@ -22,7 +22,7 @@ public:
     int addVertex(Point3d vertex);
     int addVertex(QPointF point, float z = 0.0f);
     Point3d& pointAt(int u, int v);
-    QVector<QVector<int> > getFaceIndices();
+    void computeFaceIndices();
 
     bool writeOFF(std::ostream &ofs);
     std::string surfaceToOFF( cv::Vec3b color)
@@ -42,6 +42,7 @@ public:
     QVector<Point3d> vertices;
     QVector<int> sharpCorners;
     QVector< QVector<int> > controlMesh;
+    QVector<QVector<int> > faceIndices;
 };
 
 #endif // SURFACE_H

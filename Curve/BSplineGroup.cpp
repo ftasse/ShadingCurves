@@ -342,6 +342,7 @@ void BSplineGroup::removeSurface(int surface_id)
         }
     }
 
+    surf.faceIndices.clear();
     surf.vertices.clear();
     surf.controlMesh.clear();
     surf.sharpCorners.clear();

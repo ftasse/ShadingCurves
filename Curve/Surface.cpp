@@ -34,9 +34,9 @@ Point3d& Surface::pointAt(int u, int v)
     return vertices[controlMesh[u][v]];
 }
 
-QVector<QVector<int> > Surface::getFaceIndices()
+void Surface::computeFaceIndices()
 {
-    QVector<QVector<int> > faceIndices;
+    faceIndices.clear();
 
     //Compute faces indices
     //bool flip_face = true;
@@ -67,7 +67,6 @@ QVector<QVector<int> > Surface::getFaceIndices()
         //flip_face = !flip_face;
     }
 
-    return faceIndices;
 }
 
 bool Surface::writeOFF(std::ostream &ofs)
@@ -80,7 +79,6 @@ bool Surface::writeOFF(std::ostream &ofs)
         return false;
     }
 
-    QVector<QVector<int> > faceIndices = getFaceIndices();
     ofs << vertices.size() << " " << faceIndices.size() << " " << sharpCorners.size() << std::endl;
 
     //Write vertices
@@ -160,6 +158,7 @@ void Surface::recompute(cv::Mat dt)
         }
     }*/
 
+    computeFaceIndices();
     std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);
     ofs.close();

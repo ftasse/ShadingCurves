@@ -773,7 +773,7 @@ void GLScene::draw_surface(int surface_id)
         glLineWidth(2.0);
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
-        QVector<QVector<int> > faceIndices = surf.getFaceIndices();
+        QVector<QVector<int> > faceIndices = surf.faceIndices;
         for (int i=0; i<faceIndices.size(); ++i)
         {
             glBegin(GL_POLYGON);
