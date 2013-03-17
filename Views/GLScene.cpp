@@ -1424,6 +1424,9 @@ std::vector<std::string> GLScene::OFFSurfaces()
         if (sharp1 < 0 && sharp2 < 0)
         {
             qDebug("Could not merged surface %d and %d", surface1.ref, surface2.ref);
+        } else
+        {
+            qDebug("Merge surface %d and %d", surface1.ref, surface2.ref);
         }
 
         Surface mergedSurface;
