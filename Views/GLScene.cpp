@@ -44,6 +44,7 @@ GLScene::GLScene(QObject *parent) :
     showControlPoints = true;
     showCurrentCurvePoints = true;
     showCurves = true;
+    curveSubdLevels = 5;
     hasMoved = false;
     brush = false;
     brushType = 0;
@@ -737,7 +738,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
     }
 
     QVector<ControlPoint> points = bspline.getControlPoints();
-    QVector<ControlPoint> subDividePts = subDivide(points, 5, bspline.has_uniform_subdivision);
+    QVector<ControlPoint> subDividePts = subDivide(points, curveSubdLevels, bspline.has_uniform_subdivision);
     if (bspline.has_uniform_subdivision && points.size() >= 4) {
         subDividePts.pop_back();
         subDividePts.pop_front();
@@ -1108,12 +1109,15 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     //glEnable(GL_BLEND);
     //glEnable(GL_LINE_SMOOTH);
 
+    int old_curveSubdLevels  = curveSubdLevels;
+    curveSubdLevels = 5;
     for (int i=0; i<num_splines(); ++i)
     {
         if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
         if (only_closed_curves && !spline(i).has_loop())   continue;
         draw_spline(i, true, false);
     }
+    curveSubdLevels = old_curveSubdLevels;
 
     cv::Mat img;
     img.create(imageHeight, imageWidth, CV_8UC3);
@@ -1308,6 +1312,9 @@ std::vector<std::string> GLScene::OFFSurfaces()
     QVector<std::pair<int,int> > mergingSurfaces;
     QVector<int> merge_junction_ids;
 
+    QVector< QVector<int> > mergedGroups;
+    QVector< QVector<int> > mergedGroups_JIds;
+
     for (int k=0; k<m_splineGroup.junctionInfos.size(); ++k)
     {
         CurveJunctionInfo& junctionInfo = m_splineGroup.junctionInfos[k];
@@ -1335,7 +1342,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 std::pair<int, int> merging;
                 for (int l=0; l<otherSpline.num_surfaces(); ++l)
                 {
-                    if ((otherSpline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline2Inward)
+                    if (otherSpline.surfaceAt(l).vertices.size() > 1 && (otherSpline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline2Inward)
                     {
                         surface_is_merged[otherSpline.surfaceAt(l).ref] = true;
                         merging.second = otherSpline.surfaceAt(l).ref;
@@ -1343,11 +1350,51 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 }
                 for (int l=0; l<bspline.num_surfaces(); ++l)
                 {
-                    if ((bspline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline1Inward)
+                    if (bspline.surfaceAt(l).vertices.size() > 1 && (bspline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline1Inward)
                     {
                         surface_is_merged[bspline.surfaceAt(l).ref] = true;
                         merging.first = bspline.surfaceAt(l).ref;
                     }
+                }
+
+                bool already_added = false;
+                for (int m=0; m<mergedGroups.size(); ++m)
+                {
+                    bool connected1 = false, connected2 = false;
+                    for (int n = 0; n<mergedGroups[m].size(); ++n)
+                    {
+                        if (mergedGroups[m][n] == merging.first)
+                            connected1 = true;
+                        if (mergedGroups[m][n] == merging.second)
+                            connected2 = true;
+                    }
+                    if (!connected1 && !connected2)
+                        continue;
+                    else if (connected1 && connected2)
+                        already_added = true;
+                    else if (connected1 && !connected2)
+                    {
+                        mergedGroups[m].push_back(merging.second);
+                        mergedGroups_JIds[m].push_back(k);
+                        already_added = true;
+                    }
+                    else if (connected2 && !connected1)
+                    {
+                        mergedGroups[m].push_back(merging.first);
+                        mergedGroups_JIds[m].push_back(k);
+                        already_added = true;
+                    }
+                    if (already_added)  break;
+                }
+                if (!already_added)
+                {
+                    mergedGroups.push_back(QVector<int>());
+                    mergedGroups_JIds.push_back(QVector<int>());
+                    mergedGroups.last().push_back(merging.first);
+                    mergedGroups_JIds.last().push_back(k);
+                    mergedGroups.last().push_back(merging.second);
+                    mergedGroups_JIds.last().push_back(k);
+
                 }
                 if (std::find(mergingSurfaces.begin(), mergingSurfaces.end(), merging) == mergingSurfaces.end())
                 {
@@ -1371,114 +1418,112 @@ std::vector<std::string> GLScene::OFFSurfaces()
             //qDebug("%s", surface_strings.back().c_str());
         }
 
-    //Merging the appropriate surfaces
-    for (int k=0; k<mergingSurfaces.size(); ++k)
+    for (int i=0; i<mergedGroups.size(); ++i)
     {
-        Surface& surface1 = surface(mergingSurfaces[k].first);
-        Surface& surface2 = surface(mergingSurfaces[k].second);
-        BSpline& bspline1 = spline(surface1.splineRef);
-        BSpline& bspline2 = spline(surface2.splineRef);
-        /*Point3d surface1_first = surface1.vertices[surface1.controlMesh.last().first()];
-        Point3d surface1_last = surface1.vertices[surface1.controlMesh.last().last()];
-        Point3d surface2_first = surface2.vertices[surface2.controlMesh.last().first()];
-        Point3d surface2_last = surface2.vertices[surface2.controlMesh.last().last()];*/
-
-        bool prepend = false;
-        bool close = false;
-        bool reverse_surface2 = false;
-        int sharp1 = -1;
-        int sharp2 = -1;
-
-        if (bspline1.cptRefs.first() == bspline2.cptRefs.first()) //(isEqual(surface1_first, surface2_first))
-        {
-            reverse_surface2 = true;
-            prepend = true;
-            sharp1 = surface1.controlMesh.last().first();
-            if (bspline1.cptRefs.last() == bspline2.cptRefs.last())
-                close = true;
-        } else if (bspline1.cptRefs.first() == bspline2.cptRefs.last()) //(isEqual(surface1_first, surface2_last))
-        {
-            prepend = true;
-            sharp1 = surface1.controlMesh.last().first();
-            if (bspline1.cptRefs.last() == bspline2.cptRefs.first())
-                close = true;
-        } else if (bspline1.cptRefs.last() == bspline2.cptRefs.first()) //(isEqual(surface1_last, surface2_first))
-        {
-            sharp2 = surface1.controlMesh.last().last();
-            if (bspline1.cptRefs.first() == bspline2.cptRefs.last())
-                close = true;
-        }  else if (bspline1.cptRefs.last() == bspline2.cptRefs.last()) //(isEqual(surface1_last, surface2_first))
-        {
-            reverse_surface2 = true;
-            sharp2 = surface1.controlMesh.last().last();
-            if (bspline1.cptRefs.first() == bspline2.cptRefs.first())
-                close = true;
-        }
-
-        if (bspline1.cptRefs.first() == bspline1.cptRefs.last()) // (isEqual(surface1_first, surface1_last))
-        {
-            if (sharp1<0)   sharp1 = sharp2;
-            else if (sharp2<0)  sharp2 = sharp1;
-        }
-
-        if (sharp1 < 0 && sharp2 < 0)
-        {
-            qDebug("Could not merged surface %d and %d", surface1.ref, surface2.ref);
-        } else
-        {
-            qDebug("Merge surface %d and %d", surface1.ref, surface2.ref);
-        }
+        QVector<int> surf_ids = mergedGroups[i];
 
         Surface mergedSurface;
-        mergedSurface.vertices = surface1.vertices;
-        mergedSurface.controlMesh = surface1.controlMesh;
 
-        for (int j=0; j<surface2.vertices.size(); ++j)
+        int k=0;
+        for (QVector<int>::iterator it = surf_ids.begin(); it!=surf_ids.end(); ++it)
         {
-            mergedSurface.vertices.append(surface2.vertices[j]);
-        }
-        for (int i=0; i<surface2.controlMesh.size(); ++i)
-        {
-            QVector<int> row = surface2.controlMesh[i];
-            if (reverse_surface2)   std::reverse(row.begin(), row.end());
-            if (prepend)
-                row.pop_back();
-            else
-                row.pop_front();
-            for (int j=0; j<row.size(); ++j)
-            {
-                if (prepend)
-                    mergedSurface.controlMesh[i].prepend(row[row.size()-1-j] + surface1.vertices.size());
-                else
-                    mergedSurface.controlMesh[i].append(row[j] + surface1.vertices.size());
-            }
-        }
-        if (close)
-        {
-            for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
-            {
-                if (prepend)
-                    mergedSurface.controlMesh[i].prepend(surface1.controlMesh[i].last());
-                else
-                    mergedSurface.controlMesh[i].append(surface1.controlMesh[i].first());
-            }
-        }
-        if (m_splineGroup.junctionInfos[merge_junction_ids[k]].has_negative_directions)
-        {
-            if (sharp1>=0)
-            {
-                mergedSurface.sharpCorners.push_back(sharp1);
-                if (close) mergedSurface.sharpCorners.push_back(surface1.controlMesh.last().last());
-            }
-            else if (sharp2 >= 0){
+            Surface& surf = surface(*it);
 
-                mergedSurface.sharpCorners.push_back(sharp2);
-                if (close) mergedSurface.sharpCorners.push_back(surface1.controlMesh.last().first());
-            }
+            if (it == surf_ids.begin() )
+            {
+                mergedSurface.vertices = surf.vertices;
+                mergedSurface.controlMesh = surf.controlMesh;
+            } else
+            {
+                bool prepend = false;
+                bool reverse = false;
+                QVector<int> new_vert_ids;
 
+                bool junction_is_first = false;
+                bool close = false;
+
+                Point3d old_first = mergedSurface.vertices[mergedSurface.controlMesh.last().first()];
+                Point3d old_last = mergedSurface.vertices[mergedSurface.controlMesh.last().last()];
+                Point3d surf_first = surf.vertices[surf.controlMesh.last().first()];
+                Point3d surf_last = surf.vertices[surf.controlMesh.last().last()];
+
+                if (isEqual(old_first, surf_first))
+                {
+                    reverse = true;
+                    prepend = true;
+                    junction_is_first = true;
+                    if (isEqual(old_last, surf_last))   close = true;
+                } else if (isEqual(old_first, surf_last))
+                {
+                    prepend = true;
+                    if (isEqual(old_last, surf_first))   close = true;
+                } else if (isEqual(old_last, surf_first))
+                {
+                    prepend = false;
+                    if (isEqual(old_first, surf_last))   close = true;
+                    junction_is_first = true;
+                } else if (isEqual(old_last, surf_last))
+                {
+                    reverse = true;
+                    prepend = false;
+                    if (isEqual(old_first, surf_first))   close = true;
+                } else
+                {
+                    qDebug("Could not merge surface %d", surf.ref);
+                }
+
+                for (int j=0; j<surf.vertices.size(); ++j)
+                {
+                    new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
+                }
+                if (m_splineGroup.junctionInfos[mergedGroups_JIds[i][k]].has_negative_directions)
+                {
+                    if (close)
+                    {
+                        mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().first()]);
+                        mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().last()]);
+                    } else
+                    {
+                        if (junction_is_first)  mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().first()]);
+                        else mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().last()]);
+                    }
+                }
+
+                for (int l=0; l<surf.controlMesh.size(); ++l)
+                {
+                    QVector<int> row = surf.controlMesh[l];
+                    if (reverse)   std::reverse(row.begin(), row.end());
+                    if (prepend)
+                        row.pop_back();
+                    else
+                        row.pop_front();
+                    for (int j=0; j<row.size(); ++j)
+                    {
+                        if (prepend)
+                            mergedSurface.controlMesh[l].prepend(new_vert_ids[row[row.size()-1-j]]);
+                        else
+                            mergedSurface.controlMesh[l].append(new_vert_ids[row[j]]);
+                    }
+                }
+
+                /*if (close)
+                {
+                    for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
+                    {
+                        if (prepend)
+                            mergedSurface.controlMesh[i].prepend(mergedSurface.controlMesh[i].last());
+                        else
+                            mergedSurface.controlMesh[i].append(mergedSurface.controlMesh[i].first());
+                    }
+                }*/
+
+            }
+            ++k;
         }
+
         mergedSurface.computeFaceIndices();
 
+        Surface &surface1 = surface(mergedGroups[i].first());
         BSpline& bspline = spline(surface1.splineRef);
         QPointF normal  = bspline.get_normal(1, true, surface1.direction == INWARD_DIRECTION);
         QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
@@ -1486,10 +1531,11 @@ std::vector<std::string> GLScene::OFFSurfaces()
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
         std::stringstream ss;
-        ss << "MergedSurface_"<<k<<".off";
+        ss << "MergedSurface_"<<i<<".off";
         std::ofstream ofs(ss.str().c_str());
-        mergedSurface.writeOFF(ofs);
+        ofs << surface_strings.back();
         ofs.close();
+
     }
 
     return surface_strings;

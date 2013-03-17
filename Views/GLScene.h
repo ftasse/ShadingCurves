@@ -225,6 +225,7 @@ public:
     bool showControlPoints;
     bool showCurrentCurvePoints;
     bool showCurves;
+    int curveSubdLevels;
     bool brush;
     int brushType;
     float brushSize;

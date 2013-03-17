@@ -113,6 +113,13 @@ void GraphicsView::changeControlPointSize(int pointSize)
     my_scene->update();
 }
 
+void GraphicsView::changeCurveSubdLevels(int value)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->curveSubdLevels = value;
+    my_scene->update();
+}
+
 void GraphicsView::changeResolution()
 {
     GLScene *my_scene = (GLScene *) scene();

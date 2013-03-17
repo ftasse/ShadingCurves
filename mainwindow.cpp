@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->showControlMeshBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlMesh(bool)));
     connect(ui->showControlPointsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showControlPoints(bool)));
     connect(ui->ShowCurvesBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showCurves(bool)));
+    connect(ui->curveSubdivisionsBox, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeCurveSubdLevels(int)));
 
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));

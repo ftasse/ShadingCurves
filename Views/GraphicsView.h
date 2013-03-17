@@ -37,6 +37,7 @@ public slots:
     void changeBrushSize(int size);
     void changeFreehand(bool freehand);
     void changeResolution();
+    void changeCurveSubdLevels(int value);
     void showControlMesh(bool status);
     void showControlPoints(bool status);
     void showCurves(bool status);

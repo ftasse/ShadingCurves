@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <QPoint>
+#include <QSet>
 #include <sstream>
 #include "BSpline.h"
 
@@ -43,7 +44,7 @@ public:
     int ref;
 
     QVector<Point3d> vertices;
-    QVector<int> sharpCorners;
+    QSet<int> sharpCorners;
     QVector< QVector<int> > controlMesh;
     QVector<QVector<int> > faceIndices;
 };

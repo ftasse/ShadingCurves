@@ -97,9 +97,9 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 
     //Write sharp corners
-    for (int i=0; i<sharpCorners.size(); ++i)
+    for (QSet<int>::iterator it = sharpCorners.begin(); it != sharpCorners.end(); ++it)
     {
-        ofs << sharpCorners[i] << std::endl;
+        ofs << *it << std::endl;
     }
 
     return true;
