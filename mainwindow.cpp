@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setMouseTracking(false);
 
     addDockWidget(Qt::LeftDockWidgetArea, scene->shadingProfileView);
+    scene->shadingProfileView->toggleViewAction()->setEnabled(true);
+    scene->shadingProfileView->toggleViewAction()->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_H));
     ui->menuFile->addAction(scene->shadingProfileView->toggleViewAction());
     setStyleSheet("QMainWindow::separator { border-color: rgb(0, 0, 0); width: 1px; border-width: 1px; border-style: solid;}");
 
