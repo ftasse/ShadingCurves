@@ -150,19 +150,19 @@ void ShadingProfileView::refreshPath()
         QPainterPath path;
         if (my_scene->greenShapePoints.size() == 1)
         {
-            path.moveTo(P1);
-            path.quadTo(gPoints[0], P3);
+            path.moveTo(P3);
+            path.quadTo(gPoints[0], P1);
 
         } else if (my_scene->greenShapePoints.size()>1)
         {
-            path.moveTo(P1);
-            path.cubicTo(gPoints[0], gPoints[1], P3);
+            path.moveTo(P3);
+            path.cubicTo(gPoints[0], gPoints[1], P1);
         }
         QPainterPath path2;
-        path2.moveTo(P1);
+        path2.moveTo(P3);
         for (int k=0; k<my_scene->greenShapePoints.size(); ++k)
             path2.lineTo(gPoints[k]);
-        path2.lineTo(P3);
+        path2.lineTo(P1);
 
         if (my_scene->greenPathItem == NULL)
         {
@@ -213,18 +213,18 @@ void ShadingProfileView::refreshPath()
         QPainterPath path;
         if (my_scene->redShapePoints.size() == 1)
         {
-            path.moveTo(P1);
-            path.quadTo(rPoints[0], P3);
+            path.moveTo(P3);
+            path.quadTo(rPoints[0], P1);
         } else if (my_scene->redShapePoints.size()>1)
         {
-            path.moveTo(P1);
-            path.cubicTo(rPoints[0], rPoints[1], P3);
+            path.moveTo(P3);
+            path.cubicTo(rPoints[0], rPoints[1], P1);
         }
         QPainterPath path2;
-        path2.moveTo(P1);
+        path2.moveTo(P3);
         for (int k=0; k<my_scene->redShapePoints.size(); ++k)
             path2.lineTo(rPoints[k]);
-        path2.lineTo(P3);
+        path2.lineTo(P1);
 
         if (my_scene->redPathItem == NULL)
         {

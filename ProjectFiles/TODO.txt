@@ -7,16 +7,12 @@ An edge control point should only appear once in the surface. fix this for junct
 
 Flora:
 High priority:
-add shape window (quadratics)
-
-BUGS:
-- do not interpolate any control point when its a slope or uniform curve
 
 Mid priority:
 
 
 Low priority:
-add cubics to shape window
+
 
 ???/??? priority
 A check button (possibly with a thickness spinbox) which would control for each curve whether it will appear in black on the shaded image. 
@@ -26,6 +22,12 @@ Done:
 when selecting colour: set the default value in the colour picker to the colour of the double-clicked pixel
 merge surfaces
 add slider for reducing number of subdivision steps for interactive purposes
+add cubics to shape window
+add shape window (quadratics)
 
 Note:
 connect surface width (or extent) slider to control points (Flora: We have such a slider in the shape window. Is there a need to that with the slider as well?)
+
+BUGS:
+- do not interpolate any control point when its a slope or uniform curve (Flora: Is this still a bug? If yes, I don't understand why. We need the interpolation to get the attributes (extent, height) at the subdivided points. If we want the same attributes for all control points, this is easily achieved by selected the curve and changing the values. It will copy the same values to each control point.)
+

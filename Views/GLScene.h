@@ -101,6 +101,8 @@ public:
     std::vector<std::string> OFFSurfaces();
 
     cv::Mat curvesImage(bool only_closed_curves = false);
+    cv::Mat curvesImageBGR(bool only_closed_curves=false, float thickness = -1);
+
     void update_region_coloring();
 
     cv::Mat& currentImage()
@@ -184,11 +186,11 @@ protected:
 
 signals:
     void setStatusMessage(QString message);
-    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
+    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness);
 
 public slots:
     void currentSplineChanged();
-    void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);
+    void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int _thickness);
 
     void delete_all();
     void subdivide_current_spline();

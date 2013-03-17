@@ -50,7 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_slope_curve()));
     connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_uniform_subdivision()));
     connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
-    connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool)));
+    connect(ui->thickness_box, SIGNAL(valueChanged(int)), this, SLOT(change_bspline_parameters()));
+    connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool, int)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool, int)));
 
     connect(ui->subdivideCurveButton, SIGNAL(clicked(bool)), scene, SLOT(subdivide_current_spline()));
     connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
@@ -123,22 +124,25 @@ void MainWindow::change_bspline_parameters()
                                      ui->slope_curve_box->isChecked(),
                                      ui->uniform_subdivision_curve_box->isChecked(),
                                      ui->inward_suface_box->isChecked(),
-                                     ui->outward_surface_box->isChecked());
+                                     ui->outward_surface_box->isChecked(),
+                                     ui->thickness_box->value());
 }
 
-void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
+void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness)
 {
     ui->surfaceWidthSlider->setEnabled(enabled);
     ui->slope_curve_box->setEnabled(enabled);
     ui->uniform_subdivision_curve_box->setEnabled(enabled);
     ui->inward_suface_box->setEnabled(enabled);
     ui->outward_surface_box->setEnabled(enabled);
+    ui->thickness_box->setEnabled(enabled);
 
     ui->surfaceWidthSlider->setValue(extent);
     ui->slope_curve_box->setChecked(_is_slope);
     ui->uniform_subdivision_curve_box->setChecked(_has_uniform_subdivision);
     ui->inward_suface_box->setChecked(_has_inward);
     ui->outward_surface_box->setChecked(_has_outward);
+    ui->thickness_box->setValue(thickness);
 }
 
 void MainWindow::center()

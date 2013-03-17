@@ -1089,7 +1089,7 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
     return pointIdx;
 }
 
-cv::Mat GLScene::curvesImage(bool only_closed_curves)
+cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
 {
     GLuint imageWidth = m_curImage.cols,
            imageHeight = m_curImage.rows;
@@ -1118,10 +1118,13 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glRenderMode(GL_RENDER);
-    glLineWidth(1.2);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glEnable(GL_BLEND);
-    //glEnable(GL_LINE_SMOOTH);
+
+    if (thickness < 0.0)
+    {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glEnable(GL_LINE_SMOOTH);
+    }
 
     int old_curveSubdLevels  = curveSubdLevels;
     curveSubdLevels = 5;
@@ -1129,6 +1132,11 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     {
         if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
         if (only_closed_curves && !spline(i).has_loop())   continue;
+
+        if (thickness < 0.0)
+            glLineWidth(spline(i).thickness);
+        else
+            glLineWidth(thickness);
         draw_spline(i, true, false);
     }
     curveSubdLevels = old_curveSubdLevels;
@@ -1152,8 +1160,16 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     glDeleteRenderbuffersEXT(1, &renderbuffer);
 
-    cv::cvtColor(img, img, CV_BGR2RGB);
     cv::flip(img, img, 0);
+
+    return img;
+}
+
+cv::Mat GLScene::curvesImage(bool only_closed_curves)
+{
+    cv::Mat img = curvesImageBGR(only_closed_curves, 1.2);
+
+    cv::cvtColor(img, img, CV_BGR2RGB);
     cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
     cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
@@ -1162,7 +1178,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
 void GLScene::update_region_coloring()
 {
-    m_curImage = cv::Scalar(255,255,255);
+    m_curImage = curvesImageBGR(false, -1);;
 
     cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
@@ -1427,6 +1443,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
             QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
             cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+            //if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+            {
+                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
+            }
             surface_strings.push_back( surface(i).surfaceToOFF(color) );
 
             //qDebug("%s", surface_strings.back().c_str());
@@ -1542,6 +1562,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
         QPointF normal  = bspline.get_normal(1, true, surface1.direction == INWARD_DIRECTION);
         QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
         cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+        //if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+        {
+            if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
+        }
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
         std::stringstream ss;
@@ -1635,15 +1659,15 @@ void GLScene::currentSplineChanged()
     if (curSplineRef() >= 0)
     {
         BSpline& bspline = spline(curSplineRef());
-        emit bspline_parameters_changed(true, bspline.generic_extent, bspline.is_slope, bspline.has_uniform_subdivision, bspline.has_inward_surface, bspline.has_outward_surface);
+        emit bspline_parameters_changed(true, bspline.generic_extent, bspline.is_slope, bspline.has_uniform_subdivision, bspline.has_inward_surface, bspline.has_outward_surface, bspline.thickness);
 
     } else
     {
-        emit bspline_parameters_changed(false, 0.0, false, false, false, false);
+        emit bspline_parameters_changed(false, 0.0, false, false, false, false, 0);
     }
 }
 
-void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward)
+void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int  _thickness)
 {
     bool has_changed = false;
     if (curSplineRef() >= 0)
@@ -1659,6 +1683,12 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
         {
             bspline.change_bspline_type(_is_slope, _has_uniform_subdivision, _has_inward, _has_outward);
             has_changed = true;
+        }
+
+        if (_thickness != bspline.thickness)
+        {
+            bspline.thickness = _thickness;
+            update_region_coloring();
         }
     }
 

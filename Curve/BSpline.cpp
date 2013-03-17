@@ -39,6 +39,7 @@ QPointF nearestPoint(QPointF pt, QPointF a, QPointF b, float &t)
 BSpline::BSpline():
     ref(-1), has_inward_surface(false), has_outward_surface(false), has_uniform_subdivision(false), is_slope(false), generic_extent(30.0f)
 {
+    thickness = 0;
 }
 
 void BSpline::change_generic_extent(float extent)

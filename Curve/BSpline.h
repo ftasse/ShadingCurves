@@ -66,6 +66,7 @@ public:
     bool has_uniform_subdivision;
     bool has_inward_surface;
     bool has_outward_surface;
+    int thickness;
 
     QVector<ControlPoint> subdivided_points;
     QVector<QPointF> inward_subdivided_normals, outward_subdivided_normals;
