@@ -438,7 +438,7 @@ void GLviewsubd::paintGL(void)
 
         if (writeImg)
         {
-            cv::imwrite("ImgOrig.png", imgShaded);
+            cv::imwrite("ImgOrig.tif", imgShaded);
 
             //need to convert these to 8bit images first!
 //            cv::imwrite("ImgLumDif" + QString::number(super) + "x" + QString::number(super), img);
@@ -545,10 +545,10 @@ void GLviewsubd::paintGL(void)
 
             if (writeImg)
             {
-                cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".png", img);
-                cv::imwrite("ImgFillPyrDown" + to_string(super) + ".png", imgFill);
-                cv::imwrite("ImgResult" + to_string(super) + ".png", imgShaded);
-                cv::imwrite("ImgFillResult" + to_string(super) + ".png", imgFillShaded);
+                cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".tif", img);
+                cv::imwrite("ImgFillPyrDown" + to_string(super) + ".tif", imgFill);
+                cv::imwrite("ImgResult" + to_string(super) + ".tif", imgShaded);
+                cv::imwrite("ImgFillResult" + to_string(super) + ".tif", imgFillShaded);
             }
         }
         updateGL();
