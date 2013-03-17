@@ -340,7 +340,7 @@ QVariant ShapePointItem::itemChange(GraphicsItemChange change, const QVariant &v
      } else if (change == QGraphicsItem::ItemPositionHasChanged && scene())
      {
          ShadingProfileView *view = ((ShadingProfileScene *)scene())->shadingProfileView;
-         view->refreshPath();
+         view->updateControlPointParameters();
      }
      return QGraphicsItem::itemChange(change, value);
  }

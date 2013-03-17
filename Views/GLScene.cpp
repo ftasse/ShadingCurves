@@ -1134,7 +1134,11 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
         if (only_closed_curves && !spline(i).has_loop())   continue;
 
         if (thickness < 0.0)
+        {
+            if (spline(i).thickness <= 0)
+                continue;
             glLineWidth(spline(i).thickness);
+        }
         else
             glLineWidth(thickness);
         draw_spline(i, true, false);
