@@ -1,6 +1,5 @@
 BUGS
 - colouring bug
-- add control point bug. steps: 1. click "Create". 2. add a control point. 3. delete it 4. add a new CP: ASSERT failure in QList<T>::operator[]: "index out of range"
 
 Done (TODO for Henrik: verify these):
 merge surfaces
@@ -8,7 +7,9 @@ merge surfaces
 - add cubics to shape window
 - add shape window (quadratics)
 - A check button (possibly with a thickness spinbox) which would control for each curve whether it will appear in black on the shaded image. 
-There could also be global settings for all curves and the per-curve stuff above could override it. 
+There could also be global settings for all curves and the per-curve stuff above could override it.
 
-Note:
-connect surface width (or extent) slider to control points (Flora: We have such a slider in the shape window. Is there a need to that with the slider as well?) HENRIK: NO!
+Fixed Bugs:
+- add control point bug. steps: 1. click "Create". 2. add a control point. 3. delete it 4. add a new CP: ASSERT failure in QList<T>::operator[]: "index out of range"
+- Non editable curve (see Jiri's email attachment  jiriCurveNotThere.curv
+

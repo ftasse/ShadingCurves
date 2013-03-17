@@ -464,6 +464,8 @@ void GLScene::keyPressEvent(QKeyEvent *event)
             if (shadingProfileView != NULL) shadingProfileView->centralWidget->setEnabled(false);
             selectedObjects.clear();
             m_splineGroup.garbage_collection();
+            if (m_curSplineIdx+1 > num_splines())
+                m_curSplineIdx = -1;
             recomputeAllSurfaces();
         }
     } else if (m_sketchmode == ADD_CURVE_MODE)
@@ -1624,6 +1626,9 @@ bool GLScene::openImage(std::string fname)
 
 void GLScene::saveImage(std::string fname)
 {
+
+    if (fname.find(".") == std::string::npos)
+        fname += ".png";
     if (resultImg.cols > 0)
         cv::imwrite(fname, resultImg);
     else
@@ -1650,6 +1655,8 @@ bool GLScene::openCurves(std::string fname)
 
 void GLScene::saveCurves(std::string fname)
 {
+    if (fname.find(".") == std::string::npos)
+        fname += ".curv";
     m_splineGroup.save(fname);
 }
 
