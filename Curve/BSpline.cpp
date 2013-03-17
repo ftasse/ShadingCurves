@@ -367,9 +367,9 @@ void BSpline::computeControlPointNormals()
                                         end_has_zero_height[0] = curves_has_negative_directions;
 
                                     if (otherSpline.cptRefs.first() == junction.cptRef)
-                                        otherSpline.start_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                        otherSpline.start_has_zero_height[!junction.spline1Inward] = curves_has_negative_directions;
                                     else
-                                        otherSpline.end_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                        otherSpline.end_has_zero_height[!junction.spline1Inward] = curves_has_negative_directions;
                                 }
                             }
                         }
@@ -423,9 +423,9 @@ void BSpline::computeControlPointNormals()
                                         end_has_zero_height[1] = curves_has_negative_directions;
 
                                     if (otherSpline.cptRefs.first() == junction.cptRef)
-                                        otherSpline.start_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                        otherSpline.start_has_zero_height[!junction.spline1Inward] = curves_has_negative_directions;
                                     else
-                                        otherSpline.end_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                        otherSpline.end_has_zero_height[!junction.spline1Inward] = curves_has_negative_directions;
                                 }
                             }
                         }
