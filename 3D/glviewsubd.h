@@ -19,7 +19,6 @@ public:
 	~GLviewsubd();
 
     void   loadFile(std::istream &is);
-    void   loadLine(const char *fileName);
 	void   saveFile(const char *fileName, bool isPly);
 	void   saveFileLim(const char *fileName, bool isPly);
 //	void   loadMesh(int level);
@@ -40,7 +39,6 @@ public:
 	void buildPoi(void);
 	void buildPoiSub(void);
     void buildPoiBound(void);
-    void buildLine(void);
     void regenSurfs();
     void resetSurfs();
 
@@ -54,7 +52,6 @@ public:
 	std::vector< Mesh* >				 meshCurr;
     std::vector< Mesh* >				 meshOld;
 	Mesh				 				 *nextMesh;
-    SplineC                              line;
 
 	int verInd, verIndSub;
 
@@ -103,7 +100,6 @@ public slots:
 //    void setShowShadedCtrl	(const bool b)  { shaded_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
 //    void setShowEdgedCtrl	(const bool b)  { edged_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
 //    void setShowCulledCtrl	(const bool b)  { culled_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
-    void setShowLine        (const bool b)  { line_enabled = b; if (b) {buildLine();} updateGL();}
     void setCC              (const bool b);
     void setCCB             (const bool b);
     void setICC             (const bool b);
@@ -161,7 +157,6 @@ protected:
 	void drawPoiSub();
     void drawPoiBound();
 	void drawFrame();
-    void drawLine();
 
 private:
 	bool mesh_enabled;
@@ -184,7 +179,6 @@ private:
 	bool edged_ctrl_enabled;
 	bool culled_ctrl_enabled;
 	bool frame_enabled;
-    bool line_enabled;
 
     enum SubdivType
     {
@@ -216,7 +210,6 @@ private:
     unsigned int poiBound_list;
 	unsigned int ctrl_list;
     unsigned int old_list;
-    unsigned int line_list;
 
     GLuint      imageHeight, imageWidth;
 };

@@ -65,9 +65,6 @@ void Mesh::DeleteData()
 
     my_facets.clear();
 //    my_subdFacets.clear();
-    my_rays.clear();
-    my_insRays.clear();
-    my_insMaxRays.clear();
 
     my_boundaryCorners.clear();
 
@@ -536,373 +533,373 @@ MeshCorner* Mesh::getNextCorner(MeshCorner *corner)
 
 void Mesh::compCurv(void)
 {
-	unsigned int 		i, j, ind, ind1, ind2, k, k1, k2, val1, val2;
-	MeshVertex			*vertex;
-	MeshFacet			*facet1, *facet2, *facet;
-	Point_3D			poi11, poi12, poi13, poi21, poi22, poi23, vec;
-	PointPrec			side11, side12, side13, m1, angle1,
-						side21, side22, side23, m2, angle2,
-                        sum, sumM, sumG, vor, minM, maxM, minG, maxG, mm, ang, angle;
+//	unsigned int 		i, j, ind, ind1, ind2, k, k1, k2, val1, val2;
+//	MeshVertex			*vertex;
+//	MeshFacet			*facet1, *facet2, *facet;
+//	Point_3D			poi11, poi12, poi13, poi21, poi22, poi23, vec;
+//	PointPrec			side11, side12, side13, m1, angle1,
+//						side21, side22, side23, m2, angle2,
+//                        sum, sumM, sumG, vor, minM, maxM, minG, maxG, mm, ang, angle;
 
-    PointPrec PI = 4 * atan(1.0f);
+//    PointPrec PI = 4 * atan(1.0f);
 
-//cout << "Computing Mean curvature... " << endl;
+////cout << "Computing Mean curvature... " << endl;
 
-	for (i = 0 ; i < my_numV ; i++)
-	{
-		sum = 0;
-		vec = Point_3D(0,0,0);
-		vor = 0;
-//		mn = 0;
-		vertex = &(my_vertices[i]);
-		if (!(vertex->isOnBoundary))
-		{
-			ind = vertex->my_index;
-			for (j = 0 ; j < vertex->my_valency ; j++)
-			{
-				facet1 = vertex->my_facets[j];
-				facet2 = vertex->my_facets[(j + 1) % vertex->my_valency];
-
-				val1 = facet1->my_valency;
-				k1 = 0;
-				ind1 = facet1->my_vertIndices[k1];
-				while (ind1 != ind)
-				{
-					k1++;
-					ind1 = facet1->my_vertIndices[k1];
-				}
-				val2 = facet2->my_valency;
-				k2 = 0;
-
-				ind2 = facet2->my_vertIndices[k2];
-				while (ind2 != ind)
-				{
-					k2++;
-					ind2 = facet2->my_vertIndices[k2];
-				}
-
-				// three consequtive points
-				poi13 = my_vertices[facet1->my_vertIndices[(k1 + val1 - 1) % val1]].my_point;
-				poi12 = vertex->my_point;
-//				poi12 = my_vertices[facet1->my_vertIndices[k1]].my_point;
-				poi11 = my_vertices[facet1->my_vertIndices[(k1 + 1) % val1]].my_point;
-
-				poi23 = my_vertices[facet2->my_vertIndices[(k2 + val2 - 1) % val2]].my_point;
-				poi22 = vertex->my_point;
-//				poi22 = my_vertices[facet2->my_vertIndices[k2]].my_point;
-				poi21 = my_vertices[facet2->my_vertIndices[(k2 + 1) % val2]].my_point;
-
-				side11 = poi11.dist(poi12);
-				side12 = poi12.dist(poi13);
-				side13 = poi11.dist(poi13);
-
-				side21 = poi21.dist(poi22);
-				side22 = poi22.dist(poi23);
-				side23 = poi21.dist(poi23);
-
-//cout << side11 - side22 << endl;
-
-				m1 = ((side11 * side11 - side12 * side12 - side13 * side13) / (-2.0 * side12 * side13));
-
-//if (m1 < 0) cout << "m1 is negative" << endl;
-
-				angle1 = acos(m1);
-
-				m2 = ((side22 * side22 - side21 * side21 - side23 * side23) / (-2.0 * side21 * side23));
-				angle2 = acos(m2);
-
-
-				mm = ((side12 * side12 - side11 * side11 - side13 * side13) / (-2.0 * side11 * side13));
-				ang = acos(mm);
-//cout << mm << " " << ang << endl;
-
-				angle = (PI - angle1 - ang) * (180 / PI);
-
-
-				sum += angle;
-
-//cout << sum << endl;
-
-				vec = (1.0 / tan(angle1) + 1.0 / tan(angle2)) * poi12 + vec;
-				vec = (- 1.0 / tan(angle1) - 1.0 / tan(angle2)) * poi11 + vec;
-
-//if (tan(angle1) < 0) cout << "tan(angle1) is negative" << endl;
-
-//				mn = (1.0 / tan(angle1) + 1.0 / tan(angle2)) * side11;
-
-//cout << (1.0 / tan(angle1) + 1.0 / tan(angle2)) << endl;
-
-//cout << angle1 * 180 / PI << " " << ang * 180 / PI << endl;
-
-				if (angle1 * 180 / PI >= 90 || ang * 180 / PI >= 90 || angle >= 90)
-				{
-					if 	(angle >= 90)
-					{
-						vor += 1.0 / 2.0 * side12 * side13 * sin(angle1) / 2;
-					}
-					else
-					{
-						vor += 1.0 / 2.0 * side12 * side13 * sin(angle1) / 4;
-					}
-				}
-				else
-				{
-					vor += 1.0 / 8.0 * (side12 * side12 / tan(ang) + side11 * side11 / tan(angle1));
-				}
-			}
-//            vertex->my_curvM = vec.dist(Point_3D(0,0,0));// / 4.0 / vor;
-//            vertex->my_curvM = mn / 2.0 / vor;
-//            vertex->my_curvM = mn / vor;
-
-			vertex->my_curvM = vor;
-
-			// correction for boundary corners and edges
-
-//			vor = 1.0;
-//			if (vertex->my_valency == 1)
+//	for (i = 0 ; i < my_numV ; i++)
+//	{
+//		sum = 0;
+//		vec = Point_3D(0,0,0);
+//		vor = 0;
+////		mn = 0;
+//		vertex = &(my_vertices[i]);
+//		if (!(vertex->isOnBoundary))
+//		{
+//			ind = vertex->my_index;
+//			for (j = 0 ; j < vertex->my_valency ; j++)
 //			{
-//				vertex->my_curvG = (90 - sum) / vor;
+//				facet1 = vertex->my_facets[j];
+//				facet2 = vertex->my_facets[(j + 1) % vertex->my_valency];
+
+//				val1 = facet1->my_valency;
+//				k1 = 0;
+//				ind1 = facet1->my_vertIndices[k1];
+//				while (ind1 != ind)
+//				{
+//					k1++;
+//					ind1 = facet1->my_vertIndices[k1];
+//				}
+//				val2 = facet2->my_valency;
+//				k2 = 0;
+
+//				ind2 = facet2->my_vertIndices[k2];
+//				while (ind2 != ind)
+//				{
+//					k2++;
+//					ind2 = facet2->my_vertIndices[k2];
+//				}
+
+//				// three consequtive points
+//				poi13 = my_vertices[facet1->my_vertIndices[(k1 + val1 - 1) % val1]].my_point;
+//				poi12 = vertex->my_point;
+////				poi12 = my_vertices[facet1->my_vertIndices[k1]].my_point;
+//				poi11 = my_vertices[facet1->my_vertIndices[(k1 + 1) % val1]].my_point;
+
+//				poi23 = my_vertices[facet2->my_vertIndices[(k2 + val2 - 1) % val2]].my_point;
+//				poi22 = vertex->my_point;
+////				poi22 = my_vertices[facet2->my_vertIndices[k2]].my_point;
+//				poi21 = my_vertices[facet2->my_vertIndices[(k2 + 1) % val2]].my_point;
+
+//				side11 = poi11.dist(poi12);
+//				side12 = poi12.dist(poi13);
+//				side13 = poi11.dist(poi13);
+
+//				side21 = poi21.dist(poi22);
+//				side22 = poi22.dist(poi23);
+//				side23 = poi21.dist(poi23);
+
+////cout << side11 - side22 << endl;
+
+//				m1 = ((side11 * side11 - side12 * side12 - side13 * side13) / (-2.0 * side12 * side13));
+
+////if (m1 < 0) cout << "m1 is negative" << endl;
+
+//				angle1 = acos(m1);
+
+//				m2 = ((side22 * side22 - side21 * side21 - side23 * side23) / (-2.0 * side21 * side23));
+//				angle2 = acos(m2);
+
+
+//				mm = ((side12 * side12 - side11 * side11 - side13 * side13) / (-2.0 * side11 * side13));
+//				ang = acos(mm);
+////cout << mm << " " << ang << endl;
+
+//				angle = (PI - angle1 - ang) * (180 / PI);
+
+
+//				sum += angle;
+
+////cout << sum << endl;
+
+//				vec = (1.0 / tan(angle1) + 1.0 / tan(angle2)) * poi12 + vec;
+//				vec = (- 1.0 / tan(angle1) - 1.0 / tan(angle2)) * poi11 + vec;
+
+////if (tan(angle1) < 0) cout << "tan(angle1) is negative" << endl;
+
+////				mn = (1.0 / tan(angle1) + 1.0 / tan(angle2)) * side11;
+
+////cout << (1.0 / tan(angle1) + 1.0 / tan(angle2)) << endl;
+
+////cout << angle1 * 180 / PI << " " << ang * 180 / PI << endl;
+
+//				if (angle1 * 180 / PI >= 90 || ang * 180 / PI >= 90 || angle >= 90)
+//				{
+//					if 	(angle >= 90)
+//					{
+//						vor += 1.0 / 2.0 * side12 * side13 * sin(angle1) / 2;
+//					}
+//					else
+//					{
+//						vor += 1.0 / 2.0 * side12 * side13 * sin(angle1) / 4;
+//					}
+//				}
+//				else
+//				{
+//					vor += 1.0 / 8.0 * (side12 * side12 / tan(ang) + side11 * side11 / tan(angle1));
+//				}
 //			}
-//			else if (vertex->my_valency == 2)
+////            vertex->my_curvM = vec.dist(Point_3D(0,0,0));// / 4.0 / vor;
+////            vertex->my_curvM = mn / 2.0 / vor;
+////            vertex->my_curvM = mn / vor;
+
+//			vertex->my_curvM = vor;
+
+//			// correction for boundary corners and edges
+
+////			vor = 1.0;
+////			if (vertex->my_valency == 1)
+////			{
+////				vertex->my_curvG = (90 - sum) / vor;
+////			}
+////			else if (vertex->my_valency == 2)
+////			{
+////				vertex->my_curvG = (180 - sum) / vor;
+////			}
+////			else
+////			{
+////				vertex->my_curvG = (360 - sum) / vor;
+////			}
+
+////            vertex->my_curvG = vor;
+//			vertex->my_curvG = (360 - sum) / vor;
+//		}
+//		else
+//		{
+////cout << "Boundary " << i << endl;
+//			vertex->my_curvM = 0; // or other value for boundary points?
+//			vertex->my_curvG = 0;
+
+////			for (j = 0 ; j < vertex->my_faceIndices.size() ; j++)
+////			{
+////				cout << vertex->my_faceIndices[j] << " ";
+////			}
+////			cout << endl;
+
+//		}
+
+////cout << "G: " << vertex->my_curvG << endl;
+////cout << "v: " << 10000 * vor << endl;
+
+//	}
+
+//	minM = 100000000000;
+//	maxM = -minM;
+//	minG = 100000000000;
+//	maxG = -minG;
+
+//	// average vertex curvatures and assign to facets
+//	for (i = 0 ; i < my_numF ; i++)
+//	{
+//		sumM = 0;
+//		sumG = 0;
+//		k = 0;
+//		facet = &(my_facets[i]);
+//		for (j = 0 ; j < facet->my_valency ; j++)
+//		{
+//			if (!my_vertices[facet->my_vertIndices[j]].isOnBoundary)
 //			{
-//				vertex->my_curvG = (180 - sum) / vor;
+//				sumM += my_vertices[facet->my_vertIndices[j]].my_curvM;
+//				sumG += my_vertices[facet->my_vertIndices[j]].my_curvG;
+//				k++;
 //			}
-//			else
-//			{
-//				vertex->my_curvG = (360 - sum) / vor;
-//			}
+//		}
+//		if (k == 0 ) k = 1;
+//		sumM = sumM / k;
+//		sumG = sumG / k;
+//		if (sumM > maxM)
+//		{
+//			maxM = sumM;
+//		}
+//		if (sumM < minM)
+//		{
+//			minM = sumM;
+//		}
+//		if (sumG > maxG)
+//		{
+//			maxG = sumG;
+//		}
+//		if (sumG < minG)
+//		{
+//			minG = sumG;
+//		}
+//		facet->my_curvM = sumM;
+//		facet->my_curvG = sumG;
+//	}
+//	my_minM = minM;
+//	my_maxM = maxM;
+//	my_minG = minG;
+//	my_maxG = maxG;
 
-//            vertex->my_curvG = vor;
-			vertex->my_curvG = (360 - sum) / vor;
-		}
-		else
-		{
-//cout << "Boundary " << i << endl;
-			vertex->my_curvM = 0; // or other value for boundary points?
-			vertex->my_curvG = 0;
+//cout << "curvM: " << minM << " -- " << maxM << " curvG: " << minG << " -- " << maxG << endl;
 
-//			for (j = 0 ; j < vertex->my_faceIndices.size() ; j++)
-//			{
-//				cout << vertex->my_faceIndices[j] << " ";
-//			}
-//			cout << endl;
-
-		}
-
-//cout << "G: " << vertex->my_curvG << endl;
-//cout << "v: " << 10000 * vor << endl;
-
-	}
-
-	minM = 100000000000;
-	maxM = -minM;
-	minG = 100000000000;
-	maxG = -minG;
-
-	// average vertex curvatures and assign to facets
-	for (i = 0 ; i < my_numF ; i++)
-	{
-		sumM = 0;
-		sumG = 0;
-		k = 0;
-		facet = &(my_facets[i]);
-		for (j = 0 ; j < facet->my_valency ; j++)
-		{
-			if (!my_vertices[facet->my_vertIndices[j]].isOnBoundary)
-			{
-				sumM += my_vertices[facet->my_vertIndices[j]].my_curvM;
-				sumG += my_vertices[facet->my_vertIndices[j]].my_curvG;
-				k++;
-			}
-		}
-		if (k == 0 ) k = 1;
-		sumM = sumM / k;
-		sumG = sumG / k;
-		if (sumM > maxM)
-		{
-			maxM = sumM;
-		}
-		if (sumM < minM)
-		{
-			minM = sumM;
-		}
-		if (sumG > maxG)
-		{
-			maxG = sumG;
-		}
-		if (sumG < minG)
-		{
-			minG = sumG;
-		}
-		facet->my_curvM = sumM;
-		facet->my_curvG = sumG;
-	}
-	my_minM = minM;
-	my_maxM = maxM;
-	my_minG = minG;
-	my_maxG = maxG;
-
-cout << "curvM: " << minM << " -- " << maxM << " curvG: " << minG << " -- " << maxG << endl;
-
-//cout << "DONE Computing curvature... " << endl;
+////cout << "DONE Computing curvature... " << endl;
 }
 
 void Mesh::compCurvSmooth(unsigned int rings)
 {
-	unsigned int 	i, j, k, count;
-	MeshFacet		*facet;
-	MeshVertex		*vertex, *ver;
-	PointPrec		m, g;
+//	unsigned int 	i, j, k, count;
+//	MeshFacet		*facet;
+//	MeshVertex		*vertex, *ver;
+//	PointPrec		m, g;
 
-	std::vector< std::vector <unsigned int> > ring_facets;
-	std::vector< std::vector <unsigned int> > ring_vertices;
+//	std::vector< std::vector <unsigned int> > ring_facets;
+//	std::vector< std::vector <unsigned int> > ring_vertices;
 
-	// smooth curvature for vertices
-	for (i = 0 ; i < my_numV ; i++)
-	{
-		vertex = &(my_vertices[i]);
+//	// smooth curvature for vertices
+//	for (i = 0 ; i < my_numV ; i++)
+//	{
+//		vertex = &(my_vertices[i]);
 
-		if (rings == 0)
-		{
-			vertex->my_curvMsmooth = vertex->my_curvM;
-			vertex->my_curvGsmooth = vertex->my_curvG;
-		}
-		else
-		{
-			m = 0;
-			g = 0;
-			count = 0;
-			getRingsV(vertex, rings, &ring_facets, &ring_vertices);
-			for (j = 0 ; j < ring_vertices.size() ; j++)
-			{
-				for (k = 0 ; k < ring_vertices[j].size() ; k++)
-				{
-					ver = &(my_vertices[ring_vertices[j][k]]);
-					m += ver->my_curvM;
-					g += ver->my_curvG;
-					count++;
-				}
-			}
-			vertex->my_curvMsmooth = m / count;
-			vertex->my_curvGsmooth = g / count;
-		}
-	}
+//		if (rings == 0)
+//		{
+//			vertex->my_curvMsmooth = vertex->my_curvM;
+//			vertex->my_curvGsmooth = vertex->my_curvG;
+//		}
+//		else
+//		{
+//			m = 0;
+//			g = 0;
+//			count = 0;
+//			getRingsV(vertex, rings, &ring_facets, &ring_vertices);
+//			for (j = 0 ; j < ring_vertices.size() ; j++)
+//			{
+//				for (k = 0 ; k < ring_vertices[j].size() ; k++)
+//				{
+//					ver = &(my_vertices[ring_vertices[j][k]]);
+//					m += ver->my_curvM;
+//					g += ver->my_curvG;
+//					count++;
+//				}
+//			}
+//			vertex->my_curvMsmooth = m / count;
+//			vertex->my_curvGsmooth = g / count;
+//		}
+//	}
 
-	// smooth curvature for facets
-	for (i = 0 ; i < my_numF ; i++)
-	{
-		facet = &(my_facets[i]);
-		m = 0;
-		g = 0;
-		count = facet->my_valency;
-		for (j = 0 ; j < count ; j++)
-		{
-			vertex = &(my_vertices[facet->my_vertIndices[j]]);
-			m += vertex->my_curvMsmooth;
-			g += vertex->my_curvGsmooth;
-		}
-		facet->my_curvMsmooth = m / count;
-		facet->my_curvGsmooth = g / count;
-	}
+//	// smooth curvature for facets
+//	for (i = 0 ; i < my_numF ; i++)
+//	{
+//		facet = &(my_facets[i]);
+//		m = 0;
+//		g = 0;
+//		count = facet->my_valency;
+//		for (j = 0 ; j < count ; j++)
+//		{
+//			vertex = &(my_vertices[facet->my_vertIndices[j]]);
+//			m += vertex->my_curvMsmooth;
+//			g += vertex->my_curvGsmooth;
+//		}
+//		facet->my_curvMsmooth = m / count;
+//		facet->my_curvGsmooth = g / count;
+//	}
 }
 
 void Mesh::compCurvG(void)
 {
-    unsigned int 		i, j, ind, ind2, k, val;
-    MeshVertex			*vertex;
-    MeshFacet			*facet;
-    Point_3D			poi1, poi2, poi3;
-    PointPrec			side1, side2, side3, m, angle, sum, minG, maxG;
+//    unsigned int 		i, j, ind, ind2, k, val;
+//    MeshVertex			*vertex;
+//    MeshFacet			*facet;
+//    Point_3D			poi1, poi2, poi3;
+//    PointPrec			side1, side2, side3, m, angle, sum, minG, maxG;
 
-    PointPrec PI = 4 * atan(1.0f);
+//    PointPrec PI = 4 * atan(1.0f);
 
-//cout << "Computing Gaussian curvature... " << endl;
+////cout << "Computing Gaussian curvature... " << endl;
 
-    for (i = 0 ; i < my_numV ; i++)
-    {
-        sum = 0;
-        vertex = &(my_vertices[i]);
-        ind = vertex->my_index;
-        for (j = 0 ; j < vertex->my_valency ; j++)
-        {
-//cout << "val: " << vertex->my_valency << endl;
-            facet = vertex->my_facets[j];
-            val = facet->my_valency;
-            k = 0;
-            ind2 = facet->my_vertIndices[k];
-            while (ind2 != ind)
-            {
-                k++;
-                ind2 = facet->my_vertIndices[k];
-            }
-            // three consequtive points
-            poi1 = my_vertices[facet->my_vertIndices[(k + val - 1) % val]].my_point;
-            poi2 = vertex->my_point;
-            poi3 = my_vertices[facet->my_vertIndices[(k + 1) % val]].my_point;
+//    for (i = 0 ; i < my_numV ; i++)
+//    {
+//        sum = 0;
+//        vertex = &(my_vertices[i]);
+//        ind = vertex->my_index;
+//        for (j = 0 ; j < vertex->my_valency ; j++)
+//        {
+////cout << "val: " << vertex->my_valency << endl;
+//            facet = vertex->my_facets[j];
+//            val = facet->my_valency;
+//            k = 0;
+//            ind2 = facet->my_vertIndices[k];
+//            while (ind2 != ind)
+//            {
+//                k++;
+//                ind2 = facet->my_vertIndices[k];
+//            }
+//            // three consequtive points
+//            poi1 = my_vertices[facet->my_vertIndices[(k + val - 1) % val]].my_point;
+//            poi2 = vertex->my_point;
+//            poi3 = my_vertices[facet->my_vertIndices[(k + 1) % val]].my_point;
 
-            side1 = poi1.dist(poi2);
-            side2 = poi2.dist(poi3);
-            side3 = poi1.dist(poi3);
+//            side1 = poi1.dist(poi2);
+//            side2 = poi2.dist(poi3);
+//            side3 = poi1.dist(poi3);
 
-            m = ((side3 * side3 - side2 * side2 - side1 * side1) / (-2.0 * side1 * side2));
-            angle = acos(m);
-            angle = angle * (180 / PI);
+//            m = ((side3 * side3 - side2 * side2 - side1 * side1) / (-2.0 * side1 * side2));
+//            angle = acos(m);
+//            angle = angle * (180 / PI);
 
-//cout << "Angle: " << angle << endl;
+////cout << "Angle: " << angle << endl;
 
-            sum += angle;
-        }
-        // correction for boundary corners and edges
-        if (vertex->my_valency == 1)
-        {
-            vertex->my_curvG = 90 - sum;
-        }
-        else if (vertex->my_valency == 2)
-        {
-            vertex->my_curvG =180 - sum;
-        }
-        else
-        {
-            vertex->my_curvG = 360 - sum;
-        }
+//            sum += angle;
+//        }
+//        // correction for boundary corners and edges
+//        if (vertex->my_valency == 1)
+//        {
+//            vertex->my_curvG = 90 - sum;
+//        }
+//        else if (vertex->my_valency == 2)
+//        {
+//            vertex->my_curvG =180 - sum;
+//        }
+//        else
+//        {
+//            vertex->my_curvG = 360 - sum;
+//        }
 
-//cout << vertex->my_valency << " curvG: " << vertex->my_curvG << endl;
-    }
+////cout << vertex->my_valency << " curvG: " << vertex->my_curvG << endl;
+//    }
 
-    minG = 100000;
-    maxG = -minG;
+//    minG = 100000;
+//    maxG = -minG;
 
-    // average vertex curvatures and assign to facets
-    for (i = 0 ; i < my_numF ; i++)
-    {
-        sum = 0;
-        k = 0;
-        facet = &(my_facets[i]);
-        for (j = 0 ; j < facet->my_valency ; j++)
-        {
-            if (!my_vertices[facet->my_vertIndices[j]].isOnBoundary)
-            {
-                sum += my_vertices[facet->my_vertIndices[j]].my_curvG;
-                k++;
-            }
-        }
-        sum = sum / k;
-        if (sum > maxG)
-        {
-            maxG = sum;
-        }
-        if (sum < minG)
-        {
-            minG = sum;
-        }
-        facet->my_curvG = sum;
-    }
-    my_minG = minG;
-    my_maxG = maxG;
+//    // average vertex curvatures and assign to facets
+//    for (i = 0 ; i < my_numF ; i++)
+//    {
+//        sum = 0;
+//        k = 0;
+//        facet = &(my_facets[i]);
+//        for (j = 0 ; j < facet->my_valency ; j++)
+//        {
+//            if (!my_vertices[facet->my_vertIndices[j]].isOnBoundary)
+//            {
+//                sum += my_vertices[facet->my_vertIndices[j]].my_curvG;
+//                k++;
+//            }
+//        }
+//        sum = sum / k;
+//        if (sum > maxG)
+//        {
+//            maxG = sum;
+//        }
+//        if (sum < minG)
+//        {
+//            minG = sum;
+//        }
+//        facet->my_curvG = sum;
+//    }
+//    my_minG = minG;
+//    my_maxG = maxG;
 
-//cout << "maxG: " << maxG << " minG: " << minG << endl;
+////cout << "maxG: " << maxG << " minG: " << minG << endl;
 
-//cout << "DONE Computing Gaussian curvature... " << endl;
+////cout << "DONE Computing Gaussian curvature... " << endl;
 }
 
 
@@ -1203,7 +1200,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 {
     unsigned int 				i, j, k, cnt, num, numCorners, bndCnt;
     MeshFacet 					*facet, face;
-    MeshVertex					*vertex, vert, *prev0, *prev1, *next0, *next1;
+    MeshVertex					*vertex, vert;//, *prev0, *prev1, *next0, *next1;
     MeshCorner					*cencrn, *prevcrn, *crn;
     Point_3D					Fpoi, Epoi, Vpoi, Favrg, Eavrg;
 //    PointPrec                   x, y, z;
