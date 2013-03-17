@@ -47,7 +47,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>527</height>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -323,7 +323,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>527</height>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -465,7 +465,7 @@
             <x>0</x>
             <y>0</y>
             <width>230</width>
-            <height>527</height>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -627,7 +627,7 @@
      <x>0</x>
      <y>0</y>
      <width>842</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -655,6 +655,8 @@
      <string>Debug</string>
     </property>
     <addaction name="actionDistance_transform"/>
+    <addaction name="actionDT_in_3D"/>
+    <addaction name="actionCurves_in_3D"/>
    </widget>
    <widget class="QMenu" name="menu3D">
     <property name="title">
@@ -724,6 +726,16 @@
   <action name="actionChange_resolution">
    <property name="text">
     <string>Change resolution</string>
+   </property>
+  </action>
+  <action name="actionDT_in_3D">
+   <property name="text">
+    <string>DT in 3D (slow)</string>
+   </property>
+  </action>
+  <action name="actionCurves_in_3D">
+   <property name="text">
+    <string>Curves in 3D (slow)</string>
    </property>
   </action>
  </widget>

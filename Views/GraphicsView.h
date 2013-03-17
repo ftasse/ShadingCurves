@@ -41,6 +41,8 @@ public slots:
     void showControlPoints(bool status);
     void showCurves(bool status);
     void createDistanceTransformDEBUG();
+    void showDistanceTransform3D();
+    void showCurvesImage3D();
     void show3Dwidget();
     void applyShading(bool showImg, bool writeImg);
     void applyShading();

@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
 
     connect(ui->actionDistance_transform, SIGNAL(triggered()), ui->graphicsView, SLOT(createDistanceTransformDEBUG()));
+    connect(ui->actionDT_in_3D, SIGNAL(triggered()), ui->graphicsView, SLOT(showDistanceTransform3D()));
+    connect(ui->actionCurves_in_3D, SIGNAL(triggered()), ui->graphicsView, SLOT(showCurvesImage3D()));
 
     connect(ui->actionView_surface_in_3D, SIGNAL(triggered()), ui->graphicsView, SLOT(show3Dwidget()));
 

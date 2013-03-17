@@ -302,6 +302,128 @@ void GraphicsView::createDistanceTransformDEBUG()
     dbw->show();
 }
 
+void GraphicsView::showDistanceTransform3D()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    cv::Mat curvesGrayIm = my_scene->curvesImage();
+    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
+
+    cv::Mat dt;
+    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
+
+    cv::Mat dt_normalized;
+    cv::normalize(dt, dt_normalized, 0.0, 255.0, cv::NORM_MINMAX);
+    dt_normalized.convertTo(dt_normalized, CV_8UC1);
+
+    cv::convertScaleAbs(dt_normalized, dt_normalized, 200.0/255.0, 0);
+
+    cv::cvtColor(dt_normalized, dt_normalized, CV_GRAY2RGB);
+
+    dt_normalized.convertTo(dt_normalized, CV_32FC3);
+
+    int theType = dt_normalized.type();
+    theType = my_scene->getImage()->type();
+
+    //DT to 3D
+    std::stringstream str;
+    str << "OFF" << std::endl;
+    str << dt_normalized.cols * dt_normalized.rows << " " << (dt_normalized.cols - 1) * (dt_normalized.rows - 1) << " " << 0 << std::endl;
+    for (int i = 0 ; i < dt_normalized.cols ; i++) // height
+    {
+        for (int j = 0 ; j < dt_normalized.rows ; j++)
+        {
+            str << i + 0.5 << " " << j + 0.5 << " " << dt_normalized.at<cv::Vec3f>(j,i)[0] - 100 << std::endl;
+//            str << i << " " << j << " " << 10 << std::endl;
+        }
+    }
+    for (int i = 0 ; i < dt_normalized.cols-1 ; i++)
+    {
+        for (int j = 0 ; j < dt_normalized.rows-1 ; j++)
+        {
+            str << "4" << " " << j + i * dt_normalized.rows << " " <<
+                                 j + 1 + i * dt_normalized.rows << " " <<
+                                 j + 1 + (i + 1) * dt_normalized.rows << " " <<
+                                 j + (i + 1) * dt_normalized.rows << std::endl;
+        }
+    }
+    str << 128 << " " << 128 << " " << 128 << std::endl;
+
+//    std::cout << str.str();
+
+    dt_normalized.convertTo(dt_normalized, CV_8UC3);
+    theType = dt_normalized.type();
+
+
+    glw = new MainWindow3D(dt_normalized.cols, dt_normalized.rows, my_scene->getImage());
+//    glw = new MainWindow3D(dt_normalized.cols, dt_normalized.rows, &dt_normalized);
+    glw->setWindowTitle("3D DT");
+    std::istringstream is(str.str());
+    glw->load1(is);
+    glw->ctrlWidget1->checkFeature->setChecked(false);
+    glw->ctrlWidget1->checkCtrl->setChecked(false);
+    glw->ctrlWidget1->radioMeshHeight->setChecked(true);
+    glw->ctrlWidget1->checkFrame->setChecked(false);
+    glw->show();
+}
+
+void GraphicsView::showCurvesImage3D()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    cv::Mat curvesGrayIm = my_scene->curvesImage();
+    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 255.0, cv::NORM_MINMAX);
+
+    curvesGrayIm.convertTo(curvesGrayIm, CV_8UC1);
+    cv::convertScaleAbs(curvesGrayIm,curvesGrayIm, -1, 255);
+    cv::convertScaleAbs(curvesGrayIm,curvesGrayIm, 100.0/255.0, 0);
+    cv::cvtColor(curvesGrayIm, curvesGrayIm, CV_GRAY2RGB);
+
+    curvesGrayIm.convertTo(curvesGrayIm, CV_32FC3);
+
+    int theType = curvesGrayIm.type();
+    theType = my_scene->getImage()->type();
+
+    //DT to 3D
+    std::stringstream str;
+    str << "OFF" << std::endl;
+    str << curvesGrayIm.cols * curvesGrayIm.rows << " " << (curvesGrayIm.cols - 1) * (curvesGrayIm.rows - 1) << " " << 0 << std::endl;
+    for (int i = 0 ; i < curvesGrayIm.cols ; i++) // height
+    {
+        for (int j = 0 ; j < curvesGrayIm.rows ; j++)
+        {
+            str << i + 0.5 << " " << j + 0.5 << " " << curvesGrayIm.at<cv::Vec3f>(j,i)[0] << std::endl;
+//            str << i << " " << j << " " << 10 << std::endl;
+        }
+    }
+    for (int i = 0 ; i < curvesGrayIm.cols-1 ; i++)
+    {
+        for (int j = 0 ; j < curvesGrayIm.rows-1 ; j++)
+        {
+            str << "4" << " " << j + i * curvesGrayIm.rows << " " <<
+                                 j + 1 + i * curvesGrayIm.rows << " " <<
+                                 j + 1 + (i + 1) * curvesGrayIm.rows << " " <<
+                                 j + (i + 1) * curvesGrayIm.rows << std::endl;
+        }
+    }
+    str << 128 << " " << 128 << " " << 128 << std::endl;
+
+//    std::cout << str.str();
+
+    curvesGrayIm.convertTo(curvesGrayIm, CV_8UC3);
+    theType = curvesGrayIm.type();
+
+
+    glw = new MainWindow3D(curvesGrayIm.cols, curvesGrayIm.rows, my_scene->getImage());
+//    glw = new MainWindow3D(curvesGrayIm.cols, curvesGrayIm.rows, &dt_normalized);
+    glw->setWindowTitle("3D DT");
+    std::istringstream is(str.str());
+    glw->load1(is);
+    glw->ctrlWidget1->checkFeature->setChecked(false);
+    glw->ctrlWidget1->checkCtrl->setChecked(false);
+    glw->ctrlWidget1->radioMeshHeight->setChecked(true);
+    glw->ctrlWidget1->checkFrame->setChecked(false);
+    glw->show();
+}
+
 void GraphicsView::show3Dwidget()
 {
     GLScene *my_scene = (GLScene *) scene();
