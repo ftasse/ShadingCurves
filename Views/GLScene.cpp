@@ -558,11 +558,11 @@ void GLScene::display(bool only_show_splines)
         draw_image(*displayImage());
     }
 
-    if (!only_show_splines)
+    /*if (!only_show_splines)
     for (int i=0; i<ellipses.size(); ++i)
     {
         draw_ellipse(ellipses[i].center, ellipses[i].size, ellipses[i].brush);
-    }
+    }*/
 
     if (!showCurves)
         return;
@@ -687,12 +687,13 @@ void GLScene::draw_control_point(int point_id)
 
 void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 {
-    glPushName(SPLINE_NODE_ID);
-    glPushName(spline_id);
 
     BSpline& bspline = spline(spline_id);
     if (bspline.num_cpts() <= 1)
         return;
+
+    glPushName(SPLINE_NODE_ID);
+    glPushName(spline_id);
 
     if (!only_show_splines) {
         // Display normals
