@@ -13,17 +13,14 @@ Mid priority:
 
 Low priority:
 
-
-???/??? priority
-A check button (possibly with a thickness spinbox) which would control for each curve whether it will appear in black on the shaded image. 
-There could also be global settings for all curves and the per-curve stuff above could override it.
-
 Done:
-when selecting colour: set the default value in the colour picker to the colour of the double-clicked pixel
+- when selecting colour: set the default value in the colour picker to the colour of the double-clicked pixel
 merge surfaces
-add slider for reducing number of subdivision steps for interactive purposes
-add cubics to shape window
-add shape window (quadratics)
+- add slider for reducing number of subdivision steps for interactive purposes
+- add cubics to shape window
+- add shape window (quadratics)
+- A check button (possibly with a thickness spinbox) which would control for each curve whether it will appear in black on the shaded image. 
+There could also be global settings for all curves and the per-curve stuff above could override it. 
 
 Note:
 connect surface width (or extent) slider to control points (Flora: We have such a slider in the shape window. Is there a need to that with the slider as well?)
