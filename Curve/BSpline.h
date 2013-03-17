@@ -70,6 +70,9 @@ public:
     QVector<ControlPoint> subdivided_points;
     QVector<QPointF> inward_subdivided_normals, outward_subdivided_normals;
     QVector<QPointF> inward_normals, outward_normals;
+
+    bool start_has_zero_height[2];    //for inward and outward directions. Use for surface creation
+    bool end_has_zero_height[2];
 };
 
 #endif // BSPLINE_H

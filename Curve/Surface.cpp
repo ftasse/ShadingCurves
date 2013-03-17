@@ -119,14 +119,14 @@ void Surface::recompute(cv::Mat dt)
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
     QVector<QPointF> normals = bspline.getNormals(inward);
 
-    QVector<QVector<int> > points = setSurfaceCP(subdivided_points, normals, dt,inward,bspline.has_loop());
+    QVector<QVector<int> > points = setSurfaceCP(subdivided_points, normals, dt,inward,bspline.has_loop(), bspline.start_has_zero_height[!inward], bspline.end_has_zero_height[!inward]);
 
     if(bspline.is_slope) {
         // find points on the other side
         normals = bspline.getNormals(inward);
         normals.pop_back();
         normals.pop_front();
-        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false);
+        QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false, true, true);
 
         // merge the two grids
         for(int i=0;i<points2.size()-1;i++)
@@ -164,17 +164,20 @@ void Surface::recompute(cv::Mat dt)
     ofs.close();
 }
 
-QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward, bool loop)
+QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward, bool loop, bool start_has_zero_height, bool end_has_zero_height)
 {
     // remove points from the tracing   (In the case of merging surfaces, we do this if the surfaces have an opposite)
     QVector<ControlPoint> endPoints;
-    if(!loop) {
+    if(start_has_zero_height) {
         endPoints.append(controlPoints.first());
+        controlPoints.pop_front();
+        normals.pop_front();
+    }
+    if (end_has_zero_height)
+    {
         endPoints.append(controlPoints.last());
         controlPoints.pop_back();
-        controlPoints.pop_front();
         normals.pop_back();
-        normals.pop_front();
     }
 
     float cT = 90; // threshold for curvature (in degrees)
@@ -257,7 +260,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     }
     points.append(original_cpts_ids);
 
-    if(!loop) {
+    if(start_has_zero_height) {
         // add first point
         vertices[points.last().first()].setZ(0);
         QPointF second = vertices[points.last().first()];
@@ -272,16 +275,19 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             vertices[points[i+1].first()].setZ(0);
             points[i+1].prepend(vertexId);
         }
+    }
 
+    if (end_has_zero_height)
+    {
         // add last point
         vertices[points.last().last()].setZ(0);
-        second = vertices[points.last().last()];
-        endP = (QPointF)endPoints.last();
-        normal = endP-second;
-        id_cp = addVertex(endP);
+        QPointF second = vertices[points.last().last()];
+        QPointF endP = (QPointF)endPoints.last();
+        QPointF normal = endP-second;
+        int id_cp = addVertex(endP);
         points.last().append(points.last().last());
         points.first().append(id_cp);
-        shapeAtrs = controlPoints.last().attribute(direction).shapePointAtr;
+        QVector<QPointF> shapeAtrs = controlPoints.last().attribute(direction).shapePointAtr;
         for (int i=0; i<shapeAtrs.size(); ++i){
             int vertexId = addVertex(second+normal*shapeAtrs[i].x());
             vertices[points[i+1].last()].setZ(0);

@@ -12,13 +12,15 @@ typedef struct CurveJunctionInfo
     int cptRef;
     int splineRef1;
     int splineRef2;
+    QPointF spline1Normal;
     bool spline1Inward;
     bool spline2Inward;
+    bool has_negative_directions;
 
     CurveJunctionInfo()
     {
         cptRef = splineRef1 = splineRef2 = -1;
-        spline1Inward = spline2Inward = false;
+        spline1Inward = spline2Inward = has_negative_directions = false;
     }
 } CurveJunctionInfo;
 

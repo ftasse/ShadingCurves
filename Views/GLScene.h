@@ -98,24 +98,7 @@ public:
         return false;
     }
 
-    std::vector<std::string> OFFSurfaces()
-    {
-        update_region_coloring();
-        std::vector<std::string> surface_strings;
-        for (int i=0; i< num_surfaces(); ++i)
-            if (surface(i).vertices.size() > 0)
-            {
-                BSpline& bspline = spline(surface(i).splineRef);
-                QPointF normal  = bspline.get_normal(1, true, surface(i).direction == INWARD_DIRECTION);
-
-                QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
-                cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-                surface_strings.push_back( surface(i).surfaceToOFF(color) );
-
-                //qDebug("%s", surface_strings.back().c_str());
-            }
-        return surface_strings;
-    }
+    std::vector<std::string> OFFSurfaces();
 
     cv::Mat curvesImage(bool only_closed_curves = false);
     void update_region_coloring();

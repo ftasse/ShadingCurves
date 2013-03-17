@@ -74,7 +74,7 @@ Surface& BSpline::surfaceAt(int index)
 
 QPointF BSpline::get_normal(int index, bool subdivided, bool is_inward)
 {
-    if (inward_normals.size() == 0 && cptRefs.size()>1)
+    if (inward_subdivided_normals.size() == 0 && cptRefs.size()>1)
     {
         computeControlPointNormals();
     }
@@ -205,6 +205,16 @@ QVector<ControlPoint> BSpline::getPoints()
 
 void BSpline::computeControlPointNormals()
 {
+    inward_normals.clear();
+    outward_normals.clear();
+    inward_subdivided_normals.clear();
+    outward_subdivided_normals.clear();
+    for (int k=0; k<2; ++k)
+    {
+        start_has_zero_height[k] = !has_loop();
+        end_has_zero_height[k] = !has_loop();
+    }
+
     bool inverse = false;
     QVector<ControlPoint> cpts = getControlPoints();
 
@@ -219,7 +229,10 @@ void BSpline::computeControlPointNormals()
     {
         CurveJunctionInfo& junctionInfo = m_splineGroup->junctionInfos[i];
         if (junctionInfo.splineRef1 == ref)
+        {
             m_splineGroup->junctionInfos.erase(m_splineGroup->junctionInfos.begin() + i);
+            m_splineGroup->spline(junctionInfo.splineRef2).inward_subdivided_normals.clear();
+        }
         else
             ++i;
     }
@@ -250,7 +263,7 @@ void BSpline::computeControlPointNormals()
             QVector<int>  otherSplinesRefs;
             for (int k=0; k<cpts[i].num_splines(); ++k)
             {
-                if (cpts[i].splineRefs[k] != ref)
+                if (cpts[i].splineRefs[k] != ref || m_splineGroup->spline(cpts[i].splineRefs[k]).has_loop())
                 {
                     BSpline& spline = m_splineGroup->spline(cpts[i].splineRefs[k]);
                     if (spline.num_cpts() <= 1) continue;
@@ -258,19 +271,18 @@ void BSpline::computeControlPointNormals()
                     int j = -1;
                     for (int l=0; l< spline.num_cpts(); ++l)
                     {
-                        if (spline.pointAt(l).ref == cpts[i].ref)
+                        if (spline.pointAt(l).ref == cpts[i].ref && !(spline.ref == ref && l==i))
                         {
                             j = l;
-                            break;
+                            QLineF lineOther;
+                            if (j == 0) lineOther = QLineF(spline.pointAt(1), spline.pointAt(0));
+                            //else if (j==spline.num_cpts()-1)   lineOther=QLineF(spline.pointAt(cpts.size()-2), spline.pointAt(cpts.size()-1));
+                            else    lineOther = QLineF(spline.pointAt(j-1), spline.pointAt(j));
+                            lineOther = lineOther.unitVector();
+                            otherSplinesLines.push_back(lineOther);
+                            otherSplinesRefs.push_back(spline.ref);
                         }
                     }
-                    QLineF lineOther;
-                    if (j == 0) lineOther = QLineF(spline.pointAt(1), spline.pointAt(0));
-                    //else if (j==spline.num_cpts()-1)   lineOther=QLineF(spline.pointAt(cpts.size()-2), spline.pointAt(cpts.size()-1));
-                    else    lineOther = QLineF(spline.pointAt(j-1), spline.pointAt(j));
-                    lineOther = lineOther.unitVector();
-                    otherSplinesLines.push_back(lineOther);
-                    otherSplinesRefs.push_back(spline.ref);
                 }
             }
 
@@ -319,14 +331,48 @@ void BSpline::computeControlPointNormals()
                     junctionInfo[0].splineRef1 = ref;
                     junctionInfo[0].splineRef2 = otherSplinesRefs[leftIndex];
                     junctionInfo[0].spline1Inward = true;
-                    junctionInfos.push_back(junctionInfo[0]);
-                } else
+                    junctionInfo[0].spline1Normal = in_normal;
+                    junctionInfos.push_back(junctionInfo[0]);                    
+                } else if (ref > otherSplinesRefs[leftIndex])
                 {
                     for (int l=0; l<m_splineGroup->junctionInfos.size(); ++l)
                     {
                         CurveJunctionInfo& junction  = m_splineGroup->junctionInfos[l];
                         if (junction.splineRef1==otherSplinesRefs[leftIndex] && junction.splineRef2 == ref)
-                            junction.spline2Inward = true;
+                        {
+                            if (fabs(in_normal.x()-junction.spline1Normal.x())<1e-8 &&
+                                    fabs(in_normal.y()-junction.spline1Normal.y())<1e-8)
+                            {
+                                junction.spline2Inward = true;
+                                BSpline& otherSpline = m_splineGroup->spline(otherSplinesRefs[leftIndex]);
+                                bool curves_has_negative_directions = false;
+
+                                float height1 = 0.0, height2 = 0.0;
+                                if (i==0)   height1 = pointAt(1).attributes[0].height;
+                                else    height1 = pointAt(num_cpts()-2).attributes[0].height;
+                                if (otherSpline.cptRefs.first() == junction.cptRef)
+                                    height2 = otherSpline.pointAt(1).attributes[!junction.spline1Inward].height;
+                                else
+                                    height2 = otherSpline.pointAt(otherSpline.num_cpts()-2).attributes[!junction.spline1Inward].height;
+                                curves_has_negative_directions = ((height1*height2) < 0.0f);
+
+                                junction.has_negative_directions = curves_has_negative_directions;
+                                if (has_inward_surface &&
+                                   ((otherSpline.has_outward_surface && !junction.spline1Inward) ||
+                                    (otherSpline.has_inward_surface && junction.spline1Inward)))
+                                {
+                                    if (i==0)
+                                        start_has_zero_height[0] = curves_has_negative_directions;
+                                    else
+                                        end_has_zero_height[0] = curves_has_negative_directions;
+
+                                    if (otherSpline.cptRefs.first() == junction.cptRef)
+                                        otherSpline.start_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                    else
+                                        otherSpline.end_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -341,14 +387,48 @@ void BSpline::computeControlPointNormals()
                     junctionInfo[1].splineRef1 = ref;
                     junctionInfo[1].splineRef2 = otherSplinesRefs[rightIndex];
                     junctionInfo[1].spline1Inward = false;
+                    junctionInfo[1].spline1Normal = out_normal;
                     junctionInfos.push_back(junctionInfo[1]);
-                } else
+                }  else if (ref > otherSplinesRefs[rightIndex])
                 {
                     for (int l=0; l<m_splineGroup->junctionInfos.size(); ++l)
                     {
                         CurveJunctionInfo& junction  = m_splineGroup->junctionInfos[l];
                         if (junction.splineRef1==otherSplinesRefs[rightIndex] && junction.splineRef2 == ref)
-                            junction.spline2Inward = false;
+                        {
+                            if (fabs(out_normal.x()-junction.spline1Normal.x())<1e-8 &&
+                                    fabs(out_normal.y()-junction.spline1Normal.y())<1e-8)
+                            {
+                                junction.spline2Inward = false;
+                                BSpline& otherSpline = m_splineGroup->spline(otherSplinesRefs[rightIndex]);
+                                bool curves_has_negative_directions = false;
+
+                                float height1 = 0.0, height2 = 0.0;
+                                if (i==0)   height1 = pointAt(1).attributes[1].height;
+                                else    height1 = pointAt(num_cpts()-2).attributes[1].height;
+                                if (otherSpline.cptRefs.first() == junction.cptRef)
+                                    height2 = otherSpline.pointAt(1).attributes[!junction.spline1Inward].height;
+                                else
+                                    height2 = otherSpline.pointAt(otherSpline.num_cpts()-2).attributes[!junction.spline1Inward].height;
+                                curves_has_negative_directions = ((height1*height2) < 0.0f);
+
+                                junction.has_negative_directions = curves_has_negative_directions;
+                                if (has_outward_surface &&
+                                   ((otherSpline.has_outward_surface && !junction.spline1Inward) ||
+                                    (otherSpline.has_inward_surface && junction.spline1Inward)))
+                                {
+                                    if (i==0)
+                                        start_has_zero_height[1] = curves_has_negative_directions;
+                                    else
+                                        end_has_zero_height[1] = curves_has_negative_directions;
+
+                                    if (otherSpline.cptRefs.first() == junction.cptRef)
+                                        otherSpline.start_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                    else
+                                        otherSpline.end_has_zero_height[junction.spline1Inward] = curves_has_negative_directions;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -364,9 +444,11 @@ void BSpline::computeControlPointNormals()
             outward_normals.push_back(in_normal);
         }
 
-        for (int k=0; k<junctionInfos.size(); ++k)
-            m_splineGroup->junctionInfos.push_back(junctionInfos[k]);
     }
+
+
+    for (int k=0; k<junctionInfos.size(); ++k)
+        m_splineGroup->junctionInfos.push_back(junctionInfos[k]);
 
     QVector<ControlPoint> points = getPoints();
     for (int i=0; i<points.size(); ++i)
