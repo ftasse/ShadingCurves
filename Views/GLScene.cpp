@@ -67,12 +67,14 @@ GLScene::GLScene(QObject *parent) :
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
     shadingProfileView = NULL;
-    /*shadingProfileView = new ShadingProfileView ();
-    shadingProfileView->setVisible(false);
-    addWidget(shadingProfileView);
-    shadingProfileView->setGeometry(0, 0, 300, 400);
+    shadingProfileView = new ShadingProfileView ();
+    shadingProfileView->setWindowTitle("  Shading Profile");
+    shadingProfileView->centralWidget->setEnabled(false);
+    shadingProfileView->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    shadingProfileView->setAllowedAreas(Qt::LeftDockWidgetArea);
+    shadingProfileView->setFloating(true);
 
-    connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));*/
+    connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
 }
 
 GLScene:: ~GLScene()
@@ -208,13 +210,25 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (shadingProfileView != NULL)
     {
         bool showShadingProfile = false;
+        shadingProfileView->cpts_ids.clear();
+        shadingProfileView->splineGroup = &m_splineGroup;
         for (int k=0; k<selectedObjects.size(); ++k)
+        {
             if (selectedObjects[k].first == CPT_NODE_ID)
             {
-                shadingProfileView->setControlPoint(controlPoint(selectedObjects[k].second));
+                shadingProfileView->cpts_ids.push_back(selectedObjects[k].second);
+                showShadingProfile = true;
+            } else if (selectedObjects[k].first == SPLINE_NODE_ID)
+            {
+                for (int i=0; i< spline(selectedObjects[k].second).num_cpts(); ++i)
+                {
+                    shadingProfileView->cpts_ids.push_back(spline(selectedObjects[k].second).cptRefs[i]);
+                }
                 showShadingProfile = true;
             }
-        shadingProfileView->setVisible(showShadingProfile);
+            shadingProfileView->updatePath();
+        }
+        shadingProfileView->centralWidget->setEnabled(showShadingProfile);
     }
 
     inPanMode = false;
@@ -447,7 +461,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
             }
 
-            if (shadingProfileView != NULL) shadingProfileView->setEnabled(false);
+            if (shadingProfileView != NULL) shadingProfileView->centralWidget->setEnabled(false);
             selectedObjects.clear();
             m_splineGroup.garbage_collection();
             recomputeAllSurfaces();
@@ -518,14 +532,14 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     transform.scale(scaling.x(), scaling.y());
     ellipseGroup->setTransform(transform);
 
-    if (shadingProfileView !=NULL)
+    /*if (shadingProfileView !=NULL)
     {
         QRect geom = shadingProfileView->geometry();
         if (geom.x() != width()-geom.width() || geom.y() != height()-geom.height())
         {
             shadingProfileView->setGeometry(width()-geom.width(), height()-geom.height(), geom.width(), geom.height());
         }
-    }
+    }*/
 }
 
 void GLScene::display(bool only_show_splines)

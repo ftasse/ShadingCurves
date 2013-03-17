@@ -16,6 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(false);
 
+    addDockWidget(Qt::LeftDockWidgetArea, scene->shadingProfileView);
+    ui->menuFile->addAction(scene->shadingProfileView->toggleViewAction());
+    setStyleSheet("QMainWindow::separator { border-color: rgb(0, 0, 0); width: 1px; border-width: 1px; border-style: solid;}");
+
     ui->graphicsView->setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
 

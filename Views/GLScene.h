@@ -216,10 +216,11 @@ private:
 
     QVector<Ellipse_b> ellipses;
     QGraphicsItemGroup *ellipseGroup;
-    ShadingProfileView *shadingProfileView;
 
 public:
     BSplineGroup m_splineGroup;
+    ShadingProfileView *shadingProfileView;
+
     float pointSize;
     bool showControlMesh;
     bool showControlPoints;

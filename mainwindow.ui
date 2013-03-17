@@ -677,6 +677,7 @@
     <addaction name="actionSave_OFF"/>
     <addaction name="separator"/>
     <addaction name="actionDelete_all_curves"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
