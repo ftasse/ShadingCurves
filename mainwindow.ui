@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -59,11 +59,14 @@
              <property name="mouseTracking">
               <bool>true</bool>
              </property>
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
              <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOn</enum>
+              <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
              <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAsNeeded</enum>
+              <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
              <property name="widgetResizable">
               <bool>true</bool>
@@ -73,7 +76,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>204</width>
+                <width>220</width>
                 <height>575</height>
                </rect>
               </property>
@@ -332,8 +335,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>240</width>
-            <height>537</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">

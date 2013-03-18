@@ -50,6 +50,8 @@ public:
     void save(std::string fname);
     void saveOFF(std::string fname);
 
+    void save_all(std::string fname);
+
     //Utilities
     QList<Surface>& surfaces()
     {

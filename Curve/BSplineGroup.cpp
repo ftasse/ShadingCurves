@@ -614,3 +614,8 @@ void BSplineGroup::saveOFF(std::string fname)
     }
     ofs.close();
 }
+
+void save_all(std::string fname)
+{
+
+}
