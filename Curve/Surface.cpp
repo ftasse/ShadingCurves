@@ -324,7 +324,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
         // check lines
         QLineF currentL(limit,m);
         float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        if(fabs(oldD-currentD)<EPSILON || currentD >= width || angle > angleT || counter>width) {
+        if(fabs(oldD-currentD)<EPSILON || currentD >= width) { // || angle > angleT || counter>width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
             break;
