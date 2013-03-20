@@ -1344,17 +1344,19 @@ std::vector<std::string> GLScene::OFFSurfaces()
     update_region_coloring();
     std::vector<std::string> surface_strings;
 
-    QVector<bool> surface_is_merged(num_surfaces(), false);
-    QVector<bool> junction_is_valid(m_splineGroup.junctionInfos.size(), false);
-    QVector<std::pair<int,int> > mergingSurfaces;
-    QVector<int> merge_junction_ids;
-
     QVector< QVector<int> > mergedGroups;
     QVector< QVector<int> > mergedGroups_JIds;
 
-    for (int k=0; k<m_splineGroup.junctionInfos.size(); ++k)
+    QVector<CurveJunctionInfo> junctionInfos  = m_splineGroup.junctionInfos;
+
+    QVector<bool> surface_is_merged(num_surfaces(), false);
+    QVector<bool> junction_is_valid(junctionInfos.size(), false);
+    QVector<std::pair<int,int> > mergingSurfaces;
+    QVector<int> merge_junction_ids;
+
+    for (int k=0; k<junctionInfos.size(); ++k)
     {
-        CurveJunctionInfo& junctionInfo = m_splineGroup.junctionInfos[k];
+        CurveJunctionInfo& junctionInfo = junctionInfos[k];
         BSpline&  bspline = spline(junctionInfo.splineRef1);
         BSpline& otherSpline = spline(junctionInfo.splineRef2);
         if (bspline.num_cpts() > 1 && otherSpline.num_cpts() > 1)
@@ -1450,10 +1452,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
             QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
             cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-            //if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
             {
                 if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-            }
+            }*/
             surface_strings.push_back( surface(i).surfaceToOFF(color) );
 
             //qDebug("%s", surface_strings.back().c_str());
@@ -1517,7 +1519,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 {
                     new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
                 }
-                if (m_splineGroup.junctionInfos[mergedGroups_JIds[i][k]].has_negative_directions)
+
+                CurveJunctionInfo& junction = junctionInfos[mergedGroups_JIds[i][k]];
+                bool isTJunction = false;
+                if (controlPoint(junction.cptRef).num_splines() > 2)
+                    isTJunction = true;
+                if (isTJunction || junction.has_negative_directions)
                 {
                     if (close)
                     {
@@ -1557,7 +1564,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
                             mergedSurface.controlMesh[i].append(mergedSurface.controlMesh[i].first());
                     }
                 }*/
-
             }
             ++k;
         }
@@ -1569,10 +1575,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
         QPointF normal  = bspline.get_normal(1, true, surface1.direction == INWARD_DIRECTION);
         QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
         cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-        //if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+        /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
         {
             if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-        }
+        }*/
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
         std::stringstream ss;
@@ -1601,6 +1607,12 @@ void GLScene::resetImage()
     curDisplayMode = 0;
     changeDisplayModeText();
     adjustDisplayedImageSize();
+
+    shadingProfileView->min_height = -500;
+    shadingProfileView->max_height = 500;
+    shadingProfileView->min_extent = 1;
+    shadingProfileView->max_extent = std::max(m_curImage.cols, m_curImage.rows);
+
     update();
 }
 

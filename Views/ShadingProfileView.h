@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QDockWidget>
-#include <QSlider>
+#include <QScrollBar>
+#include <QLabel>
 #include <QGraphicsEllipseItem>
 #include "Curve/ControlPoint.h"
 #include "Curve/BSplineGroup.h"
@@ -30,7 +31,7 @@ public:
         neg_x = neg_y = false;
     }
 
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    //QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 };
 
 class ShadingProfileScene : public QGraphicsScene
@@ -46,6 +47,8 @@ public:
     }
 protected:
     void keyPressEvent(QKeyEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 };
 
 class ShadingProfileView : public QDockWidget
@@ -59,19 +62,29 @@ public:
     BSplineGroup *splineGroup;
     QWidget *centralWidget;
 
+    int min_extent, max_extent;
+    int min_height, max_height;
+
 private:
 
     QGraphicsView* graphicsView;
-    QSlider *inwardExtentWidget;
-    QSlider *outwardExtentWidget;
+    QScrollBar *inwardExtentWidget;
+    QScrollBar *outwardExtentWidget;
 
-    QSlider *inwardHeightWidget;
-    QSlider *outwardHeightWidget;
+    QScrollBar *inwardHeightWidget;
+    QScrollBar *outwardHeightWidget;
+
+    QLabel *inwardExtentLabel;
+    QLabel *outwardExtentLabel;
+    QLabel *inwardHeightLabel;
+    QLabel *outwardHeightLabel;
 
     QPointF top, bottom, left, right;
     QRectF rect ;
 
     void propagateAttributes(ControlPoint& cpt);
+
+protected:
 
 signals:
     void controlPointAttributesChanged(int cptRef);
@@ -79,6 +92,7 @@ signals:
 public slots:
 
     void updatePath();
+    void updateLabels();
     void refreshPath();
 
     void add_shape_point(QPointF point);

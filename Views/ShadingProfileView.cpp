@@ -8,8 +8,28 @@
 
 #define POINT_SIZE 10.0
 
+void updateSliderLabelText(QScrollBar *slider, QLabel *label, std::string title)
+{
+    std::stringstream ss;
+    ss << title << " [" << slider->minimum() << " to " << slider->maximum() << "]" << "\n";
+    ss << "Value: " << slider->value();
+    label->setText(ss.str().c_str());
+    label->setWordWrap(true);
+}
+
+QFrame* createHorizontalLine()
+{
+    QFrame* line = new QFrame();
+    //line->setObjectName(QString::fromUtf8("line"));
+    line->setGeometry(QRect(320, 150, 118, 3));
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+}
+
 ShadingProfileView::ShadingProfileView()
 {
+    min_extent = max_extent = min_height = max_height = 0;
+
     centralWidget = new QWidget();
     setWidget(centralWidget);
 
@@ -26,20 +46,31 @@ ShadingProfileView::ShadingProfileView()
     childLayout1->addWidget(graphicsView);
     childLayout1->addSpacing(30);
 
-    inwardExtentWidget = new QSlider(Qt::Horizontal);   inwardExtentWidget->setMinimum(0);  inwardExtentWidget->setMaximum(200);
-    outwardExtentWidget = new QSlider(Qt::Horizontal);  outwardExtentWidget->setMinimum(0);  outwardExtentWidget->setMaximum(200);
-    inwardHeightWidget = new QSlider(Qt::Horizontal);   inwardHeightWidget->setMinimum(-100);  inwardExtentWidget->setMaximum(100);
-    outwardHeightWidget = new QSlider(Qt::Horizontal);  outwardHeightWidget->setMinimum(-100);  outwardExtentWidget->setMaximum(100);
-    childLayout2->addWidget(new QLabel("In  Extent (0:200)")); childLayout2->addWidget(inwardExtentWidget);
-    childLayout2->addWidget(new QLabel("Out Extent (0:200)")); childLayout2->addWidget(outwardExtentWidget);
-    childLayout2->addWidget(new QLabel("In  Height (-100:100)")); childLayout2->addWidget(inwardHeightWidget);
-    childLayout2->addWidget(new QLabel("Out Height (-100:100)")); childLayout2->addWidget(outwardHeightWidget);
+    inwardExtentWidget = new QScrollBar(Qt::Horizontal);    inwardExtentWidget->setTracking(false);
+    inwardExtentLabel = new QLabel ("Inward Extent");
+    outwardExtentWidget = new QScrollBar(Qt::Horizontal);   outwardExtentWidget->setTracking(false);
+    outwardExtentLabel = new QLabel ("Outward Extent");
+    inwardHeightWidget = new QScrollBar(Qt::Horizontal);    inwardHeightWidget->setTracking(false);
+    inwardHeightLabel = new QLabel ("Inward Height");
+    outwardHeightWidget = new QScrollBar(Qt::Horizontal);   outwardHeightWidget->setTracking(false);
+    outwardHeightLabel = new QLabel ("Outward Height");
+
+    childLayout2->addWidget(inwardExtentLabel); childLayout2->addWidget(inwardExtentWidget);
+
+    childLayout2->addWidget(outwardExtentLabel); childLayout2->addWidget(outwardExtentWidget);
+    childLayout2->addWidget(inwardHeightLabel); childLayout2->addWidget(inwardHeightWidget);
+    childLayout2->addWidget(outwardHeightLabel); childLayout2->addWidget(outwardHeightWidget);
     childLayout2->addSpacing(30);
 
-    connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
+    /*connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
     connect(outwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
     connect(inwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
-    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
+    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));*/
+
+    connect(inwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
+    connect(outwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
+    connect(inwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
+    connect(outwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
 
     splineGroup = NULL;
 }
@@ -62,6 +93,14 @@ void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
     emit controlPointAttributesChanged(cpt.ref);
 }
 
+void ShadingProfileView::updateLabels()
+{
+    updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Inward Extent");
+    updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Outward Extent");
+    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Inward Height");
+    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Outward Height");
+}
+
 void ShadingProfileView::updatePath()
 {
     ShadingProfileScene *my_scene = (ShadingProfileScene*) graphicsView->scene();
@@ -77,10 +116,27 @@ void ShadingProfileView::updatePath()
     ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
     //propagateAttributes(cpt);
 
+    inwardExtentWidget->blockSignals( true );
+    inwardExtentWidget->setMinimum(min_extent); inwardExtentWidget->setMaximum(max_extent);
     inwardExtentWidget->setValue((int)cpt.attributes[0].extent);
+    inwardExtentWidget->blockSignals( false );
+
+    outwardExtentWidget->blockSignals( true );
+    outwardExtentWidget->setMinimum(min_extent); outwardExtentWidget->setMaximum(max_extent);
     outwardExtentWidget->setValue((int)cpt.attributes[1].extent);
+    outwardExtentWidget->blockSignals( false );
+
+    inwardHeightWidget->blockSignals( true );
+    inwardHeightWidget->setMinimum(min_height); inwardHeightWidget->setMaximum(max_height);
     inwardHeightWidget->setValue((int)cpt.attributes[0].height);
+    inwardHeightWidget->blockSignals( false );
+
+    outwardHeightWidget->blockSignals( true );
+    outwardHeightWidget->setMinimum(min_height); outwardHeightWidget->setMaximum(max_height);
     outwardHeightWidget->setValue((int)cpt.attributes[1].height);
+    outwardHeightWidget->blockSignals( false );
+
+    updateLabels();
 
     rect = QRectF(0,0, 200, 200); // graphicsView->scene()->sceneRect();
     top = QPointF(rect.x() + rect.width()/2, rect.y());
@@ -250,7 +306,6 @@ void ShadingProfileView::add_shape_point(QPointF point)
         cpt.attributes[k].shapePointAtr.push_back(point);
     }
 
-    propagateAttributes(cpt);
     my_scene->greenShapePoints.clear();
     my_scene->redShapePoints.clear();
     refreshPath();
@@ -266,8 +321,6 @@ void ShadingProfileView::remove_shape_point(QVector<int> indices)
         for (int l=0; l<indices.size(); ++l)
             cpt.attributes[k].shapePointAtr.erase(cpt.attributes[k].shapePointAtr.begin()+indices[l] - l);
     }
-
-    propagateAttributes(cpt);
 
     for (int i=0; i<my_scene->greenShapePoints.size(); ++i) my_scene->removeItem(my_scene->greenShapePoints[i]);
     for (int i=0; i<my_scene->redShapePoints.size(); ++i) my_scene->removeItem(my_scene->redShapePoints[i]);
@@ -286,8 +339,55 @@ void ShadingProfileView::updateControlPointParameters()
    cpt.attributes[0].height = inwardHeightWidget->value();
    cpt.attributes[1].height = outwardHeightWidget->value();
 
+   if (inwardExtentWidget->isSliderDown() || outwardExtentWidget->isSliderDown() ||
+           inwardHeightWidget->isSliderDown() || outwardHeightWidget->isSliderDown())
+   {
+       updateLabels();
+       return;
+   }
    propagateAttributes(cpt);
-   refreshPath();
+   updatePath();
+}
+
+void ShadingProfileScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsScene::mouseReleaseEvent(event);
+    //if (event->isAccepted())    return;
+
+    shadingProfileView->updateControlPointParameters();
+}
+
+void ShadingProfileScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsScene::mouseMoveEvent(event);
+
+    for (int i=0; i<greenShapePoints.size(); ++i)
+    {
+        ShapePointItem *shapeItem = greenShapePoints[i];
+        if (!shapeItem->isSelected())   continue;
+
+        QPointF diff = event->scenePos() - event->lastScenePos();
+        if (shapeItem->neg_x) diff.setX(-diff.x());
+        if (shapeItem->neg_y) diff.setY(-diff.y());
+        diff /= 100;
+        ControlPoint& cpt = shadingProfileView->splineGroup->controlPoint(shapeItem->cpt_id);
+        cpt.attribute(shapeItem->direction).shapePointAtr[shapeItem->index] += diff;
+    }
+
+    for (int i=0; i<redShapePoints.size(); ++i)
+    {
+        ShapePointItem *shapeItem = redShapePoints[i];
+        if (!shapeItem->isSelected())   continue;
+
+        QPointF diff = event->scenePos() - event->lastScenePos();
+        if (shapeItem->neg_x) diff.setX(-diff.x());
+        if (shapeItem->neg_y) diff.setY(-diff.y());
+        diff /= 100;
+        ControlPoint& cpt = shadingProfileView->splineGroup->controlPoint(shapeItem->cpt_id);
+        cpt.attribute(shapeItem->direction).shapePointAtr[shapeItem->index] += diff;
+    }
+
+    shadingProfileView->refreshPath();
 }
 
 void ShadingProfileScene::keyPressEvent(QKeyEvent *event)
@@ -324,7 +424,7 @@ void ShadingProfileScene::keyPressEvent(QKeyEvent *event)
     }
 }
 
-QVariant ShapePointItem::itemChange(GraphicsItemChange change, const QVariant &value)
+/*QVariant ShapePointItem::itemChange(GraphicsItemChange change, const QVariant &value)
  {
      if (change == ItemPositionChange && scene()) {
          // value is the new position.
@@ -340,7 +440,7 @@ QVariant ShapePointItem::itemChange(GraphicsItemChange change, const QVariant &v
      } else if (change == QGraphicsItem::ItemPositionHasChanged && scene())
      {
          ShadingProfileView *view = ((ShadingProfileScene *)scene())->shadingProfileView;
-         view->updateControlPointParameters();
+         view->refreshPath();
      }
      return QGraphicsItem::itemChange(change, value);
- }
+ }*/

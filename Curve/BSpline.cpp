@@ -451,6 +451,60 @@ void BSpline::computeControlPointNormals()
     for (int k=0; k<junctionInfos.size(); ++k)
         m_splineGroup->junctionInfos.push_back(junctionInfos[k]);
 
+    if (num_cpts() > 1 && has_inward_surface && has_outward_surface)
+    {
+        bool hasJunction = false;
+        bool junction_is_inward = false;
+
+        for (int k=0; k<m_splineGroup->junctionInfos.size(); ++k)
+        {
+            if ( (m_splineGroup->junctionInfos[k].splineRef1 == ref
+                    && ( (m_splineGroup->junctionInfos[k].spline1Inward && has_inward_surface)
+                        || (!m_splineGroup->junctionInfos[k].spline1Inward) && has_inward_surface))
+                ||
+                 (m_splineGroup->junctionInfos[k].splineRef2 == ref
+                                     && ( (m_splineGroup->junctionInfos[k].spline2Inward && has_inward_surface)
+                                         || (!m_splineGroup->junctionInfos[k].spline2Inward) && has_inward_surface)))
+            {
+                BSpline& otherSpline = (m_splineGroup->junctionInfos[k].splineRef1 == ref)?m_splineGroup->spline((m_splineGroup->junctionInfos[k].splineRef2)):m_splineGroup->spline((m_splineGroup->junctionInfos[k].splineRef1));
+                bool otherSplineInward = (m_splineGroup->junctionInfos[k].splineRef1 == ref)?(m_splineGroup->junctionInfos[k].spline2Inward):(m_splineGroup->junctionInfos[k].spline1Inward);
+
+                if ((otherSplineInward && otherSpline.has_inward_surface) || (!otherSplineInward && otherSpline.has_outward_surface))
+                {
+                    hasJunction = true;
+                    if (m_splineGroup->junctionInfos[k].splineRef1 == ref)
+                        junction_is_inward = m_splineGroup->junctionInfos[k].spline1Inward;
+                    else
+                        junction_is_inward = m_splineGroup->junctionInfos[k].spline2Inward;
+                    break;
+                }
+            }
+        }
+
+        if (hasJunction)
+        {
+            CurveJunctionInfo junction;
+            junction.splineRef1 = ref;
+            junction.splineRef2 = ref;
+            junction.spline1Inward = true;
+            junction.spline2Inward = false;
+            junction.cptRef = pointAt(0).ref;
+            junction.has_negative_directions = (pointAt(0).attributes[0].height*pointAt(0).attributes[1].height < 0);
+
+            if (junction.has_negative_directions)
+            {
+                start_has_zero_height[0] = true;    start_has_zero_height[1] = true;
+                end_has_zero_height[0] = true;    end_has_zero_height[1] = true;
+            } else
+            {
+                start_has_zero_height[junction_is_inward] = start_has_zero_height[!junction_is_inward];
+                end_has_zero_height[junction_is_inward] = end_has_zero_height[!junction_is_inward];
+            }
+
+            //m_splineGroup->junctionInfos.prepend(junction);
+        }
+    }
+
     QVector<ControlPoint> points = getPoints();
     for (int i=0; i<points.size(); ++i)
     {
