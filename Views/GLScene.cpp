@@ -1341,6 +1341,7 @@ void GLScene::update_region_coloring()
 
 std::vector<std::string> GLScene::OFFSurfaces()
 {
+    recomputeAllSurfaces();
     update_region_coloring();
     std::vector<std::string> surface_strings;
 
@@ -1608,8 +1609,8 @@ void GLScene::resetImage()
     changeDisplayModeText();
     adjustDisplayedImageSize();
 
-    shadingProfileView->min_height = -500;
-    shadingProfileView->max_height = 500;
+    shadingProfileView->min_height = -100;
+    shadingProfileView->max_height = 100;
     shadingProfileView->min_extent = 1;
     shadingProfileView->max_extent = std::max(m_curImage.cols, m_curImage.rows);
 

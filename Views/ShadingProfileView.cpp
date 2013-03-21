@@ -46,13 +46,13 @@ ShadingProfileView::ShadingProfileView()
     childLayout1->addWidget(graphicsView);
     childLayout1->addSpacing(30);
 
-    inwardExtentWidget = new QScrollBar(Qt::Horizontal);    inwardExtentWidget->setTracking(false);
+    inwardExtentWidget = new QScrollBar(Qt::Horizontal);    //inwardExtentWidget->setTracking(false);
     inwardExtentLabel = new QLabel ("Inward Extent");
-    outwardExtentWidget = new QScrollBar(Qt::Horizontal);   outwardExtentWidget->setTracking(false);
+    outwardExtentWidget = new QScrollBar(Qt::Horizontal);   //outwardExtentWidget->setTracking(false);
     outwardExtentLabel = new QLabel ("Outward Extent");
-    inwardHeightWidget = new QScrollBar(Qt::Horizontal);    inwardHeightWidget->setTracking(false);
+    inwardHeightWidget = new QScrollBar(Qt::Horizontal);    //inwardHeightWidget->setTracking(false);
     inwardHeightLabel = new QLabel ("Inward Height");
-    outwardHeightWidget = new QScrollBar(Qt::Horizontal);   outwardHeightWidget->setTracking(false);
+    outwardHeightWidget = new QScrollBar(Qt::Horizontal);   //outwardHeightWidget->setTracking(false);
     outwardHeightLabel = new QLabel ("Outward Height");
 
     childLayout2->addWidget(inwardExtentLabel); childLayout2->addWidget(inwardExtentWidget);
@@ -62,10 +62,10 @@ ShadingProfileView::ShadingProfileView()
     childLayout2->addWidget(outwardHeightLabel); childLayout2->addWidget(outwardHeightWidget);
     childLayout2->addSpacing(30);
 
-    /*connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
+    connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
     connect(outwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
     connect(inwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
-    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));*/
+    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
 
     connect(inwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
     connect(outwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
