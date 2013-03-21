@@ -201,9 +201,8 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         float extent = controlPoints[k].attribute(direction).extent;
         float height = controlPoints[k].attribute(direction).height;
         QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
-
         QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
-        QPointF tmp = lp.at(k)+normal*2;
+        QPointF tmp = lp.at(k)+normal*4;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
         QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent,false);
 
@@ -314,7 +313,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
     float currentD = 0;
     QPointF new_cpt;
     QList<QPoint> visited;
-    float counter = 0;
+//    float counter = 0;
 
     while(true) {
         float oldD = currentD;
@@ -322,8 +321,8 @@ QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,
                             ,&currentD,normalL,visited,Td,Ta);
 
         // check lines
-        QLineF currentL(limit,m);
-        float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
+//        QLineF currentL(limit,m);
+//        float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
         if(fabs(oldD-currentD)<EPSILON || currentD >= width) { // || angle > angleT || counter>width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
