@@ -1,15 +1,2 @@
-BUGS
+BUGS, low priority:
 - colouring bug
-
-Done (TODO for Henrik: verify these):
-merge surfaces
-- add slider for reducing number of subdivision steps for interactive purposes
-- add cubics to shape window
-- add shape window (quadratics)
-- A check button (possibly with a thickness spinbox) which would control for each curve whether it will appear in black on the shaded image. 
-There could also be global settings for all curves and the per-curve stuff above could override it.
-
-Fixed Bugs:
-- add control point bug. steps: 1. click "Create". 2. add a control point. 3. delete it 4. add a new CP: ASSERT failure in QList<T>::operator[]: "index out of range"
-- Non editable curve (see Jiri's email attachment  jiriCurveNotThere.curv
-
