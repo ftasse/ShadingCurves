@@ -19,23 +19,23 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
 	mesh_enabled = true;
     flat_mesh_enabled = false;
-    smooth_mesh_enabled = false;
+    smooth_mesh_enabled = true;
 	edged_mesh_enabled = false;
 	culled_mesh_enabled = false;
 	curvM_mesh_enabled = false;
 	curvG_mesh_enabled = false;
 	curvTG_mesh_enabled = false;
-    height_mesh_enabled = true;
-    feature_lines_enabled = false;
+    height_mesh_enabled = false;
+    feature_lines_enabled = true;
 	IP_mesh_enabled = false;
     triang_enabled = false;
 	triang2_enabled = false;
-    ctrl_enabled = false;
+	ctrl_enabled = true;
     old_enabled = false;
 	shaded_ctrl_enabled = false;
 	edged_ctrl_enabled = true;
 	culled_ctrl_enabled = false;
-    frame_enabled = false;
+    frame_enabled = true;
 	probeOnCtrl = true;
     transf = true;
 	clear = true;
@@ -1325,8 +1325,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
     Mesh 			tri;
     float           eps, epsG, epsZ;
 
-//    GLfloat ambientParams[4] = {0.2, 0.2, 0.2, 1};
-    GLfloat ambientParams[4] = {0.1, 0.1, 0.1, 1};
+    GLfloat ambientParams[4] = {0.2, 0.2, 0.2, 1};
     GLfloat specComp[4] = {0.25, 0.25, 0.25, 1};
 
     epsZ = 0.001; // workaround for Z930 texture bug
@@ -1409,8 +1408,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specComp);
                 glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 90);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientParams);
-//                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_metal);
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, meshCtrl[index]->colFlat);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_metal);
             }
             else
             {

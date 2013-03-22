@@ -18,11 +18,11 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     checkFrame = new QCheckBox(tr("Image"));
     checkFull = new QCheckBox(tr("Full"));
 
-    checkCtrl->setChecked(false);
+	checkCtrl->setChecked(true);
     checkOld->setChecked(false);
-    checkFeature->setChecked(false);
-    radioCtrlEdges->setChecked(true);
-    checkFrame->setChecked(false);
+    checkFeature->setChecked(true);
+	radioCtrlEdges->setChecked(true);
+    checkFrame->setChecked(true);
 	checkFull->setChecked(true);
     checkLine->setChecked(false);
 
@@ -51,7 +51,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
     radioMeshIP = new QRadioButton(tr("Refl. Lines"));
 
 	checkMesh->setChecked(true);
-    radioMeshHeight->setChecked(true);
+    radioMeshSmooth->setChecked(true);
 
     toolBara->addWidget(checkCtrl);
     toolBara->addWidget(checkFeature);
