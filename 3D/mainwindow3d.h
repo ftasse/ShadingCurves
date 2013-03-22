@@ -42,10 +42,8 @@ public slots:
     void loadBatch2(std::istream &is);
 
 private slots:
-    void loadLine1(const char *fileName);
 	void open1();
 	void open2();
-    void openLine1();
 	void openBatch1();
 	void openBatch2();
 	void save1();
@@ -89,7 +87,7 @@ private:
     QMenu *fileMenu1;
     QMenu *fileMenu2;
 	QMenu *helpMenu;
-    QAction *open1Act, *open2Act, *openLine1Act;
+    QAction *open1Act, *open2Act;
     QAction *openBatch1Act, *openBatch2Act;
 	QAction *save1Act, *save2Act,
             *saveLim1Act, *saveLim2Act;
