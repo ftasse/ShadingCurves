@@ -212,6 +212,11 @@ void MainWindow3D::load1(std::istream &is)
 		ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
 }
 
+void MainWindow3D::loadLine1(const char *fileName)
+{
+    glwidget1->loadLine(fileName);
+}
+
 void MainWindow3D::loadBatch1(std::istream &is)
 {
     unsigned int	i, num;
@@ -343,6 +348,25 @@ void MainWindow3D::open1()
             load1(ifs);
         }
 	}
+//	statusBar()->showMessage("File: " + meshFileName);
+}
+
+void MainWindow3D::openLine1()
+{
+    QByteArray 		bytes;
+    char 			*file_name;
+    QString 		lineFileName;
+
+    lineFileName = QFileDialog::getOpenFileName(this,
+                                                tr("Open File"),
+                                                "./Data",
+                                                tr("(*.crv)"));
+    if (!lineFileName.isEmpty())
+    {
+        bytes = lineFileName.toAscii();
+        file_name = bytes.data();
+        loadLine1(file_name);
+    }
 //	statusBar()->showMessage("File: " + meshFileName);
 }
 
@@ -776,6 +800,11 @@ void MainWindow3D::createActions()
     open1Act->setStatusTip(tr("Open an existing mesh in left viewport"));
 	connect(open1Act, SIGNAL(triggered()), this, SLOT(open1()));
 
+    openLine1Act = new QAction(tr("&Open line (left)..."), this);
+    openLine1Act->setShortcut(QKeySequence(tr("Ctrl+L")));
+    openLine1Act->setStatusTip(tr("Open an existing line in left viewport"));
+    connect(openLine1Act, SIGNAL(triggered()), this, SLOT(openLine1()));
+
     open2Act = new QAction(tr("&Open mesh (right)..."), this);
 	open2Act->setShortcut(QKeySequence(tr("Ctrl+2")));
     open2Act->setStatusTip(tr("Open an existing mesh in right viewport"));
@@ -922,6 +951,7 @@ void MainWindow3D::createMenus()
 {
     fileMenu1 = menuBar()->addMenu(tr("File_Left"));
     fileMenu1->addAction(open1Act);
+    fileMenu1->addAction(openLine1Act);
     fileMenu1->addAction(openBatch1Act);
     fileMenu1->addAction(save1Act);
     fileMenu1->addAction(saveLim1Act);

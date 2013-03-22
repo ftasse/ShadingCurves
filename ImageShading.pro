@@ -29,6 +29,7 @@ SOURCES += main.cpp\
     3D/mainwindow3d.cpp \
     3D/mesh.cpp \
     3D/point_3d.cpp \
+    3D/spline.cpp \
     Views/glew/glew.c \
     Utilities/SurfaceUtils.cpp \
     Curve/Point3d.cpp \
@@ -51,6 +52,7 @@ HEADERS  += mainwindow.h \
     3D/mainwindow3d.h \
     3D/mesh.h \
     3D/point_3d.h \
+    3D/spline.h \
     3D/tostring.h \
     3D/types.h \
     Views/glew/glew.h \

@@ -27,6 +27,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 	curvTG_mesh_enabled = false;
     height_mesh_enabled = false;
     feature_lines_enabled = true;
+    line_enabled = false;
 	IP_mesh_enabled = false;
     triang_enabled = false;
 	triang2_enabled = false;
@@ -227,6 +228,11 @@ void GLviewsubd::buildAll(void)
     {
         buildFrame();
     }
+
+    if (line_enabled)
+    {
+        buildLine();
+    }
 }
 
 void GLviewsubd::initializeGL(void)
@@ -418,7 +424,7 @@ void GLviewsubd::paintGL(void)
         offScreen = false;
 
         //process images
-//        inputImg->copyTo(imgShaded);
+        inputImg->copyTo(imgShaded);
         cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
         cv::flip(imgFill, imgFill, 0);
         cv::flip(img, img, 0);
@@ -430,15 +436,15 @@ void GLviewsubd::paintGL(void)
 //            cv::imshow("Img: LumDif " + to_string(super), img);
 //        }
 
-//        if (writeImg)
-//        {
-//            cv::imwrite("ImgOrig.tif", imgShaded);
+        if (writeImg)
+        {
+            cv::imwrite("ImgOrig.tif", imgShaded);
 
-//            //need to convert these to 8bit images first!
-////            cv::imwrite("ImgLumDif" + QString::number(super) + "x" + QString::number(super), img);
-////            cv::imwrite("ImgFill" + QString::number(super) + "x" + QString::number(super), imgFill);
-//        }
-//        imgShaded.convertTo(imgShaded, CV_32FC3);
+            //need to convert these to 8bit images first!
+//            cv::imwrite("ImgLumDif" + QString::number(super) + "x" + QString::number(super), img);
+//            cv::imwrite("ImgFill" + QString::number(super) + "x" + QString::number(super), imgFill);
+        }
+        imgShaded.convertTo(imgShaded, CV_32FC3);
 
         cv::Mat imgPyrDown, imgPyrDown2, imgFillPyrDown, imgFillPyrDown2;
 
@@ -464,35 +470,36 @@ void GLviewsubd::paintGL(void)
 
         if (img.cols > 0)
         {
-//            imgShaded *= 1.0 / 255.0;
-//            cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
+            imgShaded *= 1.0 / 255.0;
+            cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
 
-//            // apply luminance adjustment
-//            for( int y = 0; y < imgShaded.rows; y++ )
+            // apply luminance adjustment
+            for( int y = 0; y < imgShaded.rows; y++ )
+            {
+                for( int x = 0; x < imgShaded.cols; x++ )
+                {
+                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603); // 0.49803921580314636, 0.50196081399917603
+
+                    if (tmp > 100)
+                    {
+                        tmp = 100;
+                    }
+                    if (tmp < 0)
+                    {
+                        tmp = 0;
+                    }
+                    imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                }
+            }
+
+            //convert back to BGR
+            cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
+//            if (showImg)
 //            {
-//                for( int x = 0; x < imgShaded.cols; x++ )
-//                {
-//                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603); // 0.49803921580314636, 0.50196081399917603
-
-//                    if (tmp > 100)
-//                    {
-//                        tmp = 100;
-//                    }
-//                    if (tmp < 0)
-//                    {
-//                        tmp = 0;
-//                    }
-//                    imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-//                }
+//                cv::imshow("Img: Shaded result", imgShaded);
 //            }
 
-//            //convert back to BGR
-//            cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
-////            if (showImg)
-////            {
-////                cv::imshow("Img: Shaded result", imgShaded);
-////            }
-
+            //extra stuff for FILL image
             imgFill.copyTo(imgFillShaded);
             cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
 
@@ -531,8 +538,8 @@ void GLviewsubd::paintGL(void)
             img.convertTo(img, CV_8UC3);
             imgFill *= 255;
             imgFill.convertTo(imgFill, CV_8UC3);
-//            imgShaded *= 255;
-//            imgShaded.convertTo(imgShaded, CV_8UC3);
+            imgShaded *= 255;
+            imgShaded.convertTo(imgShaded, CV_8UC3);
             imgFillShaded *= 255;
             imgFillShaded.convertTo(imgFillShaded, CV_8UC3);
 
@@ -540,7 +547,7 @@ void GLviewsubd::paintGL(void)
             {
                 cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".tif", img);
                 cv::imwrite("ImgFillPyrDown" + to_string(super) + ".tif", imgFill);
-//                cv::imwrite("ImgResult" + to_string(super) + ".tif", imgShaded);
+                cv::imwrite("ImgResult" + to_string(super) + ".tif", imgShaded);
                 cv::imwrite("ImgFillResult" + to_string(super) + ".tif", imgFillShaded);
             }
         }
@@ -631,6 +638,11 @@ void GLviewsubd::paintGL(void)
 
                 glCallList(ctrl_list);
                 glCallList(poiBound_list);
+            }
+
+            if (line_enabled)
+            {
+                glCallList(line_list);
             }
 
 //            glClear(GL_DEPTH_BUFFER_BIT);
@@ -1165,6 +1177,19 @@ void GLviewsubd::buildFeatureLines()
     glEndList();
 }
 
+void GLviewsubd::buildLine()
+{
+//    unsigned int j;
+
+    makeCurrent();
+    if(line_list)	glDeleteLists(line_list, 1);
+    line_list = glGenLists (1);
+    glNewList (line_list, GL_COMPILE);
+        glDisable(GL_LIGHTING);
+        drawLine();
+    glEndList();
+}
+
 void GLviewsubd::buildIPMesh()
 {
 	unsigned int j;
@@ -1659,6 +1684,26 @@ void GLviewsubd::drawFeatureLines(Mesh *mesh)
     glLineWidth(1);
 }
 
+void GLviewsubd::drawLine()
+{
+    unsigned int        i;
+
+    glDisable(GL_TEXTURE_1D);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_ctrl);
+    glColor3fv(col_ctrl);
+    glLineWidth(5);
+    glBegin(GL_LINE_STRIP);
+    if (line.my_plg.size() > 0)
+    {
+        for (i = 0 ; i <= line.my_numv ; i++)
+        {
+            glVertex3fv(line.my_plg[i].getCoords());
+        }
+    }
+    glEnd();
+    glLineWidth(1);
+}
+
 void GLviewsubd::regenSurfs()
 {
     unsigned int            i, j, level;
@@ -1809,6 +1854,14 @@ void GLviewsubd::loadFile(std::istream &is)
     {
         updateAll();
     }
+}
+
+void GLviewsubd::loadLine(const char *fileName)
+{
+    line.readC(fileName);
+
+    buildLine();
+    updateGL();
 }
 
 void GLviewsubd::saveFile(const char *fileName, bool isPly)

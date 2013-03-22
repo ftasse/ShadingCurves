@@ -5,7 +5,7 @@
 #include <list>
 #include <string>
 #include "3D/point_3d.h"
-//#include "3D/spline.h"
+#include "3D/spline.h"
 #include <QtOpenGL>
 
 // I ASSUME CLOCK-WISE ORIENTATION OF VERTICES WITHIN FACETS!
@@ -102,6 +102,16 @@ public:
 	void coutF(void);
 };
 
+class MeshRay
+{
+public:
+	MeshRay() { ; };
+   ~MeshRay() { ; };
+
+	unsigned int			my_index;
+	std::vector <SplineC>	my_crossCurves;
+};
+
 class Mesh
 {
 public:
@@ -166,6 +176,9 @@ public:
 	Point_3D		my_EV,
 					my_newEV;
 
+	CtrlPlg			my_EF,
+					my_newEF;
+
 	PointPrec		my_minM,
 					my_maxM,
 					my_minG,
@@ -182,6 +195,9 @@ public:
 
 	std::vector <MeshVertex>	my_vertices;
 	std::vector <MeshFacet>  	my_facets;
+	std::vector <MeshRay>		my_rays;
+	std::vector <MeshRay>		my_insRays;
+	std::vector <MeshRay>		my_insMaxRays;
 
 	std::vector <MeshCorner*>	my_boundaryCorners;
 
