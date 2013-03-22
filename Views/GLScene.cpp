@@ -1185,7 +1185,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 
 void GLScene::update_region_coloring()
 {
-    m_curImage = curvesImageBGR(false, -1);;
+    //curvesImageBGR(false, -1);;
+    m_curImage = cv::Scalar(255,255,255);
 
     cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
