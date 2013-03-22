@@ -434,12 +434,13 @@ void GraphicsView::showCurvesImage3D()
 void GraphicsView::show3Dwidget()
 {
     GLScene *my_scene = (GLScene *) scene();
+    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+
     glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glw->setWindowTitle("3D View");
     glw->ctrlWidget1->checkClear->setChecked(true);
 
     // transfer meshes
-    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
     for (unsigned int i=0; i<surfaces.size(); ++i)
     {
         std::istringstream is(surfaces[i]);
@@ -464,13 +465,14 @@ void GraphicsView::applyShading()
 void GraphicsView::applyShading(bool showImg, bool writeImg)
 {
     GLScene *my_scene = (GLScene *) scene();
+    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glvs->offScreen = true;
 //    glvs->offMainWindow = true;
     glvs->clear = false;
 
     // transfer meshes
-    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
     for (unsigned int i=0; i<surfaces.size(); ++i)
     {
         std::istringstream is(surfaces[i]);
