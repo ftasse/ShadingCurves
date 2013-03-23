@@ -22,6 +22,8 @@
 #include "glew/GL/glew.h"
 #include <GL/glu.h>
 
+#include <QGLWidget>
+
 static const unsigned int  SELECTION_BUFFER_SIZE = 10000;
 static const unsigned int  NAME_STACK_SIZE       = 2;
 static const unsigned int  IMAGE_NODE_ID = 0;
@@ -1094,6 +1096,7 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
 
 cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
 {
+    glWidget->makeCurrent();
     GLuint imageWidth = m_curImage.cols,
            imageHeight = m_curImage.rows;
 

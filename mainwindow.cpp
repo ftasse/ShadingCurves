@@ -23,7 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setStyleSheet("QMainWindow::separator { border-color: rgb(0, 0, 0); width: 1px; border-width: 1px; border-style: solid;}");
     scene->shadingProfileView->setMinimumWidth(230);
 
-    ui->graphicsView->setViewport(new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering)));
+    scene->glWidget = new QGLWidget( QGLFormat(QGL::SampleBuffers  | QGL::DirectRendering));
+    ui->graphicsView->setViewport(scene->glWidget);
     ui->graphicsView->setViewportUpdateMode( QGraphicsView::FullViewportUpdate);
 
     showStatusMessage("Idle Mode");

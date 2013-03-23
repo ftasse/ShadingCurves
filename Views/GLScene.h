@@ -32,6 +32,8 @@ typedef struct Ellipse_b
     }
 } Ellipse_b;
 
+class QGLWidget;
+
 class GLScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -239,6 +241,7 @@ public:
 
     QSizeF imSize;
     QLabel *displayModeLabel;
+    QGLWidget *glWidget;
 
 };
 
