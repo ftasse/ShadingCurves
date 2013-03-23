@@ -357,6 +357,11 @@ void BSpline::computeControlPointNormals()
                                     height2 = otherSpline.pointAt(otherSpline.num_cpts()-2).attributes[!junction.spline1Inward].height;
                                 curves_has_negative_directions = ((height1*height2) < 0.0f);
 
+                                if (i==0 && (pointAt(0).attributes[0].height)*height1 < 0.0f)
+                                    curves_has_negative_directions = true;
+                                else if ((pointAt(num_cpts()-1).attributes[0].height)*height1 < 0.0f)
+                                    curves_has_negative_directions = true;
+
                                 junction.has_negative_directions = curves_has_negative_directions;
                                 if (has_inward_surface &&
                                    ((otherSpline.has_outward_surface && !junction.spline1Inward) ||
@@ -412,6 +417,11 @@ void BSpline::computeControlPointNormals()
                                 else
                                     height2 = otherSpline.pointAt(otherSpline.num_cpts()-2).attributes[!junction.spline1Inward].height;
                                 curves_has_negative_directions = ((height1*height2) < 0.0f);
+
+                                if (i==0 && (pointAt(0).attributes[1].height)*height1 < 0.0f)
+                                    curves_has_negative_directions = true;
+                                else if ((pointAt(num_cpts()-1).attributes[1].height)*height1 < 0.0f)
+                                    curves_has_negative_directions = true;
 
                                 junction.has_negative_directions = curves_has_negative_directions;
                                 if (has_outward_surface &&

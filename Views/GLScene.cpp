@@ -31,7 +31,7 @@ static const unsigned int  SURFACE_NODE_ID = 3;
 
 bool isEqual(Point3d p, Point3d q)
 {
-    return (fabs(p.x()-q.x()) < 1e-05 && fabs(p.y()-q.y()) < 1e-05 && fabs(p.z()-q.z()) < 1e-05);
+    return (fabs(p.x()-q.x()) < 1e-05 && fabs(p.y()-q.y()) < 1e-05); // && fabs(p.z()-q.z()) < 1e-05
 }
 
 GLScene::GLScene(QObject *parent) :
@@ -1340,6 +1340,12 @@ void GLScene::update_region_coloring()
     update();
 }
 
+
+bool cmp_junctions (CurveJunctionInfo i, CurveJunctionInfo j)
+{
+    return (i.cptRef<j.cptRef);
+}
+
 std::vector<std::string> GLScene::OFFSurfaces()
 {
     recomputeAllSurfaces();
@@ -1350,11 +1356,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
     QVector< QVector<int> > mergedGroups_JIds;
 
     QVector<CurveJunctionInfo> junctionInfos  = m_splineGroup.junctionInfos;
+    //std::sort(junctionInfos.begin(), junctionInfos.end(), cmp_junctions);
 
     QVector<bool> surface_is_merged(num_surfaces(), false);
     QVector<bool> junction_is_valid(junctionInfos.size(), false);
-    QVector<std::pair<int,int> > mergingSurfaces;
-    QVector<int> merge_junction_ids;
+    /*QVector<std::pair<int,int> > mergingSurfaces;
+    QVector<int> merge_junction_ids;*/
 
     for (int k=0; k<junctionInfos.size(); ++k)
     {
@@ -1413,13 +1420,13 @@ std::vector<std::string> GLScene::OFFSurfaces()
                         continue;
                     else if (connected1 && connected2)
                         already_added = true;
-                    else if (connected1 && !connected2)
+                    else if (connected1)
                     {
                         mergedGroups[m].push_back(merging.second);
                         mergedGroups_JIds[m].push_back(k);
                         already_added = true;
                     }
-                    else if (connected2 && !connected1)
+                    else if (connected2)
                     {
                         mergedGroups[m].push_back(merging.first);
                         mergedGroups_JIds[m].push_back(k);
@@ -1437,13 +1444,51 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     mergedGroups_JIds.last().push_back(k);
 
                 }
-                if (std::find(mergingSurfaces.begin(), mergingSurfaces.end(), merging) == mergingSurfaces.end())
+                /*if (std::find(mergingSurfaces.begin(), mergingSurfaces.end(), merging) == mergingSurfaces.end())
                 {
                     mergingSurfaces.push_back(merging);
                     merge_junction_ids.push_back(k);
-                }
+                }*/
             }
         }
+    }
+
+    while (true)
+    {
+        bool joinMergedGroups = false;
+        int m1, m2;
+        for (int m=0; m<mergedGroups.size(); ++m)
+        {
+            for (int l=0; l<mergedGroups[m].size(); ++l)
+            {
+                for (int n=m+1; n<mergedGroups.size(); ++n)
+                {
+                    if (std::find(mergedGroups[n].begin(), mergedGroups[n].end(), mergedGroups[m][l]) != mergedGroups[n].end())
+                    {
+                        m1 = m;
+                        m2 = n;
+                        joinMergedGroups = true;
+                        break;
+                    }
+                }
+                if (joinMergedGroups)   break;
+            }
+            if (joinMergedGroups) break;
+        }
+        if (joinMergedGroups)
+        {
+            for (int n=0; n<mergedGroups[m2].size(); ++n)
+            {
+                if (std::find(mergedGroups[m1].begin(), mergedGroups[m1].end(), mergedGroups[m2][n]) == mergedGroups[m1].end())
+                {
+                    mergedGroups[m1].push_back(mergedGroups[m2][n]);
+                    mergedGroups_JIds[m1].push_back(mergedGroups_JIds[m2][n]);
+                }
+            }
+            mergedGroups.erase(mergedGroups.begin()+m2);
+            mergedGroups_JIds.erase(mergedGroups_JIds.begin()+m2);
+        } else
+            break;
     }
 
     for (int i=0; i< num_surfaces(); ++i)
@@ -1468,6 +1513,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
         QVector<int> surf_ids = mergedGroups[i];
 
         Surface mergedSurface;
+        QVector<std::pair<int, bool> > otherSplineRefs;
 
         int k=0;
         for (QVector<int>::iterator it = surf_ids.begin(); it!=surf_ids.end(); ++it)
@@ -1478,6 +1524,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
+                otherSplineRefs.push_back(std::pair<int, bool>(surf.splineRef, false));
             } else
             {
                 bool prepend = false;
@@ -1487,34 +1534,54 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 bool junction_is_first = false;
                 bool close = false;
 
-                Point3d old_first = mergedSurface.vertices[mergedSurface.controlMesh.last().first()];
+                /*Point3d old_first = mergedSurface.vertices[mergedSurface.controlMesh.last().first()];
                 Point3d old_last = mergedSurface.vertices[mergedSurface.controlMesh.last().last()];
                 Point3d surf_first = surf.vertices[surf.controlMesh.last().first()];
-                Point3d surf_last = surf.vertices[surf.controlMesh.last().last()];
+                Point3d surf_last = surf.vertices[surf.controlMesh.last().last()];*/
 
-                if (isEqual(old_first, surf_first))
+                int otherSplineRef = -1;
+                QVector<int> cptRefs1 = spline(surf.splineRef).cptRefs;
+                for (int l=otherSplineRefs.size()-1; l>=0; --l)
                 {
-                    reverse = true;
-                    prepend = true;
-                    junction_is_first = true;
-                    if (isEqual(old_last, surf_last))   close = true;
-                } else if (isEqual(old_first, surf_last))
+                    otherSplineRef = otherSplineRefs[l].first;
+                    QVector<int> cptRefs2 = spline(otherSplineRef).cptRefs;
+
+                    if (otherSplineRefs[l].second)
+                        std::reverse(cptRefs2.begin(), cptRefs2.end());
+
+                    if (cptRefs2.first() == cptRefs1.first()) //(isEqual(old_first, surf_first))
+                    {
+                        reverse = true;
+                        prepend = true;
+                        junction_is_first = true;
+                        //if (isEqual(old_last, surf_last))   close = true;
+                        if (cptRefs2.last() == cptRefs1.last()) close = true;
+                    } else if (cptRefs2.first() == cptRefs1.last()) //(isEqual(old_first, surf_last))
+                    {
+                        prepend = true;
+                        //if (isEqual(old_last, surf_first))   close = true;
+                        if (cptRefs2.last() == cptRefs1.first()) close = true;
+                    } else if (cptRefs2.last() == cptRefs1.first()) //(isEqual(old_last, surf_first))
+                    {
+                        junction_is_first = true;
+                        //if (isEqual(old_first, surf_last))   close = true;
+                        if (cptRefs2.first() == cptRefs1.last()) close = true;
+                    } else if (cptRefs2.last() == cptRefs1.last()) //(isEqual(old_last, surf_last))
+                    {
+                        reverse = true;
+                        //if (isEqual(old_first, surf_first))   close = true;
+                        if (cptRefs2.first() == cptRefs1.first()) close = true;
+                    } else
+                    {
+                        otherSplineRef = -1;
+                    }
+                    if (otherSplineRef >= 0)    break;
+
+                }
+
+                if (otherSplineRef <0)
                 {
-                    prepend = true;
-                    if (isEqual(old_last, surf_first))   close = true;
-                } else if (isEqual(old_last, surf_first))
-                {
-                    prepend = false;
-                    if (isEqual(old_first, surf_last))   close = true;
-                    junction_is_first = true;
-                } else if (isEqual(old_last, surf_last))
-                {
-                    reverse = true;
-                    prepend = false;
-                    if (isEqual(old_first, surf_first))   close = true;
-                } else
-                {
-                    qDebug("Could not merge surface %d", surf.ref);
+                    qDebug("Could connect surface %d to merged surface.", surf.ref);
                 }
 
                 for (int j=0; j<surf.vertices.size(); ++j)
@@ -1556,7 +1623,9 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     }
                 }
 
-                /*if (close)
+                otherSplineRefs.push_back(std::pair<int, bool>(surf.splineRef, reverse));
+
+                if (close)
                 {
                     for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
                     {
@@ -1565,7 +1634,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
                         else
                             mergedSurface.controlMesh[i].append(mergedSurface.controlMesh[i].first());
                     }
-                }*/
+                }
             }
             ++k;
         }
@@ -1588,7 +1657,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
         std::ofstream ofs(ss.str().c_str());
         ofs << surface_strings.back();
         ofs.close();
-
     }
 
     return surface_strings;
