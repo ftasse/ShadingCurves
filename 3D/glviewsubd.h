@@ -97,9 +97,6 @@ public slots:
 	void setShowTriang2		(const bool b)  { triang2_enabled = b; updateAll(); }
     void setShowCtrl		(const bool b)  { ctrl_enabled = b; if (b) {buildCtrl();} updateGL(); }
     void setShowOld         (const bool b)  { old_enabled = b ; if (b) {buildOld();} updateGL(); }
-//    void setShowShadedCtrl	(const bool b)  { shaded_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
-//    void setShowEdgedCtrl	(const bool b)  { edged_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
-//    void setShowCulledCtrl	(const bool b)  { culled_ctrl_enabled = b; if (b) {buildCtrl(); updateGL();} }
     void setCC              (const bool b);
     void setCCB             (const bool b);
     void setICC             (const bool b);
@@ -112,7 +109,7 @@ public slots:
 
 	void setClear(const bool b) { clear = b; }
 
-	void setShowFrame		(const bool b)  { frame_enabled = b; buildFrame(); updateGL(); }
+    void setShowFrame		(const bool b)  { frame_enabled = b; if (b) {buildFrame();} updateGL(); }
 //    void setSubdivLevel		(unsigned int newLevel);
 	void setSubdivLevel		(int newLevel);
 	void setClr				(int newColor);

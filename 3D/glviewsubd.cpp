@@ -32,9 +32,6 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 	triang2_enabled = false;
     ctrl_enabled = false;
     old_enabled = false;
-	shaded_ctrl_enabled = false;
-	edged_ctrl_enabled = true;
-	culled_ctrl_enabled = false;
     frame_enabled = false;
 	probeOnCtrl = true;
     transf = true;
@@ -273,7 +270,7 @@ void GLviewsubd::initializeGL(void)
     glLoadIdentity();
 //    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
 
-    swapBuffers();
+//    swapBuffers();
 
     glGenTextures(7, textID); // 7th for image texture
 
@@ -1202,50 +1199,18 @@ void GLviewsubd::buildCtrl()
 	glNewList (ctrl_list, GL_COMPILE);
 	if (ctrl_enabled)
 	{
-//		if (shaded_ctrl_enabled)
-//		{
-//			glEnable(GL_LIGHTING);
-//			for (j = 0 ; j < meshCurr.size() ; j++)
-//			{
-//				drawMesh(SHADED, meshCtrl[j], j, 1);
-//			}
-//		}
-//		else if (edged_ctrl_enabled)
-//		{
-
-//            for (j = 0 ; j < meshCtrl.size() ; j++)
-//			{
-//                drawMesh(WIREFRAME, meshCtrl[j], j, 1);
-//			}
-
-            glDisable(GL_LIGHTING);
-            //glEnable(GL_LIGHTING);
-//            if (indexMesh > -1 )
-//            {
-//                drawMesh(WIREFRAME, meshCtrl[indexMesh], indexMesh, 1);
-//            }
-            if (indexMesh > -1 )
+        glDisable(GL_LIGHTING);
+        if (indexMesh > -1 )
+        {
+            drawMesh(WIREFRAME, meshCtrl[indexMesh], indexMesh, 1);
+        }
+        else
+        {
+            for (j = 0 ; j < meshCtrl.size() ; j++)
             {
-                drawMesh(WIREFRAME, meshCtrl[indexMesh], indexMesh, 1);
+                drawMesh(WIREFRAME, meshCtrl[j], indexMesh, 1);
             }
-            else
-            {
-                for (j = 0 ; j < meshCtrl.size() ; j++)
-                {
-                    drawMesh(WIREFRAME, meshCtrl[j], indexMesh, 1);
-                }
-            }
-
-
-//		}
-//		else if (culled_ctrl_enabled)
-//		{
-//			glDisable(GL_LIGHTING);
-//			for (j = 0 ; j < meshCurr.size() ; j++)
-//			{
-//				drawMesh(SOLIDFRAME, meshCtrl[j], j, false);
-//			}
-//		}
+        }
 	}
 	glEndList();
 }
@@ -1276,11 +1241,11 @@ void GLviewsubd::buildFrame()
 	if(frame_list)	glDeleteLists(frame_list, 1);
 	frame_list = glGenLists (1);
 	glNewList (frame_list, GL_COMPILE);
-	if (frame_enabled)
-	{
+//	if (frame_enabled)
+//	{
 		glDisable(GL_LIGHTING);
 		drawFrame();
-	}
+//	}
 	glEndList();
 }
 
@@ -1430,8 +1395,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 
         case FLAT:
             glDisable(GL_LIGHTING);
-//            glEnable(GL_TEXTURE_1D);
-//            glBindTexture(GL_TEXTURE_1D, textID[4]);
+            glDisable(GL_TEXTURE_1D);
             glColor4fv(meshCtrl[index]->colFlat);
             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, meshCtrl[index]->colFlat);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

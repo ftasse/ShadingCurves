@@ -76,8 +76,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>220</width>
-                <height>575</height>
+                <width>216</width>
+                <height>581</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout">
@@ -335,8 +335,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>94</width>
+            <height>24</height>
            </rect>
           </property>
           <attribute name="label">
@@ -477,8 +477,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>240</width>
-            <height>537</height>
+            <width>94</width>
+            <height>24</height>
            </rect>
           </property>
           <attribute name="label">
