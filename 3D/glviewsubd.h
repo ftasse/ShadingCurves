@@ -68,6 +68,7 @@ public:
     bool    writeImg, showImg;
 
     bool    clipping;
+    int     clipMin, clipMax;
 
 	int curvRatio1, curvRatio2;
 

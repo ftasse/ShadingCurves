@@ -83,6 +83,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->imgShowAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgShowAll(bool)));
     connect(ui->imgWriteAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgWriteAll(bool)));
     connect(ui->clipping, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClipping(bool)));
+    connect(ui->clipMin, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMin(int)));
+    connect(ui->clipMax, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMax(int)));
 }
 
 MainWindow::~MainWindow()

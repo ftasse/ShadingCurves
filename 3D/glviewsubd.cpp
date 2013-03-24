@@ -73,7 +73,9 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
     super = 1; //supersampling (1, 2, or 4)
 
-    clipping = false;
+    clipping = true;
+    clipMax = 100;
+    clipMin = 0;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -506,13 +508,13 @@ void GLviewsubd::paintGL(void)
 
                     if (clipping)
                     {
-                        if (tmp > 100)
+                        if (tmp > clipMax)
                         {
-                            tmp = 100;
+                            tmp = clipMax;
                         }
-                        if (tmp < 0)
+                        if (tmp < clipMin)
                         {
-                            tmp = 0;
+                            tmp = clipMin;
                         }
                     }
                     imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;

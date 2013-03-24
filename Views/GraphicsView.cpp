@@ -16,6 +16,8 @@ GraphicsView::GraphicsView(QWidget *parent) :
     imgShowAll = true;
     imgWriteAll = true;
     clipping = true;
+    clipMin = 0;
+    clipMax = 100;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -485,6 +487,8 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->showImg = showImg;
     glvs->writeImg = writeImg;
     glvs->clipping = clipping;
+    glvs->clipMin = clipMin;
+    glvs->clipMax = clipMax;
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
 
     my_scene->surfaceImg = glvs->img.clone();
@@ -569,4 +573,14 @@ void GraphicsView::setSurfSubdLevel(int level)
 void GraphicsView::setClipping(bool b)
 {
     clipping = b;
+}
+
+void GraphicsView::setClipMin(int min)
+{
+    clipMin = min;
+}
+
+void GraphicsView::setClipMax(int max)
+{
+    clipMax = max;
 }

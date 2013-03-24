@@ -57,6 +57,8 @@ public slots:
     void setImgShowAll(bool b);
     void setImgWriteAll(bool b);
     void setClipping(bool b);
+    void setClipMin(int min);
+    void setClipMax(int max);
 
 private:
     QPointF currentCenterPoint;
@@ -65,7 +67,7 @@ private:
     MainWindow3D    *glw;
     GLviewsubd      *glvs;
 
-    int superSampling, surfSubdLevel;
+    int superSampling, surfSubdLevel, clipMin, clipMax;
     bool imgShowAll, imgWriteAll, clipping;
 };
 
