@@ -72,7 +72,7 @@ void Surface::computeFaceIndices()
 bool Surface::writeOFF(std::ostream &ofs)
 {
     ofs << "OFF" << std::endl;
-    if (controlMesh.size() == 0)
+    if (vertices.size() == 0 || faceIndices.size() == 0)
     {
         ofs << 0 << " " << 0 << " " << 0 << std::endl;
         qWarning("Warning: This surface is empty!");

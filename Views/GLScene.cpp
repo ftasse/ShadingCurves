@@ -1538,13 +1538,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
             //qDebug("%s", surface_strings.back().c_str());
         }
 
-    std::map<int, int> occurences;
-
     for (int i=0; i<mergedGroups.size(); ++i)
     {
         QVector<int> surf_ids = mergedGroups[i];
 
         Surface mergedSurface;
+        QVector<int> extraFaceIndices;
         int cptRefFront = -1;
         int cptRefBack = -1;
 
@@ -1553,14 +1552,29 @@ std::vector<std::string> GLScene::OFFSurfaces()
         {
             Surface& surf = surface(*it);
 
+            /*
+            BSpline& bspline = spline(surf.splineRef);
+
+            QVector<int> new_vert_ids;
+            for (int j=0; j<surf.vertices.size(); ++j)
+            {
+                new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
+            }
+            for (int l=0; l<surf.faceIndices.size(); ++l)
+            {
+                QVector<int> face = surf.faceIndices[l];
+                QVector<int> new_face;
+                for (int t=0; t<face.size(); ++t)
+                    new_face.push_back(new_vert_ids[face[t]]);
+                mergedSurface.faceIndices.append(new_face);
+            }*/
+
             if (it == surf_ids.begin() )
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
                 cptRefFront = spline(surf.splineRef).cptRefs.front();
                 cptRefBack = spline(surf.splineRef).cptRefs.back();
-                occurences[cptRefFront] = 1;
-                occurences[cptRefBack] = 1;
             } else
             {
                 bool prepend = false;
@@ -1600,16 +1614,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     qDebug("Could connect surface %d to merged surface.", surf.ref);
                 }
 
-                if (occurences.find(cptRefs1.first()) == occurences.end())
-                    occurences[cptRefs1.first()] = 1;
-                else
-                    occurences[cptRefs1.first()] += 1;
-
-                if (occurences.find(cptRefs1.last()) == occurences.end())
-                    occurences[cptRefs1.last()] = 1;
-                else
-                    occurences[cptRefs1.last()] += 1;
-
                 QVector<int> new_vert_ids;
                 for (int j=0; j<surf.vertices.size(); ++j)
                 {
@@ -1635,23 +1639,15 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     }
                 }
 
-                /*for (int l=0; l<surf.faceIndices.size(); ++l)
-                {
-                    QVector<int> face = surf.faceIndices[l];
-                    QVector<int> new_face;
-                    for (int t=0; t<face.size(); ++t)
-                        new_face.push_back(new_vert_ids[face[t]]);
-                    mergedSurface.faceIndices.append(new_face);
-                }*/
 
                 for (int l=0; l<surf.controlMesh.size(); ++l)
                 {
                     QVector<int> row = surf.controlMesh[l];
                     if (reverse)   std::reverse(row.begin(), row.end());
-                    if (prepend)
+                    /*if (prepend)
                         row.pop_back();
                     else
-                        row.pop_front();
+                        row.pop_front();*/
                     for (int j=0; j<row.size(); ++j)
                     {
                         if (prepend)
@@ -1676,7 +1672,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
             ++k;
         }
 
-        //mergedSurface.computeFaceIndices();
+        mergedSurface.computeFaceIndices();
 
         Surface &surface1 = surface(mergedGroups[i].first());
         BSpline& bspline = spline(surface1.splineRef);
