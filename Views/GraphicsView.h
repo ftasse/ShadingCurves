@@ -56,6 +56,7 @@ public slots:
     void setSurfSubdLevel(int);
     void setImgShowAll(bool b);
     void setImgWriteAll(bool b);
+    void setClipping(bool b);
 
 private:
     QPointF currentCenterPoint;
@@ -65,7 +66,7 @@ private:
     GLviewsubd      *glvs;
 
     int superSampling, surfSubdLevel;
-    bool imgShowAll, imgWriteAll;
+    bool imgShowAll, imgWriteAll, clipping;
 };
 
 #endif // GRAPHICSVIEW_H

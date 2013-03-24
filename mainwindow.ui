@@ -39,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
@@ -335,8 +335,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>94</width>
-            <height>24</height>
+            <width>240</width>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">
@@ -471,14 +471,30 @@
             <string>Surface subd. level</string>
            </property>
           </widget>
+          <widget class="QCheckBox" name="clipping">
+           <property name="geometry">
+            <rect>
+             <x>50</x>
+             <y>320</y>
+             <width>141</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Clip L to [0,100]</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
          <widget class="QWidget" name="drawing_toolbox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>94</width>
-            <height>24</height>
+            <width>240</width>
+            <height>537</height>
            </rect>
           </property>
           <attribute name="label">

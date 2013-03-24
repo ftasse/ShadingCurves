@@ -82,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->spinBoxSubd, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setSurfSubdLevel(int)));
     connect(ui->imgShowAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgShowAll(bool)));
     connect(ui->imgWriteAll, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setImgWriteAll(bool)));
+    connect(ui->clipping, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClipping(bool)));
 }
 
 MainWindow::~MainWindow()
