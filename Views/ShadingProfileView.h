@@ -83,6 +83,7 @@ private:
     QRectF rect ;
 
     void propagateAttributes(ControlPoint& cpt);
+    int representativeCptRef();
 
 protected:
 

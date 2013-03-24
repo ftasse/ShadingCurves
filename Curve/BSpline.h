@@ -28,6 +28,7 @@ public:
     QVector<ControlPoint> getPoints(); // HENRIK: return list of control points
     QVector<ControlPoint> getControlPoints();
     void computeControlPointNormals();
+    void editEndPoints();
 
     ControlPoint& pointAt(int index);
     Surface& surfaceAt(int index);

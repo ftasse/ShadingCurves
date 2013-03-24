@@ -47,13 +47,13 @@ ShadingProfileView::ShadingProfileView()
     childLayout1->addSpacing(30);
 
     inwardExtentWidget = new QScrollBar(Qt::Horizontal);    //inwardExtentWidget->setTracking(false);
-    inwardExtentLabel = new QLabel ("Inward Extent");
+    inwardExtentLabel = new QLabel ("Direction 1 Extent");
     outwardExtentWidget = new QScrollBar(Qt::Horizontal);   //outwardExtentWidget->setTracking(false);
-    outwardExtentLabel = new QLabel ("Outward Extent");
+    outwardExtentLabel = new QLabel ("Direction 2 Extent");
     inwardHeightWidget = new QScrollBar(Qt::Horizontal);    //inwardHeightWidget->setTracking(false);
-    inwardHeightLabel = new QLabel ("Inward Height");
+    inwardHeightLabel = new QLabel ("Direction 1 Height");
     outwardHeightWidget = new QScrollBar(Qt::Horizontal);   //outwardHeightWidget->setTracking(false);
-    outwardHeightLabel = new QLabel ("Outward Height");
+    outwardHeightLabel = new QLabel ("Direction 2 Height");
 
     childLayout2->addWidget(inwardExtentLabel); childLayout2->addWidget(inwardExtentWidget);
 
@@ -75,11 +75,18 @@ ShadingProfileView::ShadingProfileView()
     splineGroup = NULL;
 }
 
+int ShadingProfileView::representativeCptRef()
+{
+    int mid = cpts_ids.size()/2;
+    return cpts_ids[mid];
+}
+
 void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
 {
 
     for (int i=0; i<cpts_ids.size(); ++i)
     {
+        if (cpts_ids[i] == cpt.ref) continue;
         ControlPoint& other = splineGroup->controlPoint(cpts_ids[i]);
 
         for (int k=0; k<2; ++k)
@@ -95,10 +102,10 @@ void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
 
 void ShadingProfileView::updateLabels()
 {
-    updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Inward Extent");
-    updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Outward Extent");
-    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Inward Height");
-    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Outward Height");
+    updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Direction 1 Extent");
+    updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Direction 2 Extent");
+    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Direction 1 Height");
+    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Direction 2 Height");
 }
 
 void ShadingProfileView::updatePath()
@@ -110,10 +117,10 @@ void ShadingProfileView::updatePath()
     my_scene->greenPathItem = NULL;
     graphicsView->scene()->clear();
 
-    if (splineGroup == NULL || cpts_ids.size() < 0)
+    if (splineGroup == NULL || cpts_ids.size() == 0)
         return;
 
-    ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
     //propagateAttributes(cpt);
 
     inwardExtentWidget->blockSignals( true );
@@ -164,7 +171,7 @@ void ShadingProfileView::updatePath()
 void ShadingProfileView::refreshPath()
 {
     ShadingProfileScene *my_scene = (ShadingProfileScene*) graphicsView->scene();
-    ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
     float ps = POINT_SIZE;
 
     QVector<QPointF> gPoints, rPoints;
@@ -298,7 +305,7 @@ void ShadingProfileView::refreshPath()
 
 void ShadingProfileView::add_shape_point(QPointF point)
 {
-    ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
     ShadingProfileScene *my_scene = (ShadingProfileScene*) graphicsView->scene();
 
     for (int k=0; k<2; ++k)
@@ -313,7 +320,7 @@ void ShadingProfileView::add_shape_point(QPointF point)
 
 void ShadingProfileView::remove_shape_point(QVector<int> indices)
 {
-    ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
     ShadingProfileScene *my_scene = (ShadingProfileScene*) graphicsView->scene();
 
     for (int k=0; k<2; ++k)
@@ -332,7 +339,7 @@ void ShadingProfileView::remove_shape_point(QVector<int> indices)
 
 void ShadingProfileView::updateControlPointParameters()
 {
-    ControlPoint& cpt = splineGroup->controlPoint(cpts_ids.first());
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
 
    cpt.attributes[0].extent = inwardExtentWidget->value();
    cpt.attributes[1].extent = outwardExtentWidget->value();
