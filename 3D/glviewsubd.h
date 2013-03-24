@@ -75,6 +75,8 @@ public:
 
     int super;
 
+    void lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B);
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);

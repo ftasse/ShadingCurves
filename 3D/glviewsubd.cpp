@@ -494,11 +494,12 @@ void GLviewsubd::paintGL(void)
             cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
 
             // apply luminance adjustment
+            double  rr, gg, bb;
             for( int y = 0; y < imgFillShaded.rows; y++ )
             {
                 for( int x = 0; x < imgFillShaded.cols; x++ )
                 {
-                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603);
+                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
 
                     if (tmp > 100)
                     {
@@ -508,13 +509,20 @@ void GLviewsubd::paintGL(void)
                     {
                         tmp = 0;
                     }
-                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+//                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+                        //convert manually back to BGR
+//                        lab2rgb<double,double>(tmp, imgShaded.at<cv::Vec3f>(y,x)[1], imgShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+                        lab2rgbVer2(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                 }
             }
 
             //convert back to BGR
-            cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
-            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
+//            cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
+//            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
             {
             }
             //show always
@@ -2173,4 +2181,31 @@ void GLviewsubd::setRotZero(void)
     glTranslatef(-(double)imageWidth / 2.0, -(double) imageHeight / 2.0, -0);
     scale = 1;
     updateGL();
+}
+
+void GLviewsubd::lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B)
+{
+    double X, Y, Z;
+
+    // Lab -> normalized XYZ (X,Y,Z are all in 0...1)
+
+    Y = L * (1.0/116.0) + 16.0/116.0;
+    X = a * (1.0/500.0) + Y;
+    Z = b * (-1.0/200.0) + Y;
+
+    X = X > 6.0/29.0 ? X * X * X : X * (108.0/841.0) - 432.0/24389.0;
+    Y = L > 8.0 ? Y * Y * Y : L * (27.0/24389.0);
+    Z = Z > 6.0/29.0 ? Z * Z * Z : Z * (108.0/841.0) - 432.0/24389.0;
+
+    // normalized XYZ -> linear sRGB (in 0...1)
+
+    R = X * (1219569.0/395920.0)     + Y * (-608687.0/395920.0)    + Z * (-107481.0/197960.0);
+    G = X * (-80960619.0/87888100.0) + Y * (82435961.0/43944050.0) + Z * (3976797.0/87888100.0);
+    B = X * (93813.0/1774030.0)      + Y * (-180961.0/887015.0)    + Z * (107481.0/93370.0);
+
+    // linear sRGB -> gamma-compressed sRGB (in 0...1)
+
+    R = R > 0.0031308 ? pow(R, 1.0 / 2.4) * 1.055 - 0.055 : R * 12.92;
+    G = G > 0.0031308 ? pow(G, 1.0 / 2.4) * 1.055 - 0.055 : G * 12.92;
+    B = B > 0.0031308 ? pow(B, 1.0 / 2.4) * 1.055 - 0.055 : B * 12.92;
 }

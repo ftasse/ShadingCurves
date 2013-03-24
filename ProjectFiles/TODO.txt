@@ -1,2 +1,11 @@
 BUGS, low priority:
 - colouring bug
+
+
+
+Jiri:
+- look at timings
+- optionally add super sampling options to 3D GUI
+
+?Flora:
+- look at clipping at CP height level (currently done on pixels during shading)
