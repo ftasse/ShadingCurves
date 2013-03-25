@@ -38,33 +38,56 @@ void Surface::computeFaceIndices()
 {
     faceIndices.clear();
 
+    if (controlMesh.size() == 0 || controlMesh[0].size() == 0)
+        return;
+
+    if (columnBreaks.size() == 0 && hasBreak.size() == controlMesh[0].size())
+    {
+        for (int i=0; i<hasBreak.size(); ++i)
+        {
+            if (hasBreak[i])
+                columnBreaks.append(i);
+        }
+    }
+
+    QVector<int> breaks = columnBreaks;
+    breaks.append(controlMesh[0].size()-1);
+
     //Compute faces indices
     //bool flip_face = true;
     for (int k=0; k<controlMesh.size()-1; ++k)
     {
-        for (int l=0; l<controlMesh[k].size()-1; ++l)
+        int l = 0;
+        for (int i=0; i<breaks.size(); ++i)
         {
-            QVector<int> indices;
-
-            indices.push_back(controlMesh[k][l]);
-            if (controlMesh[k][l+1] != indices.back())
-                indices.push_back(controlMesh[k][l+1]);
-
-            if (controlMesh[k+1][l+1] != indices.back())
-                indices.push_back(controlMesh[k+1][l+1]);
-
-            if (controlMesh[k+1][l] != indices.back() && controlMesh[k+1][l] != indices.front())
-                indices.push_back(controlMesh[k+1][l]);
-
-            /*if (flip_face)
+            int next_break = breaks[i];
+            while (l < next_break)
             {
-                std::reverse(indices.begin(), indices.end());
-            }*/
+                QVector<int> indices;
 
-            if (indices.size() > 2)
-                faceIndices.push_back(indices);
+                indices.push_back(controlMesh[k][l]);
+                if (controlMesh[k][l+1] != indices.back())
+                    indices.push_back(controlMesh[k][l+1]);
+
+                if (controlMesh[k+1][l+1] != indices.back())
+                    indices.push_back(controlMesh[k+1][l+1]);
+
+                if (controlMesh[k+1][l] != indices.back() && controlMesh[k+1][l] != indices.front())
+                    indices.push_back(controlMesh[k+1][l]);
+
+                /*if (flip_face)
+                {
+                    std::reverse(indices.begin(), indices.end());
+                }*/
+
+                if (indices.size() > 2)
+                    faceIndices.push_back(indices);
+
+                ++l;
+            }
+            ++l;
+
         }
-        //flip_face = !flip_face;
     }
 
 }

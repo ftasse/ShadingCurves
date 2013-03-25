@@ -9,6 +9,17 @@
 #include "BSplineGroup.h"
 #include "Utilities/SurfaceUtils.h"
 
+typedef struct NormalInfo
+{
+    int pos;
+    int direction;
+    QPointF normal;
+    NormalInfo (){}
+    NormalInfo(int p, int d, QPointF n) {
+        pos = p; direction = d; normal = n;
+    }
+} NormalInfo;
+
 BSplineGroup::BSplineGroup()
 {
     runningGarbageCollection = false;
@@ -304,6 +315,157 @@ void BSplineGroup::removeSurface(int surface_id)
     surf.vertices.clear();
     surf.controlMesh.clear();
     surf.sharpCorners.clear();
+}
+
+void BSplineGroup::computeJunctions()
+{
+    junctionInfos.clear();
+    std::vector< std::vector<bool> > bsplines_start_height_edited(num_splines()),
+                                         bsplines_end_height_edited(num_splines());
+    for (int i=0; i<num_splines(); ++i)
+    {
+        bsplines_start_height_edited[i] = std::vector<bool>(2,false);
+        bsplines_end_height_edited[i] = std::vector<bool>(2,false);
+    }
+
+    for (int i=0; i<num_controlPoints(); ++i)
+    {
+        ControlPoint& cpt = controlPoint(i);
+        if (cpt.num_splines() > 1)
+        {
+            for (int j=0; j<cpt.splineRefs.size(); ++j)
+                for (int k=j+1; k<cpt.splineRefs.size(); ++k)
+                {
+                    if (cpt.splineRefs[j] == cpt.splineRefs[k])
+                        continue;
+
+                    BSpline& spline_j = spline(cpt.splineRefs[j]);
+                    BSpline& spline_k = spline(cpt.splineRefs[k]);
+
+                    if (spline_j.num_cpts()<=1 || spline_k.num_cpts()<=1)
+                        continue;
+
+                    QVector< NormalInfo > normals_j;
+                    QVector< NormalInfo > normals_k;
+
+                    for (int l=0; l<spline_j.num_cpts(); ++l)
+                        if (spline_j.cptRefs[l] == cpt.ref)
+                        {
+                            normals_j.push_back(NormalInfo(l, 0, spline_j.inward_normals[l]));
+                            normals_j.push_back(NormalInfo(l, 1, spline_j.outward_normals[l]));
+                        }
+
+                    for (int l=0; l<spline_k.num_cpts(); ++l)
+                        if (spline_k.cptRefs[l] == cpt.ref)
+                        {
+                            normals_k.push_back(NormalInfo(l, 0, spline_k.inward_normals[l]));
+                            normals_k.push_back(NormalInfo(l, 1, spline_k.outward_normals[l]));
+                        }
+
+                    for (int m=0; m<normals_j.size(); ++m)
+                        for (int n=0; n<normals_k.size(); ++n)
+                        {
+                            if (fabs(normals_j[m].normal.x()-normals_k[n].normal.x()) > 1e-8 ||
+                                    fabs(normals_j[m].normal.y()-normals_k[n].normal.y()) > 1e-8)
+                                continue;
+
+                            if (normals_j[m].direction==0 && !spline_j.has_inward_surface)
+                                continue;
+                            else if (normals_j[m].direction==1 && !spline_j.has_outward_surface)
+                                continue;
+                            if (normals_k[n].direction==0 && !spline_k.has_inward_surface)
+                                continue;
+                            else if (normals_k[n].direction==1 && !spline_k.has_outward_surface)
+                                continue;
+
+                            CurveJunctionInfo junction;
+                            junction.cptRef = cpt.ref;
+                            junction.splineRef1 = spline_j.ref; junction.spline1Direction = normals_j[m].direction;
+                            junction.splineRef2 = spline_k.ref; junction.spline2Direction = normals_k[n].direction;
+                            junction.valid = true;
+                            junction.has_negative_directions = false;
+
+                            ControlPoint leftPt, rightPt;
+                            if (normals_j[m].pos == 0)
+                                leftPt = spline_j.pointAt(1);
+                            else if (normals_j[m].pos == spline_j.num_cpts()-1)
+                                leftPt = spline_j.pointAt(spline_j.num_cpts()-2);
+                            else
+                            {
+                                qDebug("This is an invalid junction (1). cpt_id: %d", cpt.ref);
+                                continue;
+                            }
+
+                            if (normals_k[n].pos == 0)
+                                rightPt = spline_k.pointAt(1);
+                            else if (normals_k[n].pos == spline_k.num_cpts()-1)
+                                rightPt = spline_k.pointAt(spline_k.num_cpts()-2);
+                            else
+                            {
+                                qDebug("This is an invalid junction (2). cpt_id: %d", cpt.ref);
+                                continue;
+                            }
+
+                            if (leftPt.attributes[junction.spline1Direction].height*rightPt.attributes[junction.spline2Direction].height<0.0)
+                                junction.has_negative_directions = true;
+                            else if (leftPt.attributes[junction.spline1Direction].height*cpt.attributes[junction.spline1Direction].height<0.0)
+                                junction.has_negative_directions = true;
+                            else if (rightPt.attributes[junction.spline2Direction].height*cpt.attributes[junction.spline2Direction].height<0.0)
+                                junction.has_negative_directions = true;
+
+                            junctionInfos.push_back(junction);
+
+                            if (normals_j[m].pos == 0 || spline_j.has_loop())
+                            {
+                                if (!junction.has_negative_directions)
+                                    bsplines_start_height_edited[spline_j.ref][junction.spline1Direction] = false;
+                                if (!bsplines_start_height_edited[spline_j.ref][junction.spline1Direction])
+                                {
+                                    bsplines_start_height_edited[spline_j.ref][junction.spline1Direction] = true;
+                                    spline_j.start_has_zero_height[junction.spline1Direction] = junction.has_negative_directions;
+                                }
+                            }
+                            if (normals_j[m].pos == spline_j.num_cpts()-1 || spline_j.has_loop())
+                            {
+                                if (!junction.has_negative_directions)
+                                    bsplines_end_height_edited[spline_j.ref][junction.spline1Direction] = false;
+                                if (!bsplines_end_height_edited[spline_j.ref][junction.spline1Direction])
+                                {
+                                    bsplines_end_height_edited[spline_j.ref][junction.spline1Direction] = true;
+                                    spline_j.end_has_zero_height[junction.spline1Direction] = junction.has_negative_directions;
+                                }
+                            }
+
+                            if (normals_k[n].pos == 0 || spline_k.has_loop())
+                            {
+                                if (!junction.has_negative_directions)
+                                    bsplines_start_height_edited[spline_k.ref][junction.spline2Direction] = false;
+                                if (!bsplines_start_height_edited[spline_k.ref][junction.spline2Direction])
+                                {
+                                    bsplines_start_height_edited[spline_k.ref][junction.spline2Direction] = true;
+                                    spline_k.start_has_zero_height[junction.spline2Direction] = junction.has_negative_directions;
+                                }
+                            }
+                            if (normals_k[n].pos == spline_k.num_cpts()-1  || spline_k.has_loop())
+                            {
+                                if (!junction.has_negative_directions)
+                                    bsplines_end_height_edited[spline_k.ref][junction.spline2Direction] = false;
+                                if (!bsplines_end_height_edited[spline_k.ref][junction.spline2Direction])
+                                {
+                                    bsplines_end_height_edited[spline_k.ref][junction.spline2Direction] = true;
+                                    spline_k.end_has_zero_height[junction.spline2Direction] = junction.has_negative_directions;
+                                }
+                            }
+
+                        }
+                }
+        }
+    }
+
+    if (junctionInfos.size() > 0)
+    {
+        qDebug("nbr of junctions: %d", junctionInfos.size());
+    }
 }
 
 void BSplineGroup::scale(float xs, float ys)

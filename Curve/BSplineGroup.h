@@ -12,16 +12,16 @@ typedef struct CurveJunctionInfo
     int cptRef;
     int splineRef1;
     int splineRef2;
-    QPointF spline1Normal;
-    bool spline1Inward;
-    bool spline2Inward;
+    int spline1Direction;
+    int spline2Direction;
     bool has_negative_directions;
     bool valid;
 
     CurveJunctionInfo()
     {
         cptRef = splineRef1 = splineRef2 = -1;
-        spline1Inward = spline2Inward = has_negative_directions = valid = false;
+        has_negative_directions = valid = false;
+        spline1Direction = spline2Direction = -1;
     }
 } CurveJunctionInfo;
 
@@ -42,6 +42,8 @@ public:
     void removeControlPoint(int cpt_id);
     void removeSpline(int spline_id);
     void removeSurface(int surface_id);
+
+    void computeJunctions();
 
     void scale(float xs, float ys);
     void garbage_collection();

@@ -238,16 +238,11 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     inPanMode = false;
     if (hasMoved)
     {
-        for (int i=0; i<num_splines(); ++i)
-        {
-            spline(i).recompute();
-        }
-
         recomputeAllSurfaces();
         hasMoved = false;
         event->accept();
-        update();
-    }
+    } else if (sketchmode() == ADD_CURVE_MODE)
+        recomputeAllSurfaces();
 }
 
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -995,6 +990,17 @@ void GLScene::recomputeAllSurfaces()
 {
     //qDebug("Recompute surfaces");
 
+    for (int i=0; i<num_splines(); ++i)
+        if (spline(i).num_cpts() > 1)
+                spline(i).recompute();
+
+    for (int i=0; i<num_splines(); ++i)
+        if (spline(i).num_cpts() > 1)
+            spline(i).computeControlPointNormals();
+
+    m_splineGroup.computeJunctions();
+    update_region_coloring();
+
     // HENRIK, include distrance transform image
     cv::Mat curvesGrayIm = curvesImage();
     cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
@@ -1002,26 +1008,10 @@ void GLScene::recomputeAllSurfaces()
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
-    /*for (int i=0; i<num_splines(); ++i)
-        if (spline(i).num_cpts() > 1)
-                spline(i).recompute();*/
-
-    for (int i=0; i<num_splines(); ++i)
-        if (spline(i).num_cpts() > 1)
-            spline(i).computeControlPointNormals();
-
-    for (int i=0; i<num_splines(); ++i)
-        if (spline(i).num_cpts() > 1)
-            spline(i).editEndPoints();
-
-    if (m_splineGroup.junctionInfos.size()>0)
-    {
-        //qDebug("Num of merges: %d", m_splineGroup.junctionInfos.size());
-    }
-
     for (int i=0; i<num_splines(); ++i)
     {
-        spline(i).computeSurfaces(dt);
+        if (spline(i).num_cpts() > 1)
+            spline(i).computeSurfaces(dt);
     }
     update();
 }
@@ -1067,8 +1057,8 @@ void GLScene::subdivide_current_spline(){
             if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id))
                 break;
         }
-        spline.recompute();
-        m_splineGroup.garbage_collection();
+        //spline.recompute();
+        //m_splineGroup.garbage_collection();
 
         recomputeAllSurfaces();
     }
@@ -1076,18 +1066,7 @@ void GLScene::subdivide_current_spline(){
 
 void GLScene::updateConnectedSurfaces(int cptRef)
 {
-    cv::Mat curvesGrayIm = curvesImage();
-    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
-    cv::Mat dt;
-    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
-
-    ControlPoint& cpt = controlPoint(cptRef);
-    for (int k=0; k<cpt.num_splines(); ++k)
-    {
-        spline(cpt.splineRefs[k]).recompute();
-        spline(cpt.splineRefs[k]).computeSurfaces(dt);
-    }
-    update();
+    recomputeAllSurfaces();
 }
 
 void GLScene::toggleShowCurrentCurvePoints(bool status)
@@ -1151,7 +1130,7 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
     glLoadIdentity();
     glRenderMode(GL_RENDER);
 
-    if (thickness < 0.0)
+    //if (thickness < 0.0)
     {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
@@ -1206,8 +1185,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     cv::Mat img = curvesImageBGR(only_closed_curves, 1.5);
 
     cv::cvtColor(img, img, CV_BGR2RGB);
-    cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);   cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
 }
 
@@ -1377,20 +1356,13 @@ bool cmp_junctions (CurveJunctionInfo i, CurveJunctionInfo j)
 
 std::vector<std::string> GLScene::OFFSurfaces()
 {
-    recomputeAllSurfaces();
-    update_region_coloring();
     std::vector<std::string> surface_strings;
 
     QVector< QVector<int> > mergedGroups;
     QVector< QVector<int> > mergedGroups_JIds;
 
     QVector<CurveJunctionInfo> junctionInfos  = m_splineGroup.junctionInfos;
-    //std::sort(junctionInfos.begin(), junctionInfos.end(), cmp_junctions);
-
     QVector<bool> surface_is_merged(num_surfaces(), false);
-    QVector<bool> junction_is_valid(junctionInfos.size(), false);
-    /*QVector<std::pair<int,int> > mergingSurfaces;
-    QVector<int> merge_junction_ids;*/
 
     for (int k=0; k<junctionInfos.size(); ++k)
     {
@@ -1399,28 +1371,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
         BSpline& otherSpline = spline(junctionInfo.splineRef2);
         if (bspline.num_cpts() > 1 && otherSpline.num_cpts() > 1)
         {
-            bool valid = junctionInfo.valid; //See Compute Normals in BSpline to see how to validate a junction
-
-            /*if(junctionInfo.spline1Inward)
+            if (junctionInfo.valid)
             {
-                if (!bspline.has_inward_surface)
-                    continue;
-            }
-            else if (!bspline.has_outward_surface)
-                    continue;
-
-            if (otherSpline.has_inward_surface && junctionInfo.spline2Inward)
-                valid = true;
-            else if (otherSpline.has_outward_surface && !junctionInfo.spline2Inward)
-                valid = true;*/
-
-            if (valid)
-            {
-                junction_is_valid[k] = true;
                 std::pair<int, int> merging;
                 for (int l=0; l<otherSpline.num_surfaces(); ++l)
                 {
-                    if (otherSpline.surfaceAt(l).vertices.size() > 1 && (otherSpline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline2Inward)
+                    if (otherSpline.surfaceAt(l).vertices.size() > 1 && (otherSpline.surfaceAt(l).direction == INWARD_DIRECTION) == (junctionInfo.spline2Direction==0))
                     {
                         surface_is_merged[otherSpline.surfaceAt(l).ref] = true;
                         merging.second = otherSpline.surfaceAt(l).ref;
@@ -1428,7 +1384,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 }
                 for (int l=0; l<bspline.num_surfaces(); ++l)
                 {
-                    if (bspline.surfaceAt(l).vertices.size() > 1 && (bspline.surfaceAt(l).direction == INWARD_DIRECTION) == junctionInfo.spline1Inward)
+                    if (bspline.surfaceAt(l).vertices.size() > 1 && (bspline.surfaceAt(l).direction == INWARD_DIRECTION) == (junctionInfo.spline1Direction==0))
                     {
                         surface_is_merged[bspline.surfaceAt(l).ref] = true;
                         merging.first = bspline.surfaceAt(l).ref;
@@ -1474,15 +1430,28 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     mergedGroups_JIds.last().push_back(k);
 
                 }
-                /*if (std::find(mergingSurfaces.begin(), mergingSurfaces.end(), merging) == mergingSurfaces.end())
-                {
-                    mergingSurfaces.push_back(merging);
-                    merge_junction_ids.push_back(k);
-                }*/
             }
         }
     }
 
+    for (int i=0; i< num_surfaces(); ++i)
+        if (surface(i).vertices.size() > 0 && !surface_is_merged[i])
+        {
+            BSpline& bspline = spline(surface(i).splineRef);
+            QPointF normal  = bspline.get_normal(1, true, surface(i).direction == INWARD_DIRECTION);
+
+            QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
+            cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+            {
+                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
+            }*/
+            surface_strings.push_back( surface(i).surfaceToOFF(color) );
+
+            //qDebug("%s", surface_strings.back().c_str());
+        }
+
+    //Merging: (Join suitable merge groups and then create the different merged surfaces
     while (true)
     {
         bool joinMergedGroups = false;
@@ -1521,29 +1490,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
             break;
     }
 
-    for (int i=0; i< num_surfaces(); ++i)
-        if (surface(i).vertices.size() > 0 && !surface_is_merged[i])
-        {
-            BSpline& bspline = spline(surface(i).splineRef);
-            QPointF normal  = bspline.get_normal(1, true, surface(i).direction == INWARD_DIRECTION);
-
-            QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
-            cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
-            {
-                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-            }*/
-            surface_strings.push_back( surface(i).surfaceToOFF(color) );
-
-            //qDebug("%s", surface_strings.back().c_str());
-        }
-
     for (int i=0; i<mergedGroups.size(); ++i)
     {
         QVector<int> surf_ids = mergedGroups[i];
-
         Surface mergedSurface;
-        QVector<int> extraFaceIndices;
         int cptRefFront = -1;
         int cptRefBack = -1;
 
@@ -1552,24 +1502,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
         {
             Surface& surf = surface(*it);
 
-            /*
-            BSpline& bspline = spline(surf.splineRef);
-
-            QVector<int> new_vert_ids;
-            for (int j=0; j<surf.vertices.size(); ++j)
-            {
-                new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
-            }
-            for (int l=0; l<surf.faceIndices.size(); ++l)
-            {
-                QVector<int> face = surf.faceIndices[l];
-                QVector<int> new_face;
-                for (int t=0; t<face.size(); ++t)
-                    new_face.push_back(new_vert_ids[face[t]]);
-                mergedSurface.faceIndices.append(new_face);
-            }*/
-
-            if (it == surf_ids.begin() )
+           if (it == surf_ids.begin() )
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
@@ -1621,55 +1554,93 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 }
 
                 CurveJunctionInfo& junction = junctionInfos[mergedGroups_JIds[i][k]];
-                bool isTJunction = false;
-                if (controlPoint(junction.cptRef).num_splines() > 2)
-                    isTJunction = true;
-                if (controlPoint(junction.cptRef).attributes[0].height*controlPoint(junction.cptRef).attributes[0].height<0.0)
-                        isTJunction = true;
-                if (isTJunction || junction.has_negative_directions)
+                int direction = (surf.direction == OUTWARD_DIRECTION)?1:0;
+                BSpline& bspline = spline(surf.splineRef);
+
+                bool isSharp = false;
+                bool hasZeroHeight = false;
+                if (bspline.pointAt(0).num_splines() > 2)
+                    isSharp = true;
+                else if (bspline.pointAt(bspline.num_cpts()-1).num_splines()>2)
+                    isSharp = true;
+                if (junction_is_first && bspline.start_has_zero_height[direction])
+                        hasZeroHeight = true;
+                else if (!junction_is_first && bspline.end_has_zero_height[direction])
+                        hasZeroHeight = true;
+                if (isSharp)
                 {
-                    if (close)
+                    if (bspline.pointAt(0).num_splines()>2)
                     {
                         mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().first()]);
-                        mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().last()]);
-                    } else
+                    }
+                    if (bspline.pointAt(bspline.num_cpts()-1).num_splines()>2)
                     {
-                        if (junction_is_first)  mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().first()]);
-                        else mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().last()]);
+                        mergedSurface.sharpCorners.insert(new_vert_ids[surf.controlMesh.last().last()]);
                     }
                 }
 
-
+                int first = mergedSurface.controlMesh.first().first();
+                int last = mergedSurface.controlMesh.first().last();
                 for (int l=0; l<surf.controlMesh.size(); ++l)
                 {
                     QVector<int> row = surf.controlMesh[l];
+                    if (bspline.start_has_zero_height[direction])
+                    {
+                        row.prepend(surf.controlMesh.first().first());
+                    }
+                    if (bspline.end_has_zero_height[direction])
+                    {
+                        row.append(surf.controlMesh.first().last());
+                    }
+
                     if (reverse)   std::reverse(row.begin(), row.end());
-                    /*if (prepend)
-                        row.pop_back();
-                    else
-                        row.pop_front();*/
+
                     for (int j=0; j<row.size(); ++j)
                     {
                         if (prepend)
+                        {
                             mergedSurface.controlMesh[l].prepend(new_vert_ids[row[row.size()-1-j]]);
+                        }
                         else
+                        {
                             mergedSurface.controlMesh[l].append(new_vert_ids[row[j]]);
+                        }
                     }
                 }
 
 
-                if (close)
+
+                /*if (close)
                 {
                     for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
                     {
                         if (prepend)
+                        {
                             mergedSurface.controlMesh[i].prepend(mergedSurface.controlMesh[i].last());
+                        }
                         else
+                        {
                             mergedSurface.controlMesh[i].append(mergedSurface.controlMesh[i].first());
+                        }
                     }
-                }
+                }*/
+
             }
             ++k;
+        }
+
+        for (int l=0; l<mergedSurface.controlMesh[0].size(); ++l)
+        {
+            bool isSharp = true;
+            for (int i=1; i<mergedSurface.controlMesh.size(); ++i)
+            {
+                if (mergedSurface.controlMesh[i][l] != mergedSurface.controlMesh[i-1][l])
+                {
+                    isSharp = false;
+                    break;
+                }
+            }
+            if (isSharp) mergedSurface.sharpCorners.insert(mergedSurface.controlMesh[0][l]);
         }
 
         mergedSurface.computeFaceIndices();
