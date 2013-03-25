@@ -59,6 +59,8 @@ public slots:
     void setClipping(bool b);
     void setClipMin(int min);
     void setClipMax(int max);
+    void setOpenCV(bool b);
+    void setTime(bool b);
 
 private:
     QPointF currentCenterPoint;
@@ -68,7 +70,7 @@ private:
     GLviewsubd      *glvs;
 
     int superSampling, surfSubdLevel, clipMin, clipMax;
-    bool imgShowAll, imgWriteAll, clipping;
+    bool imgShowAll, imgWriteAll, clipping, openCV, timeIt;
 };
 
 #endif // GRAPHICSVIEW_H

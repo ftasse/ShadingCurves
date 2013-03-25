@@ -76,6 +76,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     clipping = true;
     clipMax = 100;
     clipMin = 0;
+    openCV = true;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -96,13 +97,16 @@ void GLviewsubd::setSubdivLevel(int newLevel)
     unsigned int newL = newLevel;
     bool        showMessageCF, showMessageCCint;
 
+    QElapsedTimer timer;
+    timer.start();
+
     showMessageCF = false;
     showMessageCCint = false;
 
     if (meshCurr.size() > 0 && meshCurr[0]->my_level != newL)
 	{
         oldLevel = meshCurr[0]->my_level;
-cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLevel << endl;
+//cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLevel << endl;
 
         if ((meshCurr[0]->my_level > newL) || (meshSubd[0].size() > newL))
 		{
@@ -131,8 +135,10 @@ cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLeve
 		}
 
 //        emit subdivLevelChanged(newLevel);
-        cout << "subdivide End " << endl;
+//        cout << "subdivide End " << endl;
 	}
+    qDebug() << "Subdivision took" << timer.elapsed() << "milliseconds";
+
 	updateAll();
 }
 
@@ -323,6 +329,9 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
+        QElapsedTimer timer;
+        timer.start();
+
         double      tmp;
 
         numberPaintCalls++;
@@ -418,6 +427,9 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
+        qDebug() << "OpenGL took " << timer.elapsed() << "milliseconds";
+        timer.restart();
+
         //process images
 //        inputImg->copyTo(imgShaded);
         cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
@@ -496,42 +508,77 @@ void GLviewsubd::paintGL(void)
 
             imgFill.copyTo(imgFillShaded);
 
-            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
-
-            // apply luminance adjustment
-            double  rr, gg, bb;
-            for( int y = 0; y < imgFillShaded.rows; y++ )
+            if (!openCV)
             {
-                for( int x = 0; x < imgFillShaded.cols; x++ )
+                // apply luminance adjustment
+                double  rr, gg, bb, L, a, b;
+                for( int y = 0; y < imgFillShaded.rows; y++ )
                 {
-                    tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
-
-                    if (clipping)
+                    for( int x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        if (tmp > clipMax)
-                        {
-                            tmp = clipMax;
-                        }
-                        if (tmp < clipMin)
-                        {
-                            tmp = clipMin;
-                        }
-                    }
-                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                        RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                                imgFillShaded.at<cv::Vec3f>(y,x)[1],
+                                imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                L, a, b);
 
-                        //convert manually back to BGR
-//                        LAB2RGB(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
-//                        lab2rgb<double,double>(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
-//                        lab2rgbVer2(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
-//                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-//                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-//                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                        tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                        if (clipping)
+                        {
+                            if (tmp > clipMax)
+                            {
+                                tmp = clipMax;
+                            }
+                            if (tmp < clipMin)
+                            {
+                                tmp = clipMin;
+                            }
+                        }
+    //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+                            //convert manually back to BGR
+
+                            LAB2RGB(tmp, a, b, rr, gg, bb);
+                            // seems to give results similar to Henrik' Matlab code
+    //                        lab2rgb<double,double>(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+                            // results are a bit different
+    //                        lab2rgbVer2(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                    }
                 }
             }
+            else // use openCV
+            {
+                cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
 
-            //convert back to BGR
-            cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
-            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
+                // apply luminance adjustment
+                for( int y = 0; y < imgFillShaded.rows; y++ )
+                {
+                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    {
+                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                        if (clipping)
+                        {
+                            if (tmp > clipMax)
+                            {
+                                tmp = clipMax;
+                            }
+                            if (tmp < clipMin)
+                            {
+                                tmp = clipMin;
+                            }
+                        }
+                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                    }
+                }
+
+                //convert back to BGR
+                cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
+                cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
+            }
 
             //show always
             if (showImg)
@@ -552,12 +599,14 @@ void GLviewsubd::paintGL(void)
             if (writeImg)
             {
                 cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".tif", img);
+                cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
                 cv::imwrite("ImgFillPyrDown" + to_string(super) + ".tif", imgFill);
 //                cv::imwrite("ImgResult" + to_string(super) + ".tif", imgShaded);
                 cv::imwrite("ImgFillResult" + to_string(super) + ".tif", imgFillShaded);
             }
         }
-        updateGL();
+//        updateGL();
+        qDebug() << "Image processing took " << timer.elapsed() << "milliseconds";
     }
     else
     {
@@ -2191,6 +2240,7 @@ void GLviewsubd::setRotZero(void)
     updateGL();
 }
 
+//somewhere from the web
 void GLviewsubd::lab2rgbVer2(double L, double a, double b, double &R, double &G, double &B)
 {
     double X, Y, Z;
@@ -2218,6 +2268,7 @@ void GLviewsubd::lab2rgbVer2(double L, double a, double b, double &R, double &G,
     B = B > 0.0031308 ? pow(B, 1.0 / 2.4) * 1.055 - 0.055 : B * 12.92;
 }
 
+//somewhere from the web
 template<class S,class T>
 void GLviewsubd::lab2rgb(
     const S li,
@@ -2264,153 +2315,198 @@ void GLviewsubd::lab2rgb(
     bo = 0.055648*x -0.204043*y + 1.057311*z;
 }
 
-
-
-
-void GLviewsubd::RGB2XYZ(double r, double g, double b, double &x, double &y, double &z)
+//reimplemented from http://www.easyrgb.com/index.php?X=MATH&H=01#text1
+void GLviewsubd::RGB2XYZ(double R, double G, double B, double &X, double &Y, double &Z)
 {
-
     double var_R,var_G,var_B;
-    var_R = (r / 255.0f);
-    var_G = (g / 255.0f);
-    var_B = (b / 255.0f);
 
-    if (var_R > 0.04045)
+    var_R = R; // / 255 )
+    var_G = G; // / 255 )
+    var_B = B; // / 255 )
+
+    if ( var_R > 0.04045 )
     {
-        var_R = pow((var_R + 0.055)/1.055, 2.4);
-
+        var_R = pow( ( var_R + 0.055 ) / 1.055, 2.4);
     }
     else
     {
         var_R = var_R / 12.92;
     }
-    if (var_G > 0.04045)
+
+    if ( var_G > 0.04045 )
     {
-        var_G = pow((var_G + 0.055)/1.055, 2.4);
+        var_G = pow( ( var_G + 0.055 ) / 1.055, 2.4);
     }
     else
     {
         var_G = var_G / 12.92;
     }
-    if (var_B > 0.04045)
+
+    if ( var_B > 0.04045 )
     {
-        var_B = pow((var_B + 0.055)/1.055, 2.4);
+        var_B = pow( ( var_B + 0.055 ) / 1.055, 2.4);
     }
     else
     {
         var_B = var_B / 12.92;
     }
 
-    var_R = var_R * 100.0f;
-    var_G = var_G * 100.0f;
-    var_B = var_B * 100.0f;
+    var_R = var_R * 100.0;
+    var_G = var_G * 100.0;
+    var_B = var_B * 100.0;
 
-    //Observer.   =   2°,   Illuminant   =   D65
-    x = var_R * 0.4124 + var_G * 0.3576 + var_B * 0.1805;
-    y = var_R * 0.2126 + var_G * 0.7152 + var_B * 0.0722;
-    z = var_R * 0.0193 + var_G * 0.1192 + var_B * 0.9505;
+    //Observer. = 2°, Illuminant = D65
+    X = var_R * 0.4124 + var_G * 0.3576 + var_B * 0.1805;
+    Y = var_R * 0.2126 + var_G * 0.7152 + var_B * 0.0722;
+    Z = var_R * 0.0193 + var_G * 0.1192 + var_B * 0.9505;
 }
 
-void GLviewsubd::XYZ2LAB(double x, double y, double z, double &L, double &A ,double &B)
+void GLviewsubd::XYZ2LAB(double X, double Y, double Z, double &L, double &a ,double &b)
 {
     double var_X,var_Y,var_Z;
-    var_X = x / 95.047f;
-    var_Y = y / 100.000f;
-    var_Z = z / 108.883f;
+
+    double ref_X = 95.047;
+    double ref_Y = 100.0;
+    double ref_Z = 100.0;
+
+    var_X = X / ref_X;          //ref_X =  95.047   Observer= 2°, Illuminant= D65
+    var_Y = Y / ref_Y;          //ref_Y = 100.000
+    var_Z = Z / ref_Z;          //ref_Z = 108.883
 
     if ( var_X > 0.008856 )
     {
-        var_X = pow((float)var_X,1.0f/3.0f);
+        var_X = pow(var_X, 1.0/3.0);
     }
     else
     {
-        var_X = ( 7.787 * var_X ) + ( 16 / 116 );
+        var_X = ( 7.787 * var_X ) + ( 16.0 / 116.0 );
     }
-    if (var_Y > 0.008856)
+
+    if ( var_Y > 0.008856 )
     {
-        var_Y = pow((float)var_Y,1.0f/3.0f);
+        var_Y = pow(var_Y, 1.0/3.0);
     }
     else
     {
-        var_Y = ( 7.787 * var_Y ) + ( 16 / 116 );
+        var_Y = ( 7.787 * var_Y ) + ( 16.0 / 116.0 );
     }
+
     if ( var_Z > 0.008856 )
     {
-        var_Z = pow((float)var_Z,1.0f/3.0f);
+        var_Z = pow(var_Z, 1.0/3.0);
     }
     else
     {
-        var_Z = ( 7.787 * var_Z ) + ( 16 / 116 );
+        var_Z = ( 7.787 * var_Z ) + ( 16.0 / 116.0 );
     }
 
-    L = ( 116 * var_Y ) - 16;
-    A = 500 * ( var_X - var_Y );
-    B = 200 * ( var_Y - var_Z );
+    L = ( 116.0 * var_Y ) - 16.0;
+    a = 500.0 * ( var_X - var_Y );
+    b = 200.0 * ( var_Y - var_Z );
 }
 
-void GLviewsubd::RGB2LAB(double r, double g,double b, double &L, double &A, double &B)
+void GLviewsubd::RGB2LAB(double R, double G,double B, double &L, double &a, double &b)
 {
     double x,y,z;
-    RGB2XYZ(r,g,b,x,y,z);
-    XYZ2LAB(x,y,z,L,A,B);
+    RGB2XYZ(R,G,B,x,y,z);
+    XYZ2LAB(x,y,z,L,a,b);
 }
+
+//reimplemented from http://www.easyrgb.com/index.php?X=MATH&H=01#text1
 void GLviewsubd::LAB2RGB(double L, double a, double b, double &R, double &G, double &B)
 {
     double x,y,z;
     LAB2XYZ(L,a,b,x,y,z);
     XYZ2RGB(x,y,z,R,G,B);
 }
-void GLviewsubd::LAB2XYZ(double lab_L, double lab_A, double lab_B, double &X, double &Y, double &Z)
+void GLviewsubd::LAB2XYZ(double L, double a, double b, double &X, double &Y, double &Z)
 {
-    double var_X,var_Y, var_Z;
+    double var_X, var_Y, var_Z, x3, y3, z3;
 
-    var_Y = ( lab_L + 16 ) / 116;
-    var_X = lab_A / 500 + var_Y;
-    var_Z = var_Y - lab_B / 200;
+    var_Y = ( L + 16.0 ) / 116.0;
+    var_X = a / 500.0 + var_Y;
+    var_Z = var_Y - b / 200.0;
 
-    if ( pow((double)var_Y,3) > 0.008856 )
-        var_Y = pow((double)var_Y,3);
-    else
-        var_Y = ( var_Y - 16 / 116 ) / 7.787;
-    if ( pow((double)var_X,3) > 0.008856 )
-        var_X = pow((double)var_X,3);
-    else
-        var_X = ( var_X - 16 / 116 ) / 7.787;
-    if ( pow((double)var_Z,3) > 0.008856 )
-        var_Z = pow((double)var_Z,3);
-    else
-        var_Z = ( var_Z - 16 / 116 ) / 7.787;
+    x3 = var_X * var_X * var_X;
+    y3 = var_Y * var_Y * var_Y;
+    z3 = var_Z * var_Z * var_Z;
 
-    X = 95.047 * var_X;
-    Y = 100.000 * var_Y;
-    Z = 108.883 * var_Z;
+    if ( y3 > 0.008856 )
+    {
+        var_Y = y3;
+    }
+    else
+    {
+        var_Y = ( var_Y - 16.0 / 116.0 ) / 7.787;
+    }
+
+    if ( x3 > 0.008856 )
+    {
+        var_X = x3;
+    }
+    else
+    {
+        var_X = ( var_X - 16.0 / 116.0 ) / 7.787;
+    }
+
+    if ( z3 > 0.008856 )
+    {
+        var_Z = z3;
+    }
+    else
+    {
+        var_Z = ( var_Z - 16.0 / 116.0 ) / 7.787;
+    }
+
+    double ref_X = 95.047;
+    double ref_Y = 100.0;
+    double ref_Z = 100.0;
+
+    X = ref_X * var_X;     //ref_X =  95.047     Observer= 2°, Illuminant= D65
+    Y = ref_Y * var_Y;     //ref_Y = 100.000
+    Z = ref_Z * var_Z;     //ref_Z = 108.883
 }
 
-void GLviewsubd::XYZ2RGB(double x, double y, double z, double &R, double &G, double &B)
+void GLviewsubd::XYZ2RGB(double X, double Y, double Z, double &R, double &G, double &B)
 {
     double var_X,var_Y,var_Z,var_R,var_G,var_B;
 
-    var_X = x / 100.0f;        //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
-    var_Y = y / 100.0f;        //Y from 0 to 100.000
-    var_Z = z / 100.0f;        //Z from 0 to 108.883
+    var_X = X / 100.0;        //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
+    var_Y = Y / 100.0;        //Y from 0 to 100.000
+    var_Z = Z / 100.0;        //Z from 0 to 108.883
 
-    var_R = var_X *  3.2406 + var_Y * -1.5372 + var_Z * -0.4986;
-    var_G = var_X * -0.9689 + var_Y *  1.8758 + var_Z *  0.0415;
-    var_B = var_X *  0.0557 + var_Y * -0.2040 + var_Z *  1.0570;
+    var_R = var_X *  3.2406 + var_Y * (-1.5372) + var_Z * (-0.4986);
+    var_G = var_X * (-0.9689) + var_Y *  1.8758 + var_Z *  0.0415;
+    var_B = var_X *  0.0557 + var_Y * (-0.2040) + var_Z *  1.0570;
 
     if ( var_R > 0.0031308 )
-        var_R = 1.055 * ( pow(var_R,( 1 / 2.4 ) )) - 0.055;
+    {
+        var_R = 1.055 * ( pow(var_R, 1.0 / 2.4) ) - 0.055;
+    }
     else
+    {
         var_R = 12.92 * var_R;
+    }
+
     if ( var_G > 0.0031308 )
-        var_G = 1.055 * ( pow(var_G, ( 1 / 2.4 )) ) - 0.055;
+    {
+        var_G = 1.055 * ( pow(var_G, 1.0 / 2.4) ) - 0.055;
+    }
     else
+    {
         var_G = 12.92 * var_G;
+    }
+
     if ( var_B > 0.0031308 )
-        var_B = 1.055 * ( pow(var_B, ( 1 / 2.4 )) ) - 0.055;
+    {
+        var_B = 1.055 * ( pow(var_B, 1.0 / 2.4) ) - 0.055;
+    }
     else
+    {
         var_B = 12.92 * var_B;
-    R = var_R * 255.0f;
-    G = var_G * 255.0f;
-    B = var_B * 255.0f;
+    }
+
+    R = var_R; // * 255;
+    G = var_G; // * 255;
+    B = var_B; // * 255;
 }

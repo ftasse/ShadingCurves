@@ -231,9 +231,8 @@ void Mesh::load(istream &is, unsigned int iH)
 //        transf();
         build();
 
-		cout << "Mesh loaded! V: " << my_numV << " F: " << my_numF
-             << " 2E: " << my_numE << endl;
-
+//		cout << "Mesh loaded! V: " << my_numV << " F: " << my_numF
+//             << " 2E: " << my_numE << endl;
 }
 
 void Mesh::save(const char *fileName, bool isPly)
@@ -338,8 +337,8 @@ void Mesh::transf(void)
     my_minz = minz;
     my_maxz = maxz;
 
-	cout << "cen: " << my_centre;
-    cout << "scale: " << my_scale << endl;
+//	cout << "cen: " << my_centre;
+//    cout << "scale: " << my_scale << endl;
 }
 
 void Mesh::build(void)
@@ -350,7 +349,7 @@ void Mesh::build(void)
     bool			search;
     MeshVertex		*vert;
 
-    cout << "Building - Start" << endl;
+//    cout << "Building - Start" << endl;
 
     times("");
 
@@ -476,9 +475,9 @@ void Mesh::build(void)
     }
 //cout << "-------------------------" << endl;
 
-    times("Building ");
+//    times("Building ");
 
-    cout << "Building - End" << endl;
+//    cout << "Building - End" << endl;
 }
 
 // returns the previous corner, but in the 'next' facet
@@ -1206,7 +1205,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 //    PointPrec                   x, y, z;
     vector<MeshCorner*>         vecCrn, vecAllCrn;
 
-    cout << "Catmull-Clark start" << endl;
+//    cout << "Catmull-Clark start" << endl;
 
     // compute new face-points
     times("");
@@ -1224,7 +1223,7 @@ void Mesh::CatmullClark(Mesh *smesh)
         Fpoi *= (1.0 / facet->my_valency);
         facet->my_Fpoi = Fpoi;
     }
-    times("Face average loop");
+//    times("Face average loop");
 
     // compute new edge-points - each only once!
     #pragma omp parallel for default(none) private(i,j,facet,crn,Epoi)
@@ -1254,10 +1253,10 @@ void Mesh::CatmullClark(Mesh *smesh)
             }
         }
     }
-    times("Edge average loop");
+//    times("Edge average loop");
 
     // compute new vertex-points
-    #pragma omp parallel for default(none) private(i,j,vertex,Vpoi,crn,next0,next1,prev0,prev1,cencrn,Favrg,Eavrg)
+    #pragma omp parallel for default(none) private(i,j,vertex,Vpoi,crn,cencrn,Favrg,Eavrg,bndCnt)
     for (i = 0 ; i < my_numV ; i++)
     {
         vertex = &my_vertices[i];
@@ -1286,10 +1285,10 @@ void Mesh::CatmullClark(Mesh *smesh)
                     }
                 }
 //                              assert(bndCnt == 2);
-                if (bndCnt != 2)
-                {
-                    cout << "Warning: bndCnt != 2" << endl;
-                }
+//                if (bndCnt != 2)
+//                {
+//                    cout << "Warning: bndCnt != 2" << endl;
+//                }
                 Vpoi *= 1.0 / (6.0 + (double)bndCnt);
 
                 //old code that does not hadle EVs at boundary correctly
@@ -1369,7 +1368,7 @@ void Mesh::CatmullClark(Mesh *smesh)
         }
         vertex->my_Vpoi = Vpoi;
     }
-    times("Vertex average loop");
+//    times("Vertex average loop");
 
     // copy over new positions of V-vertices
     smesh->my_vertices.clear();
@@ -1405,7 +1404,7 @@ void Mesh::CatmullClark(Mesh *smesh)
         vert.isFeature = false;
         smesh->my_vertices[i + my_numV] = vert;
     }
-    times("Copy over V- and F-vertices");
+//    times("Copy over V- and F-vertices");
 
     //index E-vertices and add them to vertex list
     //but first collect corners so that new E-vertices can be added in parallel
@@ -1446,7 +1445,7 @@ void Mesh::CatmullClark(Mesh *smesh)
         }
         smesh->my_vertices[i] = vert;
     }
-    times("Add E-vertices");
+//    times("Add E-vertices");
 
     //create facets
     smesh->my_facets.clear();
@@ -1553,7 +1552,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 //            cnt++;
 //        }
 //    }
-    times("Create facets");
+//    times("Create facets");
 
     smesh->my_numV = smesh->my_vertices.size();
     smesh->my_numF = smesh->my_facets.size();
@@ -1562,7 +1561,7 @@ void Mesh::CatmullClark(Mesh *smesh)
     smesh->my_minz = my_minz;
     smesh->my_maxz = my_maxz;
 
-    cout << "Catmull-Clark end" << endl;
+//    cout << "Catmull-Clark end" << endl;
 
     smesh->build();
 }

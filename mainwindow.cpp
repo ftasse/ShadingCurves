@@ -76,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->graphicsView, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
     connect(scene, SIGNAL(setStatusMessage(QString)), this, SLOT(showStatusMessage(QString)));
 
+    //shading stuff
     connect(ui->super1, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper1()));
     connect(ui->super2, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper2()));
     connect(ui->super4, SIGNAL(clicked()), ui->graphicsView, SLOT(setSuper4()));
@@ -85,6 +86,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->clipping, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClipping(bool)));
     connect(ui->clipMin, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMin(int)));
     connect(ui->clipMax, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMax(int)));
+    connect(ui->openCV, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setOpenCV(bool)));
+    connect(ui->timeIt, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setTime(bool)));
 }
 
 MainWindow::~MainWindow()

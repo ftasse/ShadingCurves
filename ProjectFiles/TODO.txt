@@ -4,7 +4,8 @@ BUGS, low priority:
 
 
 Jiri:
-- look at timings
+- look at timings, optimise everything to get interactive shading
+- sort out the Lab space problem (bug in OpenCV?)
 - optionally add super sampling options to 3D GUI
 
 ?Flora:

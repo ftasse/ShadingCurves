@@ -67,7 +67,7 @@ public:
 
     bool    writeImg, showImg;
 
-    bool    clipping;
+    bool    clipping, openCV;
     int     clipMin, clipMax;
 
 	int curvRatio1, curvRatio2;
@@ -89,14 +89,12 @@ public:
         T& go,
         T& bo);
 
-    void RGB2XYZ(double r, double g, double b, double &x, double &y, double &z);
-    void XYZ2LAB(double x, double y, double z, double &L, double &A ,double &B);
-    void RGB2LAB(double r, double g,double b, double &L, double &A, double &B);
+    void RGB2XYZ(double R, double G, double B, double &X, double &Y, double &Z);
+    void XYZ2LAB(double x, double y, double z, double &L, double &a ,double &b);
+    void RGB2LAB(double R, double G, double B, double &L, double &a, double &b);
     void LAB2RGB(double L, double a, double b, double &R, double &G, double &B);
-    void LAB2XYZ(double lab_L, double lab_A, double lab_B, double &X, double &Y, double &Z);
-    void XYZ2RGB(double x, double y, double z, double &R, double &G, double &B);
-
-
+    void LAB2XYZ(double L, double a, double b, double &X, double &Y, double &Z);
+    void XYZ2RGB(double X, double Y, double Z, double &R, double &G, double &B);
 
 public slots:
     void subdivide          (void);

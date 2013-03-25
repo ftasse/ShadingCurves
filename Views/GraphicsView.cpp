@@ -12,12 +12,14 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     superSampling = 1;
-    surfSubdLevel = 4;
+    surfSubdLevel = 3;
     imgShowAll = true;
     imgWriteAll = true;
     clipping = true;
     clipMin = 0;
     clipMax = 100;
+    openCV = true;
+    timeIt = true;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -467,10 +469,22 @@ void GraphicsView::applyShading()
 
 void GraphicsView::applyShading(bool showImg, bool writeImg)
 {
+            QElapsedTimer timer, timer2;
+            qDebug() << endl << "GVT: Timer started";
+            timer.start();
+            timer2.start();
+
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
 
+            qDebug() << "GVT: Surface OFF stream creation took " << timer2.elapsed() << "milliseconds";
+            timer2.restart();
+
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
+
+            qDebug() << "GVT: GLview constructor took " << timer2.elapsed() << "milliseconds";
+            timer2.restart();
+
     glvs->offScreen = true;
 //    glvs->offMainWindow = true;
     glvs->clear = false;
@@ -482,6 +496,9 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
         glvs->loadFile(is);
     }
 
+            qDebug() << "GVT: Loading surfaces to 3D took " << timer2.elapsed() << "milliseconds";
+            timer2.restart();
+
     glvs->indexMesh = -1;
     glvs->super = superSampling; //supersampling (1, 2, or 4)
     glvs->showImg = showImg;
@@ -489,7 +506,19 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->clipping = clipping;
     glvs->clipMin = clipMin;
     glvs->clipMax = clipMax;
+    glvs->openCV = openCV;
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
+
+            qDebug() << "GVT: Subdivision and shading took " << timer2.elapsed() << "milliseconds";
+            timer2.restart();
+
+            qDebug() << "GVT: Complete shading took" << timer.elapsed() << "milliseconds";
+            if (timeIt)
+            {
+                QMessageBox msgBox;
+                msgBox.setText("Shading took " + QString::number(timer.elapsed()) + " milliseconds");
+                msgBox.exec();
+            }
 
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
@@ -583,4 +612,14 @@ void GraphicsView::setClipMin(int min)
 void GraphicsView::setClipMax(int max)
 {
     clipMax = max;
+}
+
+void GraphicsView::setOpenCV(bool b)
+{
+    openCV = b;
+}
+
+void GraphicsView::setTime(bool b)
+{
+    timeIt = b;
 }
