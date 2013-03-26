@@ -10,6 +10,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+enum ShadingType
+{
+    CVLAB, CVHLS, OWN, MATLAB
+};
+
 class GLviewsubd : public GLviewport
 {
 	Q_OBJECT
@@ -39,6 +44,7 @@ public:
 	void buildPoi(void);
 	void buildPoiSub(void);
     void buildPoiBound(void);
+    void buildLab(void);
     void regenSurfs();
     void resetSurfs();
 
@@ -67,8 +73,11 @@ public:
 
     bool    writeImg, showImg;
 
-    bool    clipping, openCV;
+    bool    clipping, blackOut;
     int     clipMin, clipMax;
+    int     subdivTime;
+
+    ShadingType shade;
 
 	int curvRatio1, curvRatio2;
 
@@ -96,6 +105,9 @@ public:
     void LAB2XYZ(double L, double a, double b, double &X, double &Y, double &Z);
     void XYZ2RGB(double X, double Y, double Z, double &R, double &G, double &B);
 
+    void matlabRGB2LAB(double R, double G, double B, double &L, double &a, double &b);
+    void matlabLAB2RGB(double L, double a, double b, double &R, double &G, double &B);
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);
@@ -118,6 +130,7 @@ public slots:
 	void setShowTriang2		(const bool b)  { triang2_enabled = b; updateAll(); }
     void setShowCtrl		(const bool b)  { ctrl_enabled = b; if (b) {buildCtrl();} updateGL(); }
     void setShowOld         (const bool b)  { old_enabled = b ; if (b) {buildOld();} updateGL(); }
+    void setShowLab         (const bool b)  { Lab_enabled = b ; if (b) {buildLab();} updateGL(); }
     void setCC              (const bool b);
     void setCCB             (const bool b);
     void setICC             (const bool b);
@@ -175,6 +188,7 @@ protected:
 	void drawPoiSub();
     void drawPoiBound();
 	void drawFrame();
+    void drawLab();
 
 private:
 	bool mesh_enabled;
@@ -197,6 +211,7 @@ private:
 	bool edged_ctrl_enabled;
 	bool culled_ctrl_enabled;
 	bool frame_enabled;
+    bool Lab_enabled;
 
     enum SubdivType
     {
@@ -228,6 +243,7 @@ private:
     unsigned int poiBound_list;
 	unsigned int ctrl_list;
     unsigned int old_list;
+    unsigned int Lab_list;
 
     GLuint      imageHeight, imageWidth;
 };

@@ -37,6 +37,8 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     transf = true;
 	clear = true;
 
+    Lab_enabled = false;
+
     writeImg = true;
     showImg = true;
 
@@ -76,33 +78,55 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     clipping = true;
     clipMax = 100;
     clipMin = 0;
-    openCV = true;
+    shade = CVLAB;
+    blackOut = false;
 
-    double L, a, b, R, G, B;
+    subdivTime = 0;
 
-    RGB2LAB(1,1,1,L,a,b);
-    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
-    RGB2LAB(0,0,0,L,a,b);
-    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-    RGB2LAB(1,0,0,L,a,b);
-    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-    RGB2LAB(0,1,0,L,a,b);
-    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-    RGB2LAB(0,0,1,L,a,b);
-    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    //COLOUR CONVERSION TESTS
+//    double L, a, b, R, G, B;
 
-    LAB2RGB(0,0,0,R,G,B);
-    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
-    LAB2RGB(100,0.0052605,-5.76553,R,G,B);
-    cout << "100 0.0052605 -5.76553 LAB2RGB = " << R << " " << G << " " << B << endl;
-    LAB2RGB(50,-128,-128,R,G,B);
-    cout << "50 -128 -128 LAB2RGB = " << R << " " << G << " " << B << endl;
-    LAB2RGB(50,-128,128,R,G,B);
-    cout << "50 -128 128 LAB2RGB = " << R << " " << G << " " << B << endl;
-    LAB2RGB(50,128,128,R,G,B);
-    cout << "50 128 128 LAB2RGB = " << R << " " << G << " " << B << endl;
-    LAB2RGB(50,128,-128,R,G,B);
-    cout << "50 128 -128 LAB2RGB = " << R << " " << G << " " << B << endl;
+//    RGB2LAB(1,1,1,L,a,b);
+//    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    RGB2LAB(0,0,0,L,a,b);
+//    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    RGB2LAB(1,0,0,L,a,b);
+//    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    RGB2LAB(0,1,0,L,a,b);
+//    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    RGB2LAB(0,0,1,L,a,b);
+//    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+
+//    matlabRGB2LAB(1,1,1,L,a,b);
+//    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    matlabRGB2LAB(0,0,0,L,a,b);
+//    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    matlabRGB2LAB(1,0,0,L,a,b);
+//    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    matlabRGB2LAB(0,1,0,L,a,b);
+//    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+//    matlabRGB2LAB(0,0,1,L,a,b);
+//    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+
+//    LAB2RGB(0,0,0,R,G,B);
+//    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
+
+//    LAB2RGB(32.3026,79.1967,-113.364,R,G,B);
+//    cout << "32.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+//    LAB2RGB(52.3026,79.1967,-113.364,R,G,B);
+//    cout << "52.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+//    LAB2RGB(100,79.1967,-113.364,R,G,B);
+//    cout << "100 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+
+//    matlabLAB2RGB(0,0,0,R,G,B);
+//    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
+
+//    matlabLAB2RGB(32.3026,79.1967,-113.364,R,G,B);
+//    cout << "32.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+//    matlabLAB2RGB(52.3026,79.1967,-113.364,R,G,B);
+//    cout << "52.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+//    matlabLAB2RGB(100,79.1967,-113.364,R,G,B);
+//    cout << "100 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -163,7 +187,8 @@ void GLviewsubd::setSubdivLevel(int newLevel)
 //        emit subdivLevelChanged(newLevel);
 //        cout << "subdivide End " << endl;
 	}
-    qDebug() << "Subdivision took" << timer.elapsed() << "milliseconds";
+    subdivTime = timer.elapsed();
+//    qDebug() << "Subdivision took" << subdivTime << "milliseconds";
 
 	updateAll();
 }
@@ -206,59 +231,67 @@ void GLviewsubd::setIndMesh(int newInd)
 
 void GLviewsubd::buildAll(void)
 {
-    if (mesh_enabled)
+    if (!offScreen)
     {
-        if (flat_mesh_enabled)
+        if (mesh_enabled)
         {
-            buildFlatMesh();
+            if (flat_mesh_enabled)
+            {
+                buildFlatMesh();
+            }
+            else if (smooth_mesh_enabled)
+            {
+                buildSmoothMesh();
+            }
+            else if (edged_mesh_enabled)
+            {
+                buildEdgedMesh();
+            }
+            else if (culled_mesh_enabled)
+            {
+                buildCulledMesh();
+            }
+            else if (curvG_mesh_enabled)
+            {
+                buildCurvGMesh();
+            }
+            else if (height_mesh_enabled)
+            {
+                buildHeightMesh();
+            }
+            else if (IP_mesh_enabled)
+            {
+                buildIPMesh();
+            }
         }
-        else if (smooth_mesh_enabled)
-        {
-            buildSmoothMesh();
-        }
-        else if (edged_mesh_enabled)
-        {
-            buildEdgedMesh();
-        }
-        else if (culled_mesh_enabled)
-        {
-            buildCulledMesh();
-        }
-        else if (curvG_mesh_enabled)
-        {
-            buildCurvGMesh();
-        }
-        else if (height_mesh_enabled)
-        {
-            buildHeightMesh();
-        }
-        else if (IP_mesh_enabled)
-        {
-            buildIPMesh();
-        }
-    }
 
-    if (feature_lines_enabled)
-    {
-        buildFeatureLines();
-    }
+        if (feature_lines_enabled)
+        {
+            buildFeatureLines();
+        }
 
-    if (ctrl_enabled)
-    {
-        buildCtrl();
-        buildPoi();
-        buildPoiSub();
-        buildPoiBound();
-    }
+        if (ctrl_enabled)
+        {
+            buildCtrl();
+            buildPoi();
+            buildPoiSub();
+            buildPoiBound();
+        }
 
-    if (old_enabled)
-    {
-        buildOld();
-    }
+        if (old_enabled)
+        {
+            buildOld();
+        }
 
-    if (frame_enabled)
-    {
-        buildFrame();
+        if (frame_enabled)
+        {
+            buildFrame();
+        }
+
+        if (Lab_enabled)
+        {
+            buildLab();
+        }
     }
 }
 
@@ -355,8 +388,8 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
-        QElapsedTimer timer;
-        timer.start();
+//        QElapsedTimer timer;
+//        timer.start();
 
         double      tmp;
 
@@ -429,7 +462,7 @@ void GLviewsubd::paintGL(void)
         #endif
         glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
 
-        tmp = img.at<cv::Vec3f>(0,0)[0]; // for an empty image, use this value as `zero'
+//        tmp = img.at<cv::Vec3f>(0,0)[0]; // for an empty image, use this value as `zero'
 
         glClearColor(1.0, 1.0, 1.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -453,14 +486,16 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
-        qDebug() << "OpenGL took " << timer.elapsed() << "milliseconds";
-        timer.restart();
+//        qDebug() << "OpenGL took " << timer.elapsed() << "milliseconds";
+//        timer.restart();
+
+//        cout << imgFill.at<cv::Vec3f>(0,0)[0] << " " << imgFill.at<cv::Vec3f>(0,0)[1] <<" " << imgFill.at<cv::Vec3f>(0,0)[2] << endl;
 
         //process images
 //        inputImg->copyTo(imgShaded);
-        cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
-        cv::flip(imgFill, imgFill, 0);
+//        cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
         cv::flip(img, img, 0);
+        cv::flip(imgFill, imgFill, 0);
 
 //        if (showImg)
 //        {
@@ -534,7 +569,7 @@ void GLviewsubd::paintGL(void)
 
             imgFill.copyTo(imgFillShaded);
 
-            if (!openCV)
+            if (shade == OWN)
             {
                 // apply luminance adjustment
                 double  rr, gg, bb, L, a, b;
@@ -542,9 +577,9 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                        RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
                                 imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                imgFillShaded.at<cv::Vec3f>(y,x)[0],
                                 L, a, b);
 
                         tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
@@ -562,20 +597,32 @@ void GLviewsubd::paintGL(void)
                         }
     //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
 
-                            //convert manually back to BGR
+                        //convert manually back to BGR
 
-                            LAB2RGB(tmp, a, b, rr, gg, bb);
-                            // seems to give results similar to Henrik' Matlab code
-    //                        lab2rgb<double,double>(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
-                            // results are a bit different
-    //                        lab2rgbVer2(tmp, imgFillShaded.at<cv::Vec3f>(y,x)[1], imgFillShaded.at<cv::Vec3f>(y,x)[2], rr, gg, bb);
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                        LAB2RGB(tmp, a, b, rr, gg, bb);
+                        // seems to give results similar to Henrik' Matlab code
+//                         lab2rgb<double,double>(tmp, a, b, rr, gg, bb);
+                        // results are a bit different
+//                         lab2rgbVer2(tmp, a, b, rr, gg, bb);
+
+                        //black out out-of-range pixels
+                        if (blackOut)
+                        {
+                            if (bb < 0 || bb > 1 || gg < 0 || gg > 1 || rr < 0 || rr > 1)
+                            {
+                                bb = 0;
+                                gg = 0;
+                                rr = 0;
+                            }
+                        }
+
+                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                     }
                 }
             }
-            else // use openCV
+            else if (shade == CVLAB) // use openCV Lab
             {
                 cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
 
@@ -600,11 +647,82 @@ void GLviewsubd::paintGL(void)
                         imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
                     }
                 }
-
                 //convert back to BGR
                 cv::cvtColor(imgFillShaded, imgFillShaded, CV_Lab2BGR);
-                cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
+//                cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB); // why is this necessary here???
             }
+            else if (shade == CVHLS) // OpenCV HLS
+            {
+                cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2HLS);
+                clipMin = 0;
+                clipMax = 1;
+
+                // apply luminance adjustment
+                for( int y = 0; y < imgFillShaded.rows; y++ )
+                {
+                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    {
+                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[1] + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                        if (clipping)
+                        {
+                            if (tmp > clipMax)
+                            {
+                                tmp = clipMax;
+                            }
+                            if (tmp < clipMin)
+                            {
+                                tmp = clipMin;
+                            }
+                        }
+                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = tmp;
+                    }
+                }
+
+                //convert back to BGR
+                cv::cvtColor(imgFillShaded, imgFillShaded, CV_HLS2BGR);
+            }
+            else // matlab
+            {
+                // apply luminance adjustment
+                double  rr, gg, bb, L, a, b;
+                for( int y = 0; y < imgFillShaded.rows; y++ )
+                {
+                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    {
+                        matlabRGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                      imgFillShaded.at<cv::Vec3f>(y,x)[1],
+                                      imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                                      L, a, b);
+
+                        tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                        if (clipping)
+                        {
+                            if (tmp > clipMax)
+                            {
+                                tmp = clipMax;
+                            }
+                            if (tmp < clipMin)
+                            {
+                                tmp = clipMin;
+                            }
+                        }
+    //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+                        //convert manually back to BGR
+                        matlabLAB2RGB(tmp, a, b, rr, gg, bb);
+
+                        //black out already in matlabLAB2RGB fucntion
+
+                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                    }
+                }
+            }
+
+//            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB);
 
             //show always
             if (showImg)
@@ -625,14 +743,14 @@ void GLviewsubd::paintGL(void)
             if (writeImg)
             {
                 cv::imwrite("ImgLumDifPyrDown" + to_string(super) + ".tif", img);
-                cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
+//                cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
                 cv::imwrite("ImgFillPyrDown" + to_string(super) + ".tif", imgFill);
 //                cv::imwrite("ImgResult" + to_string(super) + ".tif", imgShaded);
                 cv::imwrite("ImgFillResult" + to_string(super) + ".tif", imgFillShaded);
             }
         }
 //        updateGL();
-        qDebug() << "Image processing took " << timer.elapsed() << "milliseconds";
+//        qDebug() << "Image processing took " << timer.elapsed() << "milliseconds";
     }
     else
     {
@@ -723,6 +841,11 @@ void GLviewsubd::paintGL(void)
 
 //            glClear(GL_DEPTH_BUFFER_BIT);
 //            glCallList(poiSub_list);
+
+            if (Lab_enabled)
+            {
+                glCallList(Lab_list);
+            }
         }
 
         if (ctrl_enabled || feature_lines_enabled)
@@ -1016,6 +1139,44 @@ void GLviewsubd::drawFrame()
     glDisable(GL_POLYGON_OFFSET_FILL);
     glDisable(GL_TEXTURE_2D);
     glLineWidth(1);
+}
+
+void GLviewsubd::drawLab()
+{
+    unsigned int i, j, k, max;
+    double       R, G, B, L, a, b;
+    GLfloat      col[3];
+
+    glDisable(GL_TEXTURE_1D);
+    glPointSize(6);
+
+    max = 30;
+    for (i = 0 ; i <= max ; i++)
+    {
+        for (j = 0 ; j <= max ; j++)
+        {
+            for (k = 0 ; k <= max ; k++)
+            {
+                R = (double)i / (double)max;
+                G = (double)j / (double)max;
+                B = (double)k / (double)max;
+                RGB2LAB(R, G, B, L, a, b);
+
+                col[0] = R;
+                col[1] = G;
+                col[2] = B;
+
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                glColor3fv(col);
+                glBegin(GL_POINTS);
+//                glVertex3f(a/100, b/100, L/100 - 0.5);
+                glVertex3f(a/100, L/100 - 0.5, b/100);
+                glEnd();
+            }
+        }
+    }
+
+    glPointSize(1);
 }
 
 void GLviewsubd::buildFlatMesh()
@@ -1373,6 +1534,17 @@ void GLviewsubd::buildPoiBound()
     glEndList();
 }
 
+void GLviewsubd::buildLab()
+{
+    makeCurrent();
+    if(Lab_list)	glDeleteLists(Lab_list, 1);
+    Lab_list = glGenLists (1);
+    glNewList (Lab_list, GL_COMPILE);
+        glDisable(GL_LIGHTING);
+        drawLab();
+    glEndList();
+}
+
 void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, unsigned int ctrlType)
 {
     unsigned int 	i, j;
@@ -1516,8 +1688,15 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 		case MEAN:
         case GAUSSIAN:
         case HEIGHT:
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glPolygonOffset(2 + index, 1);
+            if (type == HEIGHT && clr == 3)
+            {
+                glDisable(GL_POLYGON_OFFSET_FILL);
+            }
+            else
+            {
+                glEnable(GL_POLYGON_OFFSET_FILL);
+                glPolygonOffset(2 + index, 1);
+            }
             glDisable(GL_TEXTURE_GEN_S);
             glEnable(GL_TEXTURE_1D);
             glBindTexture(GL_TEXTURE_1D, textID[clr]);
@@ -2065,12 +2244,15 @@ void GLviewsubd::updateAll()
 {
 	unsigned int j;
 
-    //compute normals
-    for (j = 0 ; j < meshCtrl.size() ; j++)
+    if (!offScreen)
     {
-        //assert(meshCurr[j] != NULL);
-        meshCurr[j]->computeNormalsFlat();
-        meshCurr[j]->computeNormalsSmooth(smoothCoef);
+        //compute normals
+        for (j = 0 ; j < meshCtrl.size() ; j++)
+        {
+            //assert(meshCurr[j] != NULL);
+            meshCurr[j]->computeNormalsFlat();
+            meshCurr[j]->computeNormalsSmooth(smoothCoef);
+        }
     }
     buildAll();
     updateGL();
@@ -2445,6 +2627,7 @@ void GLviewsubd::LAB2RGB(double L, double a, double b, double &R, double &G, dou
     LAB2XYZ(L,a,b,x,y,z);
     XYZ2RGB(x,y,z,R,G,B);
 }
+
 void GLviewsubd::LAB2XYZ(double L, double a, double b, double &X, double &Y, double &Z)
 {
     double var_X, var_Y, var_Z, x3, y3, z3;
@@ -2535,4 +2718,107 @@ void GLviewsubd::XYZ2RGB(double X, double Y, double Z, double &R, double &G, dou
     R = var_R; // * 255;
     G = var_G; // * 255;
     B = var_B; // * 255;
+}
+
+//reimplementation from Matlab
+void GLviewsubd::matlabRGB2LAB(double R, double G,double B, double &L, double &a, double &b)
+{
+    double T = 0.008856,
+           X, Y, Z, Y3, fX, fY, fZ;
+    bool   XT, YT, ZT;
+
+    X = R * 0.412453 + G * 0.357580 + B * 0.180423;
+    Y = R * 0.212671 + G * 0.715160 + B * 0.072169;
+    Z = R * 0.019334 + G * 0.119193 + B * 0.950227;
+
+    X = X / 0.950456;
+    Z = Z / 1.088754;
+
+    XT = X > T;
+    YT = Y > T;
+    ZT = Z > T;
+
+    fX = (int)XT * pow(X,1.0/3.0) + ((int)!XT) * (7.787 * X + 16.0/116.0);
+
+    // Compute L
+    Y3 = pow(Y, 1.0/3.0);
+    fY = (int)YT * Y3 + ((int)!YT) * (7.787 * Y + 16.0/116.0);
+    L  = (int)YT * (116.0 * Y3 - 16.0) + ((int)!YT) * (903.3 * Y);
+
+    fZ = (int)ZT * pow(Z, 1.0/3.0) + ((int)!ZT) * (7.787 * Z + 16.0/116.0);
+
+    // Compute a and b
+    a = 500.0 * (fX - fY);
+    b = 200.0 * (fY - fZ);
+}
+
+void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &G, double &B)
+{
+    double T1 = 0.008856,
+           T2 = 0.206893,
+           fX, fY, fZ, X, Y, Z;
+    bool XT, YT, ZT;
+
+    //Compute Y
+    fY = pow((L + 16.0) / 116.0, 3.0);
+    YT = fY > T1;
+    fY = ((int)!YT) * (L / 903.3) + (int)YT * fY;
+    Y = fY;
+
+    // Alter fY slightly for further calculations
+    fY = (int)YT * (pow(fY, (1.0/3.0))) + ((int)!YT) * (7.787 * fY + 16.0/116.0);
+
+    // Compute X
+    fX = a / 500.0 + fY;
+    XT = fX > T2;
+    X = ((int)XT * (pow(fX,3.0)) + ((int)!XT) * ((fX - 16.0/116.0) / 7.787));
+
+    // Compute Z
+    fZ = fY - b / 200.0;
+    ZT = fZ > T2;
+    Z = ((int)ZT * (pow(fZ,3.0)) + ((int)!ZT) * ((fZ - 16.0/116.0) / 7.787));
+
+    X = X * 0.950456;
+    Z = Z * 1.088754;
+
+    R = X *  3.240479 + Y * (-1.537150) + Z * (-0.498535);
+    G = X * (-0.969256) + Y *  1.875992 + Z *  0.041556;
+    B = X *  0.055648 + Y * (-0.204043) + Z *  1.057311;
+
+    if (blackOut)
+    {
+        if (R < 0 || R > 1 || G < 0 || G > 1 || B < 0 || B > 1)
+        {
+            R = 0;
+            G = 0;
+            B = 0;
+        }
+    }
+    else
+    {
+        if (R > 1)
+        {
+            R = 1;
+        }
+        if (R < 0)
+        {
+            R = 0;
+        }
+        if (G > 1)
+        {
+            G = 1;
+        }
+        if (G < 0)
+        {
+            G = 0;
+        }
+        if (B > 1)
+        {
+            B = 1;
+        }
+        if (B < 0)
+        {
+            B = 0;
+        }
+    }
 }

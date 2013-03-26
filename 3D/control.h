@@ -47,7 +47,8 @@ public:
  	
     QCheckBox 		*checkCtrl, *checkOld, *checkFrame, *checkFull, *checkMesh,
                     *checkOnCtrl,
-                    *checkTransf, *checkClear, *checkFeature, *checkLine;
+                    *checkTransf, *checkClear, *checkFeature, *checkLine,
+                    *checkLab;
  	
     QGroupBox 		*ctrlGroupBox, *meshGroupBox, *miscGroupBox, *laplGroupBox;
  	

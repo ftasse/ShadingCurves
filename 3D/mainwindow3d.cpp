@@ -1275,4 +1275,9 @@ void MainWindow3D::connectAll()
             ctrlWidget1->subdLevelSpinbox,	  SLOT(setValue(int)));
     connect(glwidget2, 	SIGNAL(subdivToLevel(int)),
             ctrlWidget2->subdLevelSpinbox,	  SLOT(setValue(int)));
+
+    connect(ctrlWidget1->checkLab, SIGNAL(clicked(bool)),
+            glwidget1, SLOT(setShowLab(bool)));
+    connect(ctrlWidget2->checkLab, SIGNAL(clicked(bool)),
+            glwidget2, SLOT(setShowLab(bool)));
 }

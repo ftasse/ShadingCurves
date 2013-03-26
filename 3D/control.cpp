@@ -399,6 +399,10 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 //    restWidget->setContentsMargins(0,0,0,0);
 //    restWidget->setLayout(restLayout);
 
+    checkLab = new QCheckBox(tr("Lab space"));
+    checkLab->setChecked(false);
+    toolBara->addWidget(checkLab);
+
 /////////////////////////////////////////
 
     QVBoxLayout *layout = new QVBoxLayout;

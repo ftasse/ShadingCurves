@@ -5,6 +5,11 @@
 #include "../Views/DebugWindow.h"
 #include "../3D/mainwindow3d.h"
 
+//enum ShadingType
+//{
+//    CVLAB, CVHLS, OWN
+//};
+
 class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
@@ -20,6 +25,7 @@ protected:
 signals:
     void setStatusMessage(QString message);
     void setTimeOutput(QString t);
+    void setTimeOutputSub(QString t);
     
 public slots:
     void create_bspline();
@@ -60,7 +66,11 @@ public slots:
     void setClipping(bool b);
     void setClipMin(int min);
     void setClipMax(int max);
-    void setOpenCV(bool b);
+    void setShadingLab();
+    void setShadingHLS();
+    void setShadingOwn();
+    void setShadingMatlab();
+    void setBlackOut(bool b);
 
 private:
     QPointF currentCenterPoint;
@@ -69,8 +79,10 @@ private:
     MainWindow3D    *glw;
     GLviewsubd      *glvs;
 
-    int superSampling, surfSubdLevel, clipMin, clipMax;
-    bool imgShowAll, imgWriteAll, clipping, openCV, timeIt;
+    int superSampling, surfSubdLevel, clipMin, clipMax, subdivTime;
+    bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut;
+
+    ShadingType     shade;
 };
 
 #endif // GRAPHICSVIEW_H

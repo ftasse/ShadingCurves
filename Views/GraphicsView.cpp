@@ -18,7 +18,9 @@ GraphicsView::GraphicsView(QWidget *parent) :
     clipping = true;
     clipMin = 0;
     clipMax = 100;
-    openCV = true;
+    shade = MATLAB;
+    blackOut = false;
+    subdivTime = 0;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -481,8 +483,8 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
 
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
 
-            qDebug() << "GVT: GLview constructor took " << timer2.elapsed() << "milliseconds";
-            timer2.restart();
+//            qDebug() << "GVT: GLview constructor took " << timer2.elapsed() << "milliseconds";
+//            timer2.restart();
 
     glvs->offScreen = true;
 //    glvs->offMainWindow = true;
@@ -505,14 +507,18 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->clipping = clipping;
     glvs->clipMin = clipMin;
     glvs->clipMax = clipMax;
-    glvs->openCV = openCV;
+    glvs->shade = shade;
+    glvs->blackOut = blackOut;
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
+
+    subdivTime = glvs->subdivTime;
 
             qDebug() << "GVT: Subdivision and shading took " << timer2.elapsed() << "milliseconds";
             timer2.restart();
 
             qDebug() << "GVT: Complete shading took" << timer.elapsed() << "milliseconds";
             emit setTimeOutput(QString::number(timer.elapsed()));
+            emit setTimeOutputSub(QString::number(subdivTime));
 
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
@@ -614,7 +620,27 @@ void GraphicsView::setClipMax(int max)
     clipMax = max;
 }
 
-void GraphicsView::setOpenCV(bool b)
+void GraphicsView::setShadingLab()
 {
-    openCV = b;
+    shade = CVLAB;
+}
+
+void GraphicsView::setShadingHLS()
+{
+    shade = CVHLS;
+}
+
+void GraphicsView::setShadingOwn()
+{
+    shade = OWN;
+}
+
+void GraphicsView::setShadingMatlab()
+{
+    shade = MATLAB;
+}
+
+void GraphicsView::setBlackOut(bool b)
+{
+    blackOut = b;
 }
