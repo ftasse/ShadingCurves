@@ -131,6 +131,37 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
 GLviewsubd::~GLviewsubd()
 {
+    int i, j;
+
+    for (i = 0 ; i < meshSubd.size() ; i++)
+    {
+//        meshCurr[i] = NULL;
+        for (j = 1 ; j < meshSubd[i].size() ; j++)
+        {
+            delete meshSubd[i][j]; // TO DO - should clear more memory
+            meshSubd[i][j] = NULL;
+        }
+    }
+//    meshSubd.clear();
+
+    for (i = 0 ; i < meshCtrl.size() ; i++)
+    {
+        delete meshOld[i];
+//        meshOld[i] = NULL;
+    }
+
+//	if (clear)
+//	{
+        for (i = 0 ; i < meshCtrl.size() ; i++)
+        {
+            delete meshCtrl[i];
+//            meshCtrl[i] = NULL;
+        }
+//		meshCtrl.clear();
+//		meshCurr.clear();
+//        meshOld.clear();
+//		setRotZero();
+//	}
 }
 
 void GLviewsubd::subdivide(void)
