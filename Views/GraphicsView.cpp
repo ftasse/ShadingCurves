@@ -12,14 +12,13 @@ GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     superSampling = 1;
-    surfSubdLevel = 3;
-    imgShowAll = true;
+    surfSubdLevel = 2;
+    imgShowAll = false;
     imgWriteAll = true;
     clipping = true;
     clipMin = 0;
     clipMax = 100;
     openCV = true;
-    timeIt = true;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -513,15 +512,16 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
             timer2.restart();
 
             qDebug() << "GVT: Complete shading took" << timer.elapsed() << "milliseconds";
-            if (timeIt)
-            {
-                QMessageBox msgBox;
-                msgBox.setText("Shading took " + QString::number(timer.elapsed()) + " milliseconds");
-                msgBox.exec();
-            }
+            emit setTimeOutput(QString::number(timer.elapsed()));
 
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
+
+    // switch to result in my_scene
+    my_scene->curDisplayMode = 3;
+    my_scene->changeDisplayModeText();
+//    myadjustDisplayedImageSize();
+    my_scene->update();
 
 //    cv::imshow("Shaded img 4 Henrik", glvs->img);
 
@@ -617,9 +617,4 @@ void GraphicsView::setClipMax(int max)
 void GraphicsView::setOpenCV(bool b)
 {
     openCV = b;
-}
-
-void GraphicsView::setTime(bool b)
-{
-    timeIt = b;
 }

@@ -260,7 +260,7 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 	QWidget *sliderXw = new QWidget;
 	QWidget *sliderYw = new QWidget;
 	QWidget *sliderZw = new QWidget;
-	QWidget *sliderSmw = new QWidget;
+//	QWidget *sliderSmw = new QWidget;
 	QWidget *sliderRldw = new QWidget;
 	QWidget *sliderC1w = new QWidget;
 	QWidget *sliderC2w = new QWidget;

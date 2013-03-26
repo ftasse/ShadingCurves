@@ -77,6 +77,32 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     clipMax = 100;
     clipMin = 0;
     openCV = true;
+
+    double L, a, b, R, G, B;
+
+    RGB2LAB(1,1,1,L,a,b);
+    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+    RGB2LAB(0,0,0,L,a,b);
+    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+    RGB2LAB(1,0,0,L,a,b);
+    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+    RGB2LAB(0,1,0,L,a,b);
+    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
+    RGB2LAB(0,0,1,L,a,b);
+    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
+
+    LAB2RGB(0,0,0,R,G,B);
+    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
+    LAB2RGB(100,0.0052605,-5.76553,R,G,B);
+    cout << "100 0.0052605 -5.76553 LAB2RGB = " << R << " " << G << " " << B << endl;
+    LAB2RGB(50,-128,-128,R,G,B);
+    cout << "50 -128 -128 LAB2RGB = " << R << " " << G << " " << B << endl;
+    LAB2RGB(50,-128,128,R,G,B);
+    cout << "50 -128 128 LAB2RGB = " << R << " " << G << " " << B << endl;
+    LAB2RGB(50,128,128,R,G,B);
+    cout << "50 128 128 LAB2RGB = " << R << " " << G << " " << B << endl;
+    LAB2RGB(50,128,-128,R,G,B);
+    cout << "50 128 -128 LAB2RGB = " << R << " " << G << " " << B << endl;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -334,8 +360,8 @@ void GLviewsubd::paintGL(void)
 
         double      tmp;
 
-        numberPaintCalls++;
-        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
+//        numberPaintCalls++;
+//        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
 
         int origClr, origView[4];
 

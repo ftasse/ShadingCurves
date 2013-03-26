@@ -19,6 +19,7 @@ protected:
     
 signals:
     void setStatusMessage(QString message);
+    void setTimeOutput(QString t);
     
 public slots:
     void create_bspline();
@@ -60,7 +61,6 @@ public slots:
     void setClipMin(int min);
     void setClipMax(int max);
     void setOpenCV(bool b);
-    void setTime(bool b);
 
 private:
     QPointF currentCenterPoint;

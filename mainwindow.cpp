@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->clipMin, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMin(int)));
     connect(ui->clipMax, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setClipMax(int)));
     connect(ui->openCV, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setOpenCV(bool)));
-    connect(ui->timeIt, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setTime(bool)));
+    connect(ui->graphicsView, SIGNAL(setTimeOutput(QString)), ui->timeOutput, SLOT(setText(QString)));
 }
 
 MainWindow::~MainWindow()

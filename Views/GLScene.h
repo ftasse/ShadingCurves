@@ -207,7 +207,6 @@ private:
 
     int m_curSplineIdx;
     bool hasMoved;
-    int curDisplayMode; //0 for blank image, 1 for target image, 2 for surface image
 
     SketchMode m_sketchmode;
     double  m_modelview [16];
@@ -224,6 +223,8 @@ private:
 public:
     BSplineGroup m_splineGroup;
     ShadingProfileView *shadingProfileView;
+
+    int curDisplayMode; //0 for blank image, 1 for target image, 2 for surface image (made public by Jiri)
 
     float pointSize;
     bool showControlMesh;

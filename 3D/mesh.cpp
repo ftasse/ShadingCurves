@@ -949,9 +949,9 @@ void Mesh::computeNormalsSmooth(unsigned int rings)
     MeshFacet		*facet;//, *fc;
 	MeshVertex		*vertex;
     GLfloat			//normal[3],
-                    normal2[3], nextNormal[3], dotThreshold;
+                    normal2[3];
 
-    dotThreshold = 0.9;
+//    dotThreshold = 0.9;
 
 //	std::vector< std::vector <unsigned int> > ring_facets;
 //	std::vector< std::vector <unsigned int> > ring_vertices;
@@ -1015,9 +1015,9 @@ void Mesh::computeNormalsSmooth(unsigned int rings)
 //			normal[1] += facet->my_normalSmooth[1];
 //			normal[2] += facet->my_normalSmooth[2];
 
-            nextNormal[0] = facet->my_normalFlat[0];
-            nextNormal[1] = facet->my_normalFlat[1];
-            nextNormal[2] = facet->my_normalFlat[2];
+//            nextNormal[0] = facet->my_normalFlat[0];
+//            nextNormal[1] = facet->my_normalFlat[1];
+//            nextNormal[2] = facet->my_normalFlat[2];
 
 //            // check for sharp creases; do not average normals across them
 //            normA = sqrt(nextNormal[0] * nextNormal[0] + nextNormal[1] * nextNormal[1] + nextNormal[2] * nextNormal[2]);
