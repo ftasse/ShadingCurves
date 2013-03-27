@@ -44,7 +44,7 @@ GLScene::GLScene(QObject *parent) :
     pointSize = 10.0;
     showControlMesh = true;
     showControlPoints = true;
-    showCurrentCurvePoints = true;
+    showCurrentCurvePoints = false;
     showCurves = true;
     curveSubdLevels = 5;
     hasMoved = false;
@@ -208,6 +208,8 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsScene::mouseReleaseEvent(event);
     if (event->isAccepted()) return;
+
+    selectedPointChanged();
 
     shadingProfileView->cpts_ids.clear();
 
@@ -988,11 +990,22 @@ void GLScene::createBSpline()
 
 void GLScene::recomputeAllSurfaces()
 {
-    //qDebug("Recompute surfaces");
+    QTime t;
+    t.start();
+
+    int npoints=0, ncurves=0, nsurfaces=0;
+
+    for (int i=0; i<num_cpts(); ++i)
+        if (controlPoint(i).num_splines()>0)    ++npoints;
 
     for (int i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
-                spline(i).recompute();
+        {
+            ncurves++;
+            if (spline(i).has_inward_surface)  nsurfaces++;
+            if (spline(i).has_outward_surface)  nsurfaces++;
+            spline(i).recompute();
+        }
 
     for (int i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
@@ -1013,6 +1026,9 @@ void GLScene::recomputeAllSurfaces()
         if (spline(i).num_cpts() > 1)
             spline(i).computeSurfaces(dt);
     }
+
+    qDebug("Recomputed all surfaces: (%d points, %d curves, %d surfaces) %.3f secs", npoints, ncurves, nsurfaces, t.elapsed()/1000.0);
+
     update();
 }
 
@@ -1087,6 +1103,9 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
         {
             return targetId;
         }
+    } else if (selectedObjects.size()>0 && selectedObjects.front().first == CPT_NODE_ID)
+    {
+        return selectedObjects.front().second;
     } else
     {
         return -1;
@@ -1506,6 +1525,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
+                mergedSurface.sharpCorners = surf.sharpCorners;
                 cptRefFront = spline(surf.splineRef).cptRefs.front();
                 cptRefBack = spline(surf.splineRef).cptRefs.back();
             } else
@@ -1551,6 +1571,11 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 for (int j=0; j<surf.vertices.size(); ++j)
                 {
                     new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
+                }
+
+                for (QSet<int>::iterator it = surf.sharpCorners.begin(); it != surf.sharpCorners.end(); ++it)
+                {
+                    mergedSurface.sharpCorners.insert(new_vert_ids[*it]);
                 }
 
                 CurveJunctionInfo& junction = junctionInfos[mergedGroups_JIds[i][k]];
@@ -1765,13 +1790,51 @@ void GLScene::currentSplineChanged()
     }
 }
 
+void GLScene::selectedPointChanged()
+{
+    bool point_selected = false;
+    bool isSharp = false;
+    for (int i=0; i<selectedObjects.size(); ++i)
+    {
+        if (selectedObjects[i].first == CPT_NODE_ID)
+        {
+            ControlPoint& cpt = controlPoint(selectedObjects[i].second);
+            point_selected = true;
+            isSharp = cpt.isSharp;
+        }
+    }
+
+    emit point_parameters_changed(point_selected, isSharp);
+}
+
+void GLScene::change_point_parameters(bool isSharp)
+{
+    bool has_changed = false;
+
+    for (int i=0; i<selectedObjects.size(); ++i)
+    {
+        if (selectedObjects[i].first == CPT_NODE_ID)
+        {
+            ControlPoint& cpt = controlPoint(selectedObjects[i].second);
+            if (cpt.isSharp != isSharp)
+            {
+                cpt.isSharp = isSharp;
+                has_changed = true;
+            }
+        }
+    }
+
+    if (has_changed)
+        recomputeAllSurfaces();
+}
+
 void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int  _thickness)
 {
     bool has_changed = false;
     if (curSplineRef() >= 0)
     {
         BSpline& bspline = spline(curSplineRef());
-        if (fabs(bspline.generic_extent-extent) > 1)
+        if (extent>=0.0f && fabs(bspline.generic_extent-extent) > 1)
         {
             bspline.change_generic_extent(extent);
             has_changed = true;

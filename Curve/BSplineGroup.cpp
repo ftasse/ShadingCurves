@@ -462,10 +462,10 @@ void BSplineGroup::computeJunctions()
         }
     }
 
-    if (junctionInfos.size() > 0)
+    /*if (junctionInfos.size() > 0)
     {
         qDebug("nbr of junctions: %d", junctionInfos.size());
-    }
+    }*/
 }
 
 void BSplineGroup::scale(float xs, float ys)

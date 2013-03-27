@@ -124,6 +124,12 @@ void BSpline::recompute()
         subdivided_points.pop_front();
     }
 
+    if (num_cpts() > 1)
+    {
+        subdivided_points.first().isSharp = pointAt(0).isSharp;
+        subdivided_points.last().isSharp = pointAt(num_cpts()-1).isSharp;
+    }
+
     /*for (int i = 0; i<subdivided_points.size(); ++i)
     {
         subdivided_points[i].print();

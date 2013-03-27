@@ -161,6 +161,7 @@ void Surface::recompute(cv::Mat dt)
             points[i].append(points[i].first());
     }
 
+
     for (int k=0; k<points.size(); ++k)
         controlMesh.append(points.at(k));
 
@@ -211,7 +212,11 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     QVector<int> original_cpts_ids;     int extra_curvature_vertices_count = 0;
 
     for (int k=0; k<controlPoints.size(); ++k)
+    {
         original_cpts_ids.push_back( addVertex(controlPoints[k],controlPoints[k].attribute(direction).height) );
+        if (controlPoints[k].isSharp)
+                sharpCorners.insert(original_cpts_ids.last());
+    }
 
     // get limit points for the control points
     QVector<QPointF> lp = limitPoints(controlPoints);

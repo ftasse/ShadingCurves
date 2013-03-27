@@ -189,8 +189,12 @@ protected:
 signals:
     void setStatusMessage(QString message);
     void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness);
+    void point_parameters_changed(bool enabled, bool isSharp);
 
 public slots:
+    void selectedPointChanged();
+    void change_point_parameters(bool isSharp);
+
     void currentSplineChanged();
     void change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int _thickness);
 

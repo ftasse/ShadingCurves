@@ -5,19 +5,19 @@
 #include "../Curve/BSplineGroup.h"
 
 ControlPoint::ControlPoint():
-    Point3d(), ref(-1)
+    Point3d(), ref(-1), isSharp(false)
 {
     useDefaultAttributes();
 }
 
 ControlPoint::ControlPoint(QPointF val):
-    Point3d(val.x(), val.y()), ref(-1)
+    Point3d(val.x(), val.y()), ref(-1), isSharp(false)
 {
     useDefaultAttributes();
 }
 
 ControlPoint::ControlPoint(float x, float y, float z, Attribute _attributes[2]):
-    Point3d(x, y, z), ref(-1)
+    Point3d(x, y, z), ref(-1), isSharp(false)
 {
     attributes[0] = _attributes[0];
     attributes[1] = _attributes[1];

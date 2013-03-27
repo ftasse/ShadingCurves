@@ -54,6 +54,7 @@ public:
     QVector<int> splineRefs;
 
     int ref;
+    bool isSharp;
     Attribute attributes[2];
 };
 
