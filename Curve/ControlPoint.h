@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <QList>
 #include <QVector>
+#include <opencv2/core/core.hpp>
 
 #include "Point3d.h"
 
@@ -16,13 +17,28 @@ typedef enum NormalDirection
   OUTWARD_DIRECTION
 } NormalDirection;
 
-typedef struct Attribute
+class Attribute
 {
+public:
     NormalDirection direction; //0 for inward point along the normal,    1 for outward point along the normal
     float extent;
     float height;
     QVector<QPointF> shapePointAtr;
-} Attribute;
+
+    Attribute()
+    {
+        direction = INWARD_DIRECTION;
+        extent = height = 0.0f;
+    }
+
+    Attribute(cv::FileNode node):Attribute()
+    {
+        this->read(node);
+    }
+
+    void write(cv::FileStorage& fs) const ;
+    void read(const cv::FileNode& node);
+};
 
 class ControlPoint : public Point3d
 {
@@ -31,9 +47,14 @@ public:
     ControlPoint(QPointF val);
     ControlPoint(float x, float y, float z, Attribute attributes[2]);
 
+    ControlPoint(cv::FileNode node):ControlPoint()
+    {
+        read(node);
+    }
+
     BSpline& splineAt(int index);
 
-    int num_splines()
+    int num_splines()   const
     {
         return splineRefs.size();
     }
@@ -48,6 +69,9 @@ public:
 
     void useDefaultAttributes();
     void print();
+
+    void write(cv::FileStorage& fs) const ;
+    void read(const cv::FileNode& node);
 
 public:
     BSplineGroup *m_splineGroup;

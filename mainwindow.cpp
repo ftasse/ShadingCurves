@@ -31,6 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Connections
     connect(ui->actionDelete_all_curves, SIGNAL(triggered()), scene, SLOT(delete_all()));
+    connect(ui->actionOpen_project, SIGNAL(triggered()), ui->graphicsView, SLOT(loadProject()));
+    connect(ui->actionSave_Project, SIGNAL(triggered()), ui->graphicsView, SLOT(saveProject()));
+
+    connect(ui->actionOpen_Backgroung_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadBackgroungImage()));
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
     connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));
     connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));

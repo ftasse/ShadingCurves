@@ -940,6 +940,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Image"/>
+    <addaction name="actionOpen_Backgroung_Image"/>
     <addaction name="actionSave_Image"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_project"/>
@@ -989,7 +990,13 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen_Image">
    <property name="text">
-    <string>Open Image</string>
+    <string>Open Target Image</string>
+   </property>
+   <property name="iconText">
+    <string>Open Target Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Target Image</string>
    </property>
   </action>
   <action name="actionCreate_BSpline">
@@ -999,7 +1006,7 @@
   </action>
   <action name="actionSave_Image">
    <property name="text">
-    <string>Save Image</string>
+    <string>Save Results Image</string>
    </property>
   </action>
   <action name="actionOpen_Curves">
@@ -1060,6 +1067,11 @@
   <action name="actionReuse_results_image">
    <property name="text">
     <string>Reuse results image</string>
+   </property>
+  </action>
+  <action name="actionOpen_Backgroung_Image">
+   <property name="text">
+    <string>Open Backgroung Image</string>
    </property>
   </action>
  </widget>

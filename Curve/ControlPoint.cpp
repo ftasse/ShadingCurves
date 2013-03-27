@@ -4,6 +4,19 @@
 #include "../Curve/BSpline.h"
 #include "../Curve/BSplineGroup.h"
 
+//These write and read functions must be defined for the serialization in FileStorage to work
+static void write(cv::FileStorage& fs, const std::string&, const Attribute& x)
+{
+    x.write(fs);
+}
+
+static void read(const cv::FileNode& node, Attribute& x, const Attribute& default_value = Attribute()){
+    if(node.empty())
+        x = default_value;
+    else
+        x.read(node);
+}
+
 ControlPoint::ControlPoint():
     Point3d(), ref(-1), isSharp(false)
 {
@@ -59,4 +72,71 @@ BSpline& ControlPoint::splineAt(int index)
 {
     int spline_ref = splineRefs[index];
     return m_splineGroup->spline(spline_ref);
+}
+
+void ControlPoint::write(cv::FileStorage& fs) const                        //Write serialization for this class
+{
+    fs << "{:" ;
+    fs << "x" << x() << "y" << y() << "z" << z() << "ref" << ref  << "isSharp" << (int)isSharp;
+
+    fs << "splineRefs" << "[:";
+    for (int i=0; i<num_splines(); ++i)
+        fs << splineRefs[i];
+    fs << "]";
+    fs << "attribute_dir1" << attributes[0];
+    fs << "attribute_dir2" << attributes[1];
+
+    fs << "}";
+}
+
+void ControlPoint::read(const cv::FileNode& node)                          //Read serialization for this class
+{
+    setX((float)node["x"]);
+    setY((float)node["y"]);
+    setZ((float)node["z"]);
+    ref = (int)node["ref"];
+    isSharp = (int)node["isSharp"];
+
+    cv::FileNode n = node["splineRefs"];                         // Read string sequence - Get node
+   {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end(); // Go through the node
+        for (; it != it_end; ++it)
+            splineRefs.push_back((int)*it);
+    }
+
+    attributes[0] = (Attribute)node["attribute_dir1"];
+    attributes[1] = (Attribute)node["attribute_dir2"];
+}
+
+void Attribute::write(cv::FileStorage& fs) const
+{
+    fs << "{:";
+    fs << "inwardDirection" << (direction==INWARD_DIRECTION) << "extent" << extent << "height" << height;
+    fs << "shapePointAtrs" << "[:";
+    for (int i=0; i<shapePointAtr.size(); ++i)
+    {
+        fs << "{:" << "x" << shapePointAtr[i].x() << "y" << shapePointAtr[i].y() << "}";
+    }
+    fs << "]";
+    fs << "}";
+}
+
+void Attribute::read(const cv::FileNode& node)
+{
+    bool inwardDir = (int)node["inwardDirection"];
+    if (inwardDir) direction = INWARD_DIRECTION;
+    else direction = OUTWARD_DIRECTION;
+
+    extent = (float)node["extent"];
+    height = (float)node["height"];
+
+    cv::FileNode n = node["shapePointAtrs"];                         // Read string sequence - Get node
+    {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end(); // Go through the node
+        for (; it != it_end; ++it)
+        {
+            cv::FileNode m = *it;
+            shapePointAtr.push_back(QPointF((float)m["x"], (float)m["y"]));
+        }
+    }
 }

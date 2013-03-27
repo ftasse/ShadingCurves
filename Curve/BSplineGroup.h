@@ -53,7 +53,8 @@ public:
     void save(std::string fname);
     void saveOFF(std::string fname);
 
-    void save_all(std::string fname);
+    void saveAll(std::string fname);
+    void loadAll(std::string fname);
 
     //Utilities
     QList<Surface>& surfaces()
@@ -102,6 +103,7 @@ public:
     }
 
 public:
+    cv::Size imageSize;
     std::vector< std::pair<QPoint, QColor> > colorMapping;
     QVector<CurveJunctionInfo> junctionInfos;
 

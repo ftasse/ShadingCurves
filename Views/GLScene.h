@@ -16,22 +16,6 @@
 
 static QString displayModesList[NUM_DISPLAY_MODES] = {"Blank Image", "Target Image", "Surface Image", "Result Image"};
 
-// HENRIK: had to rename it since Windows already has a definition of Ellipse
-typedef struct Ellipse_b
-{
-    QPointF center;
-    float size;
-    QBrush brush;
-
-    Ellipse_b(){}
-    Ellipse_b(QPointF _center, float _size, QBrush _brush)
-    {
-        center = _center;
-        size = _size;
-        brush = _brush;
-    }
-} Ellipse_b;
-
 class QGLWidget;
 
 class GLScene : public QGraphicsScene
@@ -236,13 +220,11 @@ private:
     SketchMode m_sketchmode;
     double  m_modelview [16];
     double  m_projection [16];
-    QList<std::pair<uint, uint> > selectedObjects;
 
     float m_scale;
     QPointF m_translation;
     bool inPanMode;
 
-    QVector<Ellipse_b> ellipses;
     QGraphicsItemGroup *ellipseGroup;
 
 public:
@@ -267,6 +249,7 @@ public:
     bool discreteB;
 
     QSizeF imSize;
+    QList<std::pair<uint, uint> > selectedObjects;
     QLabel *displayModeLabel;
     QGLWidget *glWidget;
 

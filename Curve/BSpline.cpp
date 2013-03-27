@@ -42,6 +42,36 @@ BSpline::BSpline():
     thickness = 0;
 }
 
+void BSpline::write(cv::FileStorage& fs) const
+{
+    fs << "{:" << "ref" << ref << "has_inward_surface" << has_inward_surface << "has_outward_surface" << has_outward_surface;
+    fs << "has_uniform_subdivision" << has_uniform_subdivision << "is_slope" << is_slope << "thickness" << thickness;
+
+    fs << "cptRefs" << "[:";
+    for (int i=0; i<cptRefs.size(); ++i)
+        fs << cptRefs[i];
+    fs << "]";
+
+    fs << "}";
+}
+
+void BSpline::read(const cv::FileNode& node)
+{
+    node["ref"] >> ref;
+    node["has_inward_surface"] >> has_inward_surface;
+    node["has_outward_surface"] >> has_outward_surface;
+    node["has_uniform_subdivision"] >> has_uniform_subdivision;
+    node["is_slope"] >> is_slope;
+    node["thickness"] >> thickness;
+
+    cv::FileNode n = node["cptRefs"];                         // Read string sequence - Get node
+    {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end(); // Go through the node
+        for (; it != it_end; ++it)
+            cptRefs.push_back((int)*it);
+    }
+}
+
 void BSpline::change_generic_extent(float extent)
 {
     generic_extent = extent;

@@ -218,6 +218,25 @@ void GraphicsView::loadImage()
     }
 }
 
+void GraphicsView::loadBackgroungImage()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                    tr("Open Background Image Files"),
+                                    "",
+                                    tr("Background Image files (*.jpg *.jpeg *.png *.gif *.bmp)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+        my_scene->orgBlankImage = cv::imread(fileName.toStdString());
+        my_scene->currentImage() = my_scene->orgBlankImage.clone();
+        my_scene->recomputeAllSurfaces();
+    }
+}
+
 void GraphicsView::saveImage()
 {
     QFileDialog::Options options;
@@ -267,6 +286,49 @@ void GraphicsView::saveCurves()
     {
         GLScene *my_scene = (GLScene *) scene();
         my_scene->saveCurves(fileName.toStdString());
+    }
+}
+
+
+void GraphicsView::loadProject()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                    tr("Open Image Shading Project Files"),
+                                    "",
+                                    tr("Image Shading Project files (*.xml *.yml *.yaml)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+
+        my_scene->splineGroup().loadAll(fileName.toStdString());
+        cv::resize(my_scene->orgBlankImage, my_scene->orgBlankImage, my_scene->splineGroup().imageSize);
+        cv::resize(my_scene->currentImage(), my_scene->currentImage(), my_scene->splineGroup().imageSize);
+        my_scene->changeResolution(my_scene->splineGroup().imageSize.width, my_scene->splineGroup().imageSize.height);
+
+        my_scene->curSplineRef() = -1; my_scene->selectedObjects.clear();
+        my_scene->recomputeAllSurfaces();
+    }
+}
+
+void GraphicsView::saveProject()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Save Image Shading Project"),
+                                    "",
+                                    tr("Image Shading Project Files (*.xml *.yml *.yaml)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+        my_scene->splineGroup().imageSize = cv::Size(my_scene->currentImage().cols, my_scene->currentImage().rows);
+        my_scene->splineGroup().saveAll(fileName.toStdString());
     }
 }
 

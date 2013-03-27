@@ -33,8 +33,11 @@ public slots:
     void edit_bspline();
     void loadImage();
     void saveImage();
+    void loadBackgroungImage();
     void loadCurves();
     void saveCurves();
+    void loadProject();
+    void saveProject();
 
     // HENRIK: add write to off-file support
     void saveOff();

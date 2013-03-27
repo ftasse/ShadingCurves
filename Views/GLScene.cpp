@@ -994,6 +994,7 @@ void GLScene::recomputeAllSurfaces()
     QTime t;
     t.start();
 
+    m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
     int npoints=0, ncurves=0, nsurfaces=0;
 
     for (int i=0; i<num_cpts(); ++i)
@@ -1725,6 +1726,7 @@ bool GLScene::openImage(std::string fname)
     //Test if image was loaded
     if (image.cols > 0)
     {
+        changeResolution(image.cols, image.rows);
         m_targetImage = image;
         curDisplayMode = 1;
         changeDisplayModeText();

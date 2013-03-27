@@ -56,6 +56,14 @@ public:
         else    return outward_subdivided_normals;
     }
 
+    void write(cv::FileStorage& fs) const ;
+    void read(const cv::FileNode& node);
+
+    BSpline(cv::FileNode node):BSpline()
+    {
+        read(node);
+    }
+
 public:
     BSplineGroup *m_splineGroup;
     QVector<int> cptRefs;

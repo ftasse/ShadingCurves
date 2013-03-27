@@ -9,6 +9,31 @@
 #include "BSplineGroup.h"
 #include "Utilities/SurfaceUtils.h"
 
+//These write and read functions must be defined for the serialization in FileStorage to work
+static void write(cv::FileStorage& fs, const std::string&, const ControlPoint& x)
+{
+    x.write(fs);
+}
+
+static void read(const cv::FileNode& node, ControlPoint& x, const ControlPoint& default_value = ControlPoint()){
+    if(node.empty())
+        x = default_value;
+    else
+        x.read(node);
+}
+
+static void write(cv::FileStorage& fs, const std::string&, const BSpline& x)
+{
+    x.write(fs);
+}
+
+static void read(const cv::FileNode& node, BSpline& x, const BSpline& default_value = BSpline()){
+    if(node.empty())
+        x = default_value;
+    else
+        x.read(node);
+}
+
 typedef struct NormalInfo
 {
     int pos;
@@ -27,23 +52,6 @@ BSplineGroup::BSplineGroup()
 
 int BSplineGroup::addControlPoint(QPointF value, float z)
 {
-    /*for (int i=0; i<num_controlPoints(); ++i)
-    {
-        if (!original && controlPoint(i).isOriginal)
-            continue;
-        float dx =  controlPoint(i).x() - value.x();
-        float dy =  controlPoint(i).y() - value.y();
-        float dz =  controlPoint(i).z() - z;
-        float dist = sqrt(dx*dx + dy*dy + dz*dz);
-        if (fabs(dz) < EPSILON && dist < 5.0)
-        {
-            return i;
-        } else if (fabs(dz) > EPSILON && dist < EPSILON)
-        {
-            return i;
-        }
-    }*/
-
     ControlPoint cpt(value);
     cpt.m_splineGroup = this;
     cpt.ref = num_controlPoints();
@@ -735,7 +743,82 @@ void BSplineGroup::saveOFF(std::string fname)
     ofs.close();
 }
 
-void save_all(std::string fname)
+void BSplineGroup::saveAll(std::string fname)
 {
+    garbage_collection();
 
+    if (fname.find('.') == std::string::npos)
+        fname += ".xml";
+
+    cv::FileStorage fs(fname.c_str(), cv::FileStorage::WRITE);
+    fs << "Resolution" << "{:" << "width" << imageSize.width << "height" << imageSize.height << "}";
+
+    fs << "ControlPoints" << "[:";
+    for (int i=0; i<num_controlPoints(); ++i)
+    {
+        fs << controlPoint(i);
+    }
+    fs << "]";
+
+    fs << "Curves" << "[:";
+    for (int i=0; i<num_splines(); ++i)
+    {
+        fs << spline(i);
+    }
+    fs << "]";
+
+    fs << "ColorMappings" << "[:";
+    for (int i=0; i<colorMapping.size(); ++i)
+    {
+        std::pair<QPoint, QColor> mapping = colorMapping[i];
+        fs << "{:";
+        fs << "point" << "{:" << "x" << mapping.first.x() << "y" << mapping.first.y() << "}";
+        fs << "color" << "{:" << "red" << mapping.second.red() << "green" << mapping.second.green() << "blue" << mapping.second.blue() << "}";
+        fs << "}";
+    }
+}
+
+void BSplineGroup::loadAll(std::string fname)
+{
+    m_cpts.clear();
+    m_splines.clear();
+    m_surfaces.clear();
+    colorMapping.clear();
+    junctionInfos.clear();
+
+    cv::FileStorage fs(fname.c_str(), cv::FileStorage::READ);
+    fs["Resolution"]["width"] >> imageSize.width;
+    fs["Resolution"]["height"] >> imageSize.height;
+
+    cv::FileNode n = fs["ControlPoints"];
+    {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end();
+        for (; it != it_end; ++it)
+        {
+            controlPoints().push_back((ControlPoint)*it);
+            controlPoints().last().m_splineGroup = this;
+        }
+    }
+
+    n = fs["Curves"];
+    {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end();
+        for (; it != it_end; ++it)
+        {
+            splines().push_back((BSpline)*it);
+            splines().last().m_splineGroup = this;
+        }
+    }
+
+    n = fs["ColorMappings"];
+   {
+        cv::FileNodeIterator it = n.begin(), it_end = n.end();
+        for (; it != it_end; ++it)
+        {
+            QPoint point; QColor color;
+            cv::FileNode pointNode = (*it)["point"], colorNode = (*it)["color"];
+            point.setX(pointNode["x"]); point.setY(pointNode["y"]);
+            color.setRed(pointNode["red"]); color.setGreen(pointNode["green"]); color.setBlue(pointNode["blue"]);
+        }
+    }
 }

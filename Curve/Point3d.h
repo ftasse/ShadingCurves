@@ -8,7 +8,7 @@ class Point3d : public QPointF
 public:
     Point3d(float _x = 0.0, float _y = 0.0, float _z = 0.0);
 
-    float z()
+    float z() const
     {
         return m_z;
     }
