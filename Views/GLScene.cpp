@@ -304,7 +304,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
         if (m_splineGroup.addControlPointToSpline(m_curSplineIdx, cptRef))
         {
-            if (spline(m_curSplineIdx).num_cpts()>2 && spline(m_curSplineIdx).cptRefs.front() == cptRef)
+            if (spline(m_curSplineIdx).num_cpts()>=3 && spline(m_curSplineIdx).cptRefs.front() == cptRef)
             {
                 spline(m_curSplineIdx).has_uniform_subdivision = true;
                 spline(m_curSplineIdx).recompute();
@@ -395,7 +395,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_W)
      {
         //Reset blank image
-        m_curImage = cv::Scalar(255,255,255);
+        m_curImage = orgBlankImage.clone();
         m_splineGroup.colorMapping.clear();
         update();
         return;
@@ -877,6 +877,7 @@ void GLScene::changeResolution(int resWidth, int resHeight)
     float xs = resWidth / ((float) currentImage().cols);
     float ys = resHeight / ((float) currentImage().rows);
     cv::resize(currentImage(), currentImage(), cv::Size(resWidth, resHeight));
+    cv::resize(orgBlankImage, orgBlankImage, cv::Size(resWidth, resHeight));
     adjustDisplayedImageSize();
     m_splineGroup.scale(xs, ys);
     recomputeAllSurfaces();
@@ -1027,7 +1028,7 @@ void GLScene::recomputeAllSurfaces()
             spline(i).computeSurfaces(dt);
     }
 
-    qDebug("Recomputed all surfaces: (%d points, %d curves, %d surfaces) %.3f secs", npoints, ncurves, nsurfaces, t.elapsed()/1000.0);
+    qDebug("Recomputed all surfaces: (%d points, %d curves, %d surfaces) %d ms", npoints, ncurves, nsurfaces, t.elapsed());
 
     update();
 }
@@ -1213,7 +1214,7 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
 void GLScene::update_region_coloring()
 {
     //curvesImageBGR(false, -1);;
-    m_curImage = cv::Scalar(255,255,255);
+    m_curImage = orgBlankImage.clone();
 
     cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
@@ -1234,7 +1235,7 @@ void GLScene::update_region_coloring()
         QPoint seed = m_splineGroup.colorMapping[l].first;
         QColor qcolor = m_splineGroup.colorMapping[l].second;
         cv::Scalar color(qcolor.blue(), qcolor.green(), qcolor.red());
-        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color);
+        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
 
         QVector<QPoint> neighbours;
         for (int i=0; i<result.rows; ++i)
@@ -1700,6 +1701,8 @@ void GLScene::resetImage()
 
     std::string blankImagePath = imageLocationWithID("blank.png");
     m_curImage = loadImage(blankImagePath);
+    orgBlankImage = m_curImage.clone();
+
     if (prevSize.width() > 0)
         cv::resize(m_curImage, m_curImage, cv::Size(prevSize.height(), prevSize.width()));
 

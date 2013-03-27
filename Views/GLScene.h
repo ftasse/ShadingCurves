@@ -177,6 +177,11 @@ public:
         displayModeLabel->setText(displayModesList[curDisplayMode]);
     }
 
+    BSplineGroup& splineGroup()
+    {
+        return m_splineGroup;
+    }
+
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
@@ -203,6 +208,22 @@ public slots:
     void toggleShowCurrentCurvePoints(bool status);
 
     void updateConnectedSurfaces(int cptRef);
+
+    void reuseResultsImage()
+    {
+        if (resultImg.cols > 0)
+        {
+            orgBlankImage = resultImg.clone();
+            m_curImage = resultImg.clone();
+            splineGroup().colorMapping.clear();
+            curDisplayMode = 0;
+            changeDisplayModeText();
+            update();
+        }   else
+        {
+            qDebug("Error: results image is not yet initialized");
+        }
+    }
 
 
 private:
@@ -242,6 +263,7 @@ public:
     bool freehand;
     cv::Mat surfaceImg;
     cv::Mat resultImg;
+    cv::Mat orgBlankImage;
     bool discreteB;
 
     QSizeF imSize;

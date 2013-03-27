@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionSave_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(saveCurves()));
     connect(ui->actionCreate_BSpline, SIGNAL(triggered()), ui->graphicsView, SLOT(create_bspline()));
     connect(ui->actionChange_resolution, SIGNAL(triggered()), ui->graphicsView, SLOT(changeResolution()));
+    connect(ui->actionReuse_results_image, SIGNAL(triggered()), scene, SLOT(reuseResultsImage()));
 
     connect(ui->createCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(create_bspline()));
     connect(ui->editCurveButton, SIGNAL(pressed()), ui->graphicsView, SLOT(edit_bspline()));
