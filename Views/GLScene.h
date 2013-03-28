@@ -179,6 +179,7 @@ signals:
     void setStatusMessage(QString message);
     void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness);
     void point_parameters_changed(bool enabled, bool isSharp);
+    void triggerShading();
 
 public slots:
     void selectedPointChanged();
@@ -209,6 +210,7 @@ public slots:
         }
     }
 
+    void setInteractiveShading(bool b);
 
 private:
     cv::Mat m_curImage;
@@ -252,6 +254,8 @@ public:
     QList<std::pair<uint, uint> > selectedObjects;
     QLabel *displayModeLabel;
     QGLWidget *glWidget;
+
+    bool interactiveShading;
 
 };
 

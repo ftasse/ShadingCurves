@@ -77,6 +77,8 @@ GLScene::GLScene(QObject *parent) :
     shadingProfileView->setFloating(true);
 
     connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
+
+    interactiveShading = false;
 }
 
 GLScene:: ~GLScene()
@@ -993,6 +995,7 @@ void GLScene::recomputeAllSurfaces()
 {
     QTime t;
     t.start();
+    int i;
 
     m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
     int npoints=0, ncurves=0, nsurfaces=0;
@@ -1000,16 +1003,18 @@ void GLScene::recomputeAllSurfaces()
     for (int i=0; i<num_cpts(); ++i)
         if (controlPoint(i).num_splines()>0)    ++npoints;
 
-    for (int i=0; i<num_splines(); ++i)
+//    #pragma omp parallel for default(none) reduction(+:ncurves) reduction(+:nsurfaces) private(i)
+    for (i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
         {
-            ncurves++;
-            if (spline(i).has_inward_surface)  nsurfaces++;
-            if (spline(i).has_outward_surface)  nsurfaces++;
+            ncurves = ncurves + 1;
+            if (spline(i).has_inward_surface)  nsurfaces = nsurfaces + 1;
+            if (spline(i).has_outward_surface)  nsurfaces = nsurfaces + 1;
             spline(i).recompute();
         }
 
-    for (int i=0; i<num_splines(); ++i)
+//    #pragma omp parallel for default(none) private(i)
+    for (i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
             spline(i).computeControlPointNormals();
 
@@ -1023,13 +1028,19 @@ void GLScene::recomputeAllSurfaces()
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
-    for (int i=0; i<num_splines(); ++i)
+//    #pragma omp parallel for default(none) private(i) shared(dt)
+    for (i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
             spline(i).computeSurfaces(dt);
     }
 
     qDebug("Recomputed all surfaces: (%d points, %d curves, %d surfaces) %d ms", npoints, ncurves, nsurfaces, t.elapsed());
+
+    if (interactiveShading)
+    {
+        emit triggerShading();
+    }
 
     update();
 }
@@ -1860,4 +1871,9 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
 
     if (has_changed)
         recomputeAllSurfaces();
+}
+
+void GLScene::setInteractiveShading(bool b)
+{
+    interactiveShading = b;
 }

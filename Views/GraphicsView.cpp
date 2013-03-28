@@ -14,8 +14,8 @@ GraphicsView::GraphicsView(QWidget *parent) :
     superSampling = 1;
     surfSubdLevel = 2;
     imgShowAll = false;
-    imgWriteAll = true;
-    clipping = true;
+    imgWriteAll = false;
+    clipping = false;
     clipMin = 0;
     clipMax = 100;
     shade = MATLAB;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>842</width>
-    <height>726</height>
+    <width>1441</width>
+    <height>999</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,15 +39,15 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>240</width>
-            <height>537</height>
+            <width>109</width>
+            <height>109</height>
            </rect>
           </property>
           <attribute name="label">
@@ -76,8 +76,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>220</width>
-                <height>517</height>
+                <width>94</width>
+                <height>24</height>
                </rect>
               </property>
               <widget class="QPushButton" name="createCurveButton">
@@ -399,7 +399,7 @@
             <x>0</x>
             <y>0</y>
             <width>240</width>
-            <height>537</height>
+            <height>800</height>
            </rect>
           </property>
           <attribute name="label">
@@ -410,19 +410,19 @@
             <rect>
              <x>20</x>
              <y>0</y>
-             <width>161</width>
-             <height>27</height>
+             <width>61</width>
+             <height>41</height>
             </rect>
            </property>
            <property name="text">
-            <string>Show shaded image</string>
+            <string>Shade</string>
            </property>
           </widget>
           <widget class="QGroupBox" name="groupBox">
            <property name="geometry">
             <rect>
              <x>50</x>
-             <y>40</y>
+             <y>50</y>
              <width>120</width>
              <height>81</height>
             </rect>
@@ -502,14 +502,14 @@
             <string>Save images</string>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
           <widget class="QSpinBox" name="spinBoxSubd">
            <property name="geometry">
             <rect>
              <x>160</x>
-             <y>130</y>
+             <y>140</y>
              <width>52</width>
              <height>27</height>
             </rect>
@@ -525,7 +525,7 @@
            <property name="geometry">
             <rect>
              <x>20</x>
-             <y>130</y>
+             <y>140</y>
              <width>131</width>
              <height>31</height>
             </rect>
@@ -547,7 +547,7 @@
             <string>Clip luminance</string>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
           <widget class="QSpinBox" name="clipMin">
@@ -602,7 +602,7 @@
             </rect>
            </property>
            <property name="maximum">
-            <number>255</number>
+            <number>200</number>
            </property>
            <property name="value">
             <number>100</number>
@@ -718,25 +718,6 @@
             </property>
            </widget>
           </widget>
-          <widget class="Line" name="line">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>160</y>
-             <width>251</width>
-             <height>20</height>
-            </rect>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
           <widget class="QLineEdit" name="timeOutputSub">
            <property name="geometry">
             <rect>
@@ -763,14 +744,27 @@
             <string>of which subd:</string>
            </property>
           </widget>
+          <widget class="QCheckBox" name="interactiveShading">
+           <property name="geometry">
+            <rect>
+             <x>120</x>
+             <y>10</y>
+             <width>111</width>
+             <height>24</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Interactive</string>
+           </property>
+          </widget>
          </widget>
          <widget class="QWidget" name="drawing_toolbox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>240</width>
-            <height>537</height>
+            <width>94</width>
+            <height>24</height>
            </rect>
           </property>
           <attribute name="label">
@@ -931,8 +925,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>842</width>
-     <height>25</height>
+     <width>1441</width>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -84,7 +84,7 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
     mainLayout->setContentsMargins(0,0,0,0);
 	widget->setLayout(mainLayout);
 
-//    mainWindowPixmap = new QPixmap("../meshVis/icons/mainWindowIcon.png");
+//    QPixmap *mainWindowPixmap = new QPixmap("../imageshading/icons/MWicon3D.png");
 //    QIcon mainWindowIcon(*mainWindowPixmap);
 //    setWindowIcon(mainWindowIcon);
 

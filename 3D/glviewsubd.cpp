@@ -428,7 +428,10 @@ void GLviewsubd::paintGL(void)
         QElapsedTimer timer;
         timer.start();
 
-        double      tmp;
+        double      tmp, val, valMin, valMax;
+
+        valMin = 0.495;
+        valMax = 0.505;
 
 //        numberPaintCalls++;
 //        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
@@ -617,48 +620,53 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
-                                imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                imgFillShaded.at<cv::Vec3f>(y,x)[0],
-                                L, a, b);
+                        val = img.at<cv::Vec3f>(y,x)[0];
 
-                        tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
-
-                        if (clipping)
+                        if (val < valMin || val > valMax)
                         {
-                            if (tmp > clipMax)
+                            RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                    imgFillShaded.at<cv::Vec3f>(y,x)[1],
+                                    imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                                    L, a, b);
+
+                            tmp = L + 200*(val - 0.5); //0.50196081399917603
+
+                            if (clipping)
                             {
-                                tmp = clipMax;
+                                if (tmp > clipMax)
+                                {
+                                    tmp = clipMax;
+                                }
+                                if (tmp < clipMin)
+                                {
+                                    tmp = clipMin;
+                                }
                             }
-                            if (tmp < clipMin)
+        //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+                            //convert manually back to BGR
+
+                            LAB2RGB(tmp, a, b, rr, gg, bb);
+                            // seems to give results similar to Henrik' Matlab code
+    //                         lab2rgb<double,double>(tmp, a, b, rr, gg, bb);
+                            // results are a bit different
+    //                         lab2rgbVer2(tmp, a, b, rr, gg, bb);
+
+                            //black out out-of-range pixels
+                            if (blackOut)
                             {
-                                tmp = clipMin;
+                                if (bb < 0 || bb > 1 || gg < 0 || gg > 1 || rr < 0 || rr > 1)
+                                {
+                                    bb = 0;
+                                    gg = 0;
+                                    rr = 0;
+                                }
                             }
+
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                         }
-    //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-
-                        //convert manually back to BGR
-
-                        LAB2RGB(tmp, a, b, rr, gg, bb);
-                        // seems to give results similar to Henrik' Matlab code
-//                         lab2rgb<double,double>(tmp, a, b, rr, gg, bb);
-                        // results are a bit different
-//                         lab2rgbVer2(tmp, a, b, rr, gg, bb);
-
-                        //black out out-of-range pixels
-                        if (blackOut)
-                        {
-                            if (bb < 0 || bb > 1 || gg < 0 || gg > 1 || rr < 0 || rr > 1)
-                            {
-                                bb = 0;
-                                gg = 0;
-                                rr = 0;
-                            }
-                        }
-
-                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                     }
                 }
             }
@@ -671,7 +679,7 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603, 0.498039215803146
 
                         if (clipping)
                         {
@@ -730,39 +738,44 @@ void GLviewsubd::paintGL(void)
                 {
                     for( int x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        matlabRGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
-                                      imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                      imgFillShaded.at<cv::Vec3f>(y,x)[0],
-                                      L, a, b);
+                        val = img.at<cv::Vec3f>(y,x)[0];
 
-                        tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
-
-                        if (img.at<cv::Vec3f>(y,x)[0] < 0.1)
+                        if (val < valMin || val > valMax)
                         {
-                            int iii = 1;
-                        }
+                            matlabRGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                          imgFillShaded.at<cv::Vec3f>(y,x)[1],
+                                          imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                                          L, a, b);
 
-                        if (clipping)
-                        {
-                            if (tmp > clipMax)
+                            tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                            if (img.at<cv::Vec3f>(y,x)[0] < 0.1)
                             {
-                                tmp = clipMax;
+                                int iii = 1;
                             }
-                            if (tmp < clipMin)
+
+                            if (clipping)
                             {
-                                tmp = clipMin;
+                                if (tmp > clipMax)
+                                {
+                                    tmp = clipMax;
+                                }
+                                if (tmp < clipMin)
+                                {
+                                    tmp = clipMin;
+                                }
                             }
+        //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+
+                            //convert manually back to BGR
+                            matlabLAB2RGB(tmp, a, b, rr, gg, bb);
+
+                            //black out already in matlabLAB2RGB fucntion
+
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                         }
-    //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-
-                        //convert manually back to BGR
-                        matlabLAB2RGB(tmp, a, b, rr, gg, bb);
-
-                        //black out already in matlabLAB2RGB fucntion
-
-                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                        imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
                     }
                 }
             }

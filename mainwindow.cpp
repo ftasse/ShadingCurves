@@ -29,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     showStatusMessage("Idle Mode");
 
+//    QPixmap *mainWindowPixmap = new QPixmap("../imageshading/icons/MWicon2D.png");
+//    QIcon mainWindowIcon(*mainWindowPixmap);
+//    setWindowIcon(mainWindowIcon);
+
     //Connections
     connect(ui->actionDelete_all_curves, SIGNAL(triggered()), scene, SLOT(delete_all()));
     connect(ui->actionOpen_project, SIGNAL(triggered()), ui->graphicsView, SLOT(loadProject()));
@@ -101,6 +105,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->blackOut, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setBlackOut(bool)));
     connect(ui->graphicsView, SIGNAL(setTimeOutput(QString)), ui->timeOutput, SLOT(setText(QString)));
     connect(ui->graphicsView, SIGNAL(setTimeOutputSub(QString)), ui->timeOutputSub, SLOT(setText(QString)));
+    connect(ui->interactiveShading, SIGNAL(clicked(bool)), scene, SLOT(setInteractiveShading(bool)));
+    connect(scene, SIGNAL(triggerShading()), ui->graphicsView, SLOT(applyShading()));
 }
 
 MainWindow::~MainWindow()
