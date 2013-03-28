@@ -1224,27 +1224,57 @@ void GLviewsubd::drawLab()
     glPointSize(6);
 
     max = 30;
-    for (i = 0 ; i <= max ; i++)
+    if (mesh_enabled)
     {
-        for (j = 0 ; j <= max ; j++)
+        for (i = 0 ; i <= max ; i++)
         {
-            for (k = 0 ; k <= max ; k++)
+            for (j = 0 ; j <= max ; j++)
             {
-                R = (double)i / (double)max;
-                G = (double)j / (double)max;
-                B = (double)k / (double)max;
-                RGB2LAB(R, G, B, L, a, b);
+                for (k = 0 ; k <= max ; k++)
+                {
+                    R = (double)i / (double)max;
+                    G = (double)j / (double)max;
+                    B = (double)k / (double)max;
+                    RGB2LAB(R, G, B, L, a, b);
 
-                col[0] = R;
-                col[1] = G;
-                col[2] = B;
+                    col[0] = R;
+                    col[1] = G;
+                    col[2] = B;
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-                glColor3fv(col);
-                glBegin(GL_POINTS);
-//                glVertex3f(a/100, b/100, L/100 - 0.5);
-                glVertex3f(a/100, L/100 - 0.5, b/100);
-                glEnd();
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                    glColor3fv(col);
+                    glBegin(GL_POINTS);
+    //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                    glVertex3f(a/100, L/100 - 0.5, b/100);
+                    glEnd();
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i = 0 ; i <= max ; i++)
+        {
+            for (j = 0 ; j <= max ; j++)
+            {
+                for (k = 0 ; k <= max ; k++)
+                {
+                    L = (double)i / (double)max * 500 - 200;
+                    a = (double)j / (double)max * 255 - 128;
+                    b = (double)k / (double)max * 255 - 128;
+                    LAB2RGB(L, a, b, R, G, B);
+
+                    col[0] = R;
+                    col[1] = G;
+                    col[2] = B;
+
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                    glColor3fv(col);
+                    glBegin(GL_POINTS);
+    //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                    glVertex3f(a/100, L/100 - 0.5, b/100);
+                    glEnd();
+                }
             }
         }
     }
