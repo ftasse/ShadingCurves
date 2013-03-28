@@ -83,7 +83,7 @@ private:
     GLviewsubd      *glvs;
 
     int superSampling, surfSubdLevel, clipMin, clipMax, subdivTime;
-    bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut;
+    bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut, interactiveShading;
 
     ShadingType     shade;
 };

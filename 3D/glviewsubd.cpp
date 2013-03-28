@@ -454,7 +454,7 @@ void GLviewsubd::paintGL(void)
         //depth buffer
         glGenRenderbuffersEXT(1, &depthbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, super*imageWidth, super*imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, super*imageWidth, super*imageHeight);
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                          GL_RENDERBUFFER_EXT, depthbuffer);
 
@@ -616,9 +616,11 @@ void GLviewsubd::paintGL(void)
             {
                 // apply luminance adjustment
                 double  rr, gg, bb, L, a, b;
-                for( int y = 0; y < imgFillShaded.rows; y++ )
+                int x, y;
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                for( y = 0; y < imgFillShaded.rows; y++ )
                 {
-                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    for( x = 0; x < imgFillShaded.cols; x++ )
                     {
                         val = img.at<cv::Vec3f>(y,x)[0];
 
@@ -675,9 +677,11 @@ void GLviewsubd::paintGL(void)
                 cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2Lab);
 
                 // apply luminance adjustment
-                for( int y = 0; y < imgFillShaded.rows; y++ )
+                int x, y;
+                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax)
+                for( y = 0; y < imgFillShaded.rows; y++ )
                 {
-                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    for( x = 0; x < imgFillShaded.cols; x++ )
                     {
                         tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603, 0.498039215803146
 
@@ -706,9 +710,11 @@ void GLviewsubd::paintGL(void)
                 clipMax = 1;
 
                 // apply luminance adjustment
-                for( int y = 0; y < imgFillShaded.rows; y++ )
+                int x, y;
+                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax)
+                for( y = 0; y < imgFillShaded.rows; y++ )
                 {
-                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    for( x = 0; x < imgFillShaded.cols; x++ )
                     {
                         tmp = imgFillShaded.at<cv::Vec3f>(y,x)[1] + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
 
@@ -734,9 +740,14 @@ void GLviewsubd::paintGL(void)
             {
                 // apply luminance adjustment
                 double  rr, gg, bb, L, a, b;
-                for( int y = 0; y < imgFillShaded.rows; y++ )
+                int x, y;
+
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                for( y = 0; y < imgFillShaded.rows; y++ )
                 {
-                    for( int x = 0; x < imgFillShaded.cols; x++ )
+                    //paralellising the inner loop gives slower results
+                    //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
+                    for( x = 0; x < imgFillShaded.cols; x++ )
                     {
                         val = img.at<cv::Vec3f>(y,x)[0];
 
@@ -2800,14 +2811,14 @@ void GLviewsubd::matlabRGB2LAB(double R, double G,double B, double &L, double &a
     YT = Y > T;
     ZT = Z > T;
 
-    fX = (int)XT * powJiri(X,1.0/3.0) + ((int)!XT) * (7.787 * X + 16.0/116.0);
+    fX = (int)XT * powJiri(X, 0.333333) + ((int)!XT) * (7.787 * X + 0.137931);
 
     // Compute L
-    Y3 = powJiri(Y, 1.0/3.0);
-    fY = (int)YT * Y3 + ((int)!YT) * (7.787 * Y + 16.0/116.0);
+    Y3 = powJiri(Y, 0.333333);
+    fY = (int)YT * Y3 + ((int)!YT) * (7.787 * Y + 0.137931);
     L  = (int)YT * (116.0 * Y3 - 16.0) + ((int)!YT) * (903.3 * Y);
 
-    fZ = (int)ZT * powJiri(Z, 1.0/3.0) + ((int)!ZT) * (7.787 * Z + 16.0/116.0);
+    fZ = (int)ZT * powJiri(Z, 0.333333) + ((int)!ZT) * (7.787 * Z + 0.137931);
 
     // Compute a and b
     a = 500.0 * (fX - fY);
@@ -2832,22 +2843,20 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
 
     tmp = (int)YT;
     tmp = (int)!YT;
-    tmp2 = powJiri(fY, 1.0/3.0);
-
-
+    tmp2 = powJiri(fY, 0.333333);
 
     // Alter fY slightly for further calculations
-    fY = (int)YT * (powJiri(fY, (1.0/3.0))) + ((int)!YT) * (7.787 * fY + 16.0/116.0);
+    fY = (int)YT * (powJiri(fY, 0.333333)) + ((int)!YT) * (7.787 * fY + 0.137931);
 
     // Compute X
     fX = a / 500.0 + fY;
     XT = fX > T2;
-    X = ((int)XT * (powJiri(fX,3.0)) + ((int)!XT) * ((fX - 16.0/116.0) / 7.787));
+    X = ((int)XT * (powJiri(fX,3.0)) + ((int)!XT) * ((fX - 0.137931) / 7.787));
 
     // Compute Z
     fZ = fY - b / 200.0;
     ZT = fZ > T2;
-    Z = ((int)ZT * (powJiri(fZ,3.0)) + ((int)!ZT) * ((fZ - 16.0/116.0) / 7.787));
+    Z = ((int)ZT * (powJiri(fZ,3.0)) + ((int)!ZT) * ((fZ - 0.137931) / 7.787));
 
     X = X * 0.950456;
     Z = Z * 1.088754;
@@ -2871,7 +2880,7 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
         {
             R = 1;
         }
-        if (R < 0)
+        else if (R < 0)
         {
             R = 0;
         }
@@ -2879,7 +2888,7 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
         {
             G = 1;
         }
-        if (G < 0)
+        else if (G < 0)
         {
             G = 0;
         }
@@ -2887,7 +2896,7 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
         {
             B = 1;
         }
-        if (B < 0)
+        else if (B < 0)
         {
             B = 0;
         }

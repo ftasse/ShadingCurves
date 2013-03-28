@@ -995,7 +995,6 @@ void GLScene::recomputeAllSurfaces()
 {
     QTime t;
     t.start();
-    int i;
 
     m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
     int npoints=0, ncurves=0, nsurfaces=0;
@@ -1003,18 +1002,16 @@ void GLScene::recomputeAllSurfaces()
     for (int i=0; i<num_cpts(); ++i)
         if (controlPoint(i).num_splines()>0)    ++npoints;
 
-//    #pragma omp parallel for default(none) reduction(+:ncurves) reduction(+:nsurfaces) private(i)
-    for (i=0; i<num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
         {
-            ncurves = ncurves + 1;
-            if (spline(i).has_inward_surface)  nsurfaces = nsurfaces + 1;
-            if (spline(i).has_outward_surface)  nsurfaces = nsurfaces + 1;
+            ncurves++;
+            if (spline(i).has_inward_surface)  nsurfaces++;
+            if (spline(i).has_outward_surface)  nsurfaces++;
             spline(i).recompute();
         }
 
-//    #pragma omp parallel for default(none) private(i)
-    for (i=0; i<num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
         if (spline(i).num_cpts() > 1)
             spline(i).computeControlPointNormals();
 
@@ -1028,8 +1025,7 @@ void GLScene::recomputeAllSurfaces()
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
 
-//    #pragma omp parallel for default(none) private(i) shared(dt)
-    for (i=0; i<num_splines(); ++i)
+    for (int i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
             spline(i).computeSurfaces(dt);
