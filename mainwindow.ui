@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1441</width>
-    <height>999</height>
+    <width>741</width>
+    <height>742</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,10 +25,19 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
+        <layout class="QFormLayout" name="formLayout"/>
+       </item>
+       <item>
         <widget class="GraphicsView" name="graphicsView"/>
        </item>
        <item>
         <widget class="QToolBox" name="toolBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="maximumSize">
           <size>
            <width>240</width>
@@ -39,15 +48,15 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="curves_toolbox">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>109</width>
-            <height>109</height>
+            <width>240</width>
+            <height>553</height>
            </rect>
           </property>
           <attribute name="label">
@@ -76,8 +85,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>94</width>
-                <height>24</height>
+                <width>216</width>
+                <height>529</height>
                </rect>
               </property>
               <widget class="QPushButton" name="createCurveButton">
@@ -399,7 +408,7 @@
             <x>0</x>
             <y>0</y>
             <width>240</width>
-            <height>800</height>
+            <height>553</height>
            </rect>
           </property>
           <attribute name="label">
@@ -763,8 +772,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>94</width>
-            <height>24</height>
+            <width>240</width>
+            <height>553</height>
            </rect>
           </property>
           <attribute name="label">
@@ -925,8 +934,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1441</width>
-     <height>27</height>
+     <width>741</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

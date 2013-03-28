@@ -1216,16 +1216,16 @@ void GLviewsubd::drawFrame()
 
 void GLviewsubd::drawLab()
 {
-    unsigned int i, j, k, max;
+    unsigned int i, j, k, l, max, max2;
     double       R, G, B, L, a, b;
     GLfloat      col[3];
 
     glDisable(GL_TEXTURE_1D);
-    glPointSize(6);
 
     max = 30;
-    if (mesh_enabled)
+    if (flat_mesh_enabled)
     {
+        glPointSize(10);
         for (i = 0 ; i <= max ; i++)
         {
             for (j = 0 ; j <= max ; j++)
@@ -1245,14 +1245,15 @@ void GLviewsubd::drawLab()
                     glColor3fv(col);
                     glBegin(GL_POINTS);
     //                glVertex3f(a/100, b/100, L/100 - 0.5);
-                    glVertex3f(a/100, L/100 - 0.5, b/100);
+                    glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
                     glEnd();
                 }
             }
         }
     }
-    else
+    else if (smooth_mesh_enabled)
     {
+        glPointSize(8);
         for (i = 0 ; i <= max ; i++)
         {
             for (j = 0 ; j <= max ; j++)
@@ -1272,8 +1273,92 @@ void GLviewsubd::drawLab()
                     glColor3fv(col);
                     glBegin(GL_POINTS);
     //                glVertex3f(a/100, b/100, L/100 - 0.5);
-                    glVertex3f(a/100, L/100 - 0.5, b/100);
+                    glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
                     glEnd();
+                }
+            }
+        }
+    }
+    else if (edged_mesh_enabled)
+    {
+        glPointSize(6);
+        max = 170;
+        for (j = 0 ; j <= max ; j++)
+        {
+            for (k = 0 ; k <= max ; k++)
+            {
+                L = 0;
+                a = (double)j / (double)max * 255 - 128;
+                b = (double)k / (double)max * 255 - 128;
+                LAB2RGB(L, a, b, R, G, B);
+
+                col[0] = R;
+                col[1] = G;
+                col[2] = B;
+
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                glColor3fv(col);
+                glBegin(GL_POINTS);
+//                glVertex3f(a/100, b/100, L/100 - 0.5);
+                glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
+                glEnd();
+            }
+        }
+        for (j = 0 ; j <= max ; j++)
+        {
+            for (k = 0 ; k <= max ; k++)
+            {
+                L = 100;
+                a = (double)j / (double)max * 255 - 128;
+                b = (double)k / (double)max * 255 - 128;
+                LAB2RGB(L, a, b, R, G, B);
+
+                col[0] = R;
+                col[1] = G;
+                col[2] = B;
+
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                glColor3fv(col);
+                glBegin(GL_POINTS);
+//                glVertex3f(a/100, b/100, L/100 - 0.5);
+                glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
+                glEnd();
+            }
+        }
+    }
+    else if (culled_mesh_enabled)
+    {
+        glPointSize(8);
+        max = 30;
+        max2 = 3;
+        for (i = 0 ; i <= max ; i++)
+        {
+            for (j = 0 ; j <= max ; j++)
+            {
+                for (k = 0 ; k <= max ; k++)
+                {
+                    R = (double)i / (double)max;
+                    G = (double)j / (double)max;
+                    B = (double)k / (double)max;
+                    RGB2LAB(R, G, B, L, a, b);
+
+                    for (l = 0 ; l <= max2 ; l++)
+                    {
+                        L = (double)l / (double)max2 * 300 - 100;
+                        LAB2RGB(L, a, b, R, G, B);
+
+                        col[0] = R;
+                        col[1] = G;
+                        col[2] = B;
+
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                        glColor3fv(col);
+                        glBegin(GL_POINTS);
+        //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                        glVertex3f(a/100, L/100 - 0.5, b/100);
+                        glEnd();
+
+                    }
                 }
             }
         }
