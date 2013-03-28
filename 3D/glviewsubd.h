@@ -108,6 +108,8 @@ public:
     void matlabRGB2LAB(double R, double G, double B, double &L, double &a, double &b);
     void matlabLAB2RGB(double L, double a, double b, double &R, double &G, double &B);
 
+    double powJiri(double b, double e);
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);

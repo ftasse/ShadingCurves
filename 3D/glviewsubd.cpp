@@ -219,7 +219,7 @@ void GLviewsubd::setSubdivLevel(int newLevel)
 //        cout << "subdivide End " << endl;
 	}
     subdivTime = timer.elapsed();
-//    qDebug() << "Subdivision took" << subdivTime << "milliseconds";
+    qDebug() << "3D: Subdivision: " << subdivTime << "ms";
 
 	updateAll();
 }
@@ -328,6 +328,9 @@ void GLviewsubd::buildAll(void)
 
 void GLviewsubd::initializeGL(void)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     static const int res = 1024;
     PointPrec		col[3];
     GLfloat			texture[5][res][4], alpha;
@@ -412,6 +415,9 @@ void GLviewsubd::initializeGL(void)
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
                  0, GL_BGR, GL_UNSIGNED_BYTE, inputImg->data);
+
+    qDebug() << "3D: GL initialisation: " << timer.elapsed() << "ms";
+
 }
 
 void GLviewsubd::paintGL(void)
@@ -419,8 +425,8 @@ void GLviewsubd::paintGL(void)
 
     if (offScreen)
     {
-//        QElapsedTimer timer;
-//        timer.start();
+        QElapsedTimer timer;
+        timer.start();
 
         double      tmp;
 
@@ -517,8 +523,8 @@ void GLviewsubd::paintGL(void)
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 
-//        qDebug() << "OpenGL took " << timer.elapsed() << "milliseconds";
-//        timer.restart();
+        qDebug() << "3D: OpenGL rendering: " << timer.elapsed() << "ms";
+        timer.restart();
 
 //        cout << imgFill.at<cv::Vec3f>(0,0)[0] << " " << imgFill.at<cv::Vec3f>(0,0)[1] <<" " << imgFill.at<cv::Vec3f>(0,0)[2] << endl;
 
@@ -599,6 +605,9 @@ void GLviewsubd::paintGL(void)
 ////            }
 
             imgFill.copyTo(imgFillShaded);
+
+            qDebug() << "3D: IP: Prepare images: " << timer.elapsed() << "ms";
+            timer.restart();
 
             if (shade == OWN)
             {
@@ -728,6 +737,11 @@ void GLviewsubd::paintGL(void)
 
                         tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
 
+                        if (img.at<cv::Vec3f>(y,x)[0] < 0.1)
+                        {
+                            int iii = 1;
+                        }
+
                         if (clipping)
                         {
                             if (tmp > clipMax)
@@ -752,6 +766,9 @@ void GLviewsubd::paintGL(void)
                     }
                 }
             }
+
+            qDebug() << "3D: IP: Change luminance: " << timer.elapsed() << "ms";
+            timer.restart();
 
 //            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB);
 
@@ -781,7 +798,8 @@ void GLviewsubd::paintGL(void)
             }
         }
 //        updateGL();
-//        qDebug() << "Image processing took " << timer.elapsed() << "milliseconds";
+
+        qDebug() << "3D: IP: Show/write images: " << timer.elapsed() << "ms";
     }
     else
     {
@@ -2502,9 +2520,9 @@ void GLviewsubd::lab2rgbVer2(double L, double a, double b, double &R, double &G,
 
     // linear sRGB -> gamma-compressed sRGB (in 0...1)
 
-    R = R > 0.0031308 ? pow(R, 1.0 / 2.4) * 1.055 - 0.055 : R * 12.92;
-    G = G > 0.0031308 ? pow(G, 1.0 / 2.4) * 1.055 - 0.055 : G * 12.92;
-    B = B > 0.0031308 ? pow(B, 1.0 / 2.4) * 1.055 - 0.055 : B * 12.92;
+    R = R > 0.0031308 ? powJiri(R, 1.0 / 2.4) * 1.055 - 0.055 : R * 12.92;
+    G = G > 0.0031308 ? powJiri(G, 1.0 / 2.4) * 1.055 - 0.055 : G * 12.92;
+    B = B > 0.0031308 ? powJiri(B, 1.0 / 2.4) * 1.055 - 0.055 : B * 12.92;
 }
 
 //somewhere from the web
@@ -2565,7 +2583,7 @@ void GLviewsubd::RGB2XYZ(double R, double G, double B, double &X, double &Y, dou
 
     if ( var_R > 0.04045 )
     {
-        var_R = pow( ( var_R + 0.055 ) / 1.055, 2.4);
+        var_R = powJiri( ( var_R + 0.055 ) / 1.055, 2.4);
     }
     else
     {
@@ -2574,7 +2592,7 @@ void GLviewsubd::RGB2XYZ(double R, double G, double B, double &X, double &Y, dou
 
     if ( var_G > 0.04045 )
     {
-        var_G = pow( ( var_G + 0.055 ) / 1.055, 2.4);
+        var_G = powJiri( ( var_G + 0.055 ) / 1.055, 2.4);
     }
     else
     {
@@ -2583,7 +2601,7 @@ void GLviewsubd::RGB2XYZ(double R, double G, double B, double &X, double &Y, dou
 
     if ( var_B > 0.04045 )
     {
-        var_B = pow( ( var_B + 0.055 ) / 1.055, 2.4);
+        var_B = powJiri( ( var_B + 0.055 ) / 1.055, 2.4);
     }
     else
     {
@@ -2614,7 +2632,7 @@ void GLviewsubd::XYZ2LAB(double X, double Y, double Z, double &L, double &a ,dou
 
     if ( var_X > 0.008856 )
     {
-        var_X = pow(var_X, 1.0/3.0);
+        var_X = powJiri(var_X, 1.0/3.0);
     }
     else
     {
@@ -2623,7 +2641,7 @@ void GLviewsubd::XYZ2LAB(double X, double Y, double Z, double &L, double &a ,dou
 
     if ( var_Y > 0.008856 )
     {
-        var_Y = pow(var_Y, 1.0/3.0);
+        var_Y = powJiri(var_Y, 1.0/3.0);
     }
     else
     {
@@ -2632,7 +2650,7 @@ void GLviewsubd::XYZ2LAB(double X, double Y, double Z, double &L, double &a ,dou
 
     if ( var_Z > 0.008856 )
     {
-        var_Z = pow(var_Z, 1.0/3.0);
+        var_Z = powJiri(var_Z, 1.0/3.0);
     }
     else
     {
@@ -2721,7 +2739,7 @@ void GLviewsubd::XYZ2RGB(double X, double Y, double Z, double &R, double &G, dou
 
     if ( var_R > 0.0031308 )
     {
-        var_R = 1.055 * ( pow(var_R, 1.0 / 2.4) ) - 0.055;
+        var_R = 1.055 * ( powJiri(var_R, 1.0 / 2.4) ) - 0.055;
     }
     else
     {
@@ -2730,7 +2748,7 @@ void GLviewsubd::XYZ2RGB(double X, double Y, double Z, double &R, double &G, dou
 
     if ( var_G > 0.0031308 )
     {
-        var_G = 1.055 * ( pow(var_G, 1.0 / 2.4) ) - 0.055;
+        var_G = 1.055 * ( powJiri(var_G, 1.0 / 2.4) ) - 0.055;
     }
     else
     {
@@ -2739,7 +2757,7 @@ void GLviewsubd::XYZ2RGB(double X, double Y, double Z, double &R, double &G, dou
 
     if ( var_B > 0.0031308 )
     {
-        var_B = 1.055 * ( pow(var_B, 1.0 / 2.4) ) - 0.055;
+        var_B = 1.055 * ( powJiri(var_B, 1.0 / 2.4) ) - 0.055;
     }
     else
     {
@@ -2769,14 +2787,14 @@ void GLviewsubd::matlabRGB2LAB(double R, double G,double B, double &L, double &a
     YT = Y > T;
     ZT = Z > T;
 
-    fX = (int)XT * pow(X,1.0/3.0) + ((int)!XT) * (7.787 * X + 16.0/116.0);
+    fX = (int)XT * powJiri(X,1.0/3.0) + ((int)!XT) * (7.787 * X + 16.0/116.0);
 
     // Compute L
-    Y3 = pow(Y, 1.0/3.0);
+    Y3 = powJiri(Y, 1.0/3.0);
     fY = (int)YT * Y3 + ((int)!YT) * (7.787 * Y + 16.0/116.0);
     L  = (int)YT * (116.0 * Y3 - 16.0) + ((int)!YT) * (903.3 * Y);
 
-    fZ = (int)ZT * pow(Z, 1.0/3.0) + ((int)!ZT) * (7.787 * Z + 16.0/116.0);
+    fZ = (int)ZT * powJiri(Z, 1.0/3.0) + ((int)!ZT) * (7.787 * Z + 16.0/116.0);
 
     // Compute a and b
     a = 500.0 * (fX - fY);
@@ -2790,24 +2808,33 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
            fX, fY, fZ, X, Y, Z;
     bool XT, YT, ZT;
 
+    int tmp;
+    double tmp2;
+
     //Compute Y
-    fY = pow((L + 16.0) / 116.0, 3.0);
+    fY = powJiri((L + 16.0) / 116.0, 3.0);
     YT = fY > T1;
     fY = ((int)!YT) * (L / 903.3) + (int)YT * fY;
     Y = fY;
 
+    tmp = (int)YT;
+    tmp = (int)!YT;
+    tmp2 = powJiri(fY, 1.0/3.0);
+
+
+
     // Alter fY slightly for further calculations
-    fY = (int)YT * (pow(fY, (1.0/3.0))) + ((int)!YT) * (7.787 * fY + 16.0/116.0);
+    fY = (int)YT * (powJiri(fY, (1.0/3.0))) + ((int)!YT) * (7.787 * fY + 16.0/116.0);
 
     // Compute X
     fX = a / 500.0 + fY;
     XT = fX > T2;
-    X = ((int)XT * (pow(fX,3.0)) + ((int)!XT) * ((fX - 16.0/116.0) / 7.787));
+    X = ((int)XT * (powJiri(fX,3.0)) + ((int)!XT) * ((fX - 16.0/116.0) / 7.787));
 
     // Compute Z
     fZ = fY - b / 200.0;
     ZT = fZ > T2;
-    Z = ((int)ZT * (pow(fZ,3.0)) + ((int)!ZT) * ((fZ - 16.0/116.0) / 7.787));
+    Z = ((int)ZT * (powJiri(fZ,3.0)) + ((int)!ZT) * ((fZ - 16.0/116.0) / 7.787));
 
     X = X * 0.950456;
     Z = Z * 1.088754;
@@ -2851,5 +2878,17 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
         {
             B = 0;
         }
+    }
+}
+
+double GLviewsubd::powJiri(double b, double e)
+{
+    if (b < 0)
+    {
+        return(-pow(-b, e));
+    }
+    else
+    {
+        return(pow(b,e));
     }
 }

@@ -533,20 +533,17 @@ void GraphicsView::applyShading()
 void GraphicsView::applyShading(bool showImg, bool writeImg)
 {
             QElapsedTimer timer, timer2;
-            qDebug() << endl << "GVT: Timer started";
+            qDebug() << endl;// << "GVT: Timer started";
             timer.start();
             timer2.start();
 
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
 
-            qDebug() << "GVT: Surface OFF stream creation took " << timer2.elapsed() << "milliseconds";
+            qDebug() << "GVT: Surface OFF stream creation: " << timer2.elapsed() << "ms";
             timer2.restart();
 
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
-
-//            qDebug() << "GVT: GLview constructor took " << timer2.elapsed() << "milliseconds";
-//            timer2.restart();
 
     glvs->offScreen = true;
 //    glvs->offMainWindow = true;
@@ -559,7 +556,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
         glvs->loadFile(is);
     }
 
-            qDebug() << "GVT: Loading surfaces to 3D took " << timer2.elapsed() << "milliseconds";
+            qDebug() << "GVT: Loading surfaces to 3D: " << timer2.elapsed() << "ms";
             timer2.restart();
 
     glvs->indexMesh = -1;
@@ -575,10 +572,10 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
 
     subdivTime = glvs->subdivTime;
 
-            qDebug() << "GVT: Subdivision and shading took " << timer2.elapsed() << "milliseconds";
+            qDebug() << "GVT: Subdivision and shading: " << timer2.elapsed() << "ms";
             timer2.restart();
 
-            qDebug() << "GVT: Complete shading took" << timer.elapsed() << "milliseconds";
+            qDebug() << "GVTALL: Complete shading: " << timer.elapsed() << "ms";
             emit setTimeOutput(QString::number(timer.elapsed()));
             emit setTimeOutputSub(QString::number(subdivTime));
 
@@ -590,8 +587,6 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     my_scene->changeDisplayModeText();
 //    myadjustDisplayedImageSize();
     my_scene->update();
-
-//    cv::imshow("Shaded img 4 Henrik", glvs->img);
 
     delete glvs;
 }
