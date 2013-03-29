@@ -12,7 +12,7 @@
 
 enum ShadingType
 {
-    CVLAB, CVHLS, OWN, MATLAB
+    CVLAB, CVHLS, OWN, MATLAB, YXY
 };
 
 class GLviewsubd : public GLviewport
@@ -107,6 +107,9 @@ public:
 
     void matlabRGB2LAB(double R, double G, double B, double &L, double &a, double &b);
     void matlabLAB2RGB(double L, double a, double b, double &R, double &G, double &B);
+
+    void RGB2YXY(double R, double G, double B, double &Y, double &x, double &y);
+    void YXY2RGB(double Y, double x, double y, double &R, double &G, double &B);
 
     double powJiri(double b, double e);
 

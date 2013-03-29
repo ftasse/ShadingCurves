@@ -697,6 +697,11 @@ void GraphicsView::setShadingMatlab()
     shade = MATLAB;
 }
 
+void GraphicsView::setShadingYxy()
+{
+    shade = YXY;
+}
+
 void GraphicsView::setBlackOut(bool b)
 {
     blackOut = b;

@@ -73,6 +73,7 @@ public slots:
     void setShadingHLS();
     void setShadingOwn();
     void setShadingMatlab();
+    void setShadingYxy();
     void setBlackOut(bool b);
 
 private:

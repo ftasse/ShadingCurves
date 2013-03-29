@@ -127,6 +127,11 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 //    cout << "52.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
 //    matlabLAB2RGB(100,79.1967,-113.364,R,G,B);
 //    cout << "100 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
+
+//    RGB2YXY(1,1,1,L,a,b);
+//    cout << "1 1 1 RGB2Yxy = " << L << " " << a << " " << b << endl;
+//    RGB2YXY(0,0,0,L,a,b);
+//    cout << "0 0 0 RGB2Yxy = " << L << " " << a << " " << b << endl;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -639,7 +644,7 @@ void GLviewsubd::paintGL(void)
                                 {
                                     tmp = clipMax;
                                 }
-                                if (tmp < clipMin)
+                                else if (tmp < clipMin)
                                 {
                                     tmp = clipMin;
                                 }
@@ -691,7 +696,7 @@ void GLviewsubd::paintGL(void)
                             {
                                 tmp = clipMax;
                             }
-                            if (tmp < clipMin)
+                            else if (tmp < clipMin)
                             {
                                 tmp = clipMin;
                             }
@@ -724,7 +729,7 @@ void GLviewsubd::paintGL(void)
                             {
                                 tmp = clipMax;
                             }
-                            if (tmp < clipMin)
+                            else if (tmp < clipMin)
                             {
                                 tmp = clipMin;
                             }
@@ -735,6 +740,64 @@ void GLviewsubd::paintGL(void)
 
                 //convert back to BGR
                 cv::cvtColor(imgFillShaded, imgFillShaded, CV_HLS2BGR);
+            }
+            else if (shade == YXY) // Yxy
+            {
+                clipMin = 0;
+                clipMax = 1;
+
+                // apply luminance adjustment
+                double  rr, gg, bb, L, a, b;
+                int x, y;
+
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                for( y = 0; y < imgFillShaded.rows; y++ )
+                {
+                    //paralellising the inner loop gives slower results
+                    //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
+                    for( x = 0; x < imgFillShaded.cols; x++ )
+                    {
+                        val = img.at<cv::Vec3f>(y,x)[0];
+
+                        if (val < valMin || val > valMax)
+                        {
+                            RGB2YXY(imgFillShaded.at<cv::Vec3f>(y,x)[2],
+                                    imgFillShaded.at<cv::Vec3f>(y,x)[1],
+                                    imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                                    L, a, b);
+
+//                            tmp = L + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+
+                            // L in [0,1], tmp should lie in [0,log10(2)]
+                            tmp = log10(L + 1) + log10(2)*2*(val - 0.5);
+
+                            // clip
+                            if (clipping)
+                            {
+                                if (tmp > log10(2))
+                                {
+                                    tmp = log10(2);
+                                }
+                                else if (tmp < 0)
+                                {
+                                    tmp = 0;
+                                }
+                            }
+
+                            //convert back tmp
+                            tmp = pow(10.0, tmp) - 1;
+
+                            //convert manually back to BGR
+                            YXY2RGB(tmp, a, b, rr, gg, bb);
+
+                            //black out already in YXY2RGB fucntion
+
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                        }
+                    }
+                }
             }
             else // matlab
             {
@@ -758,12 +821,7 @@ void GLviewsubd::paintGL(void)
                                           imgFillShaded.at<cv::Vec3f>(y,x)[0],
                                           L, a, b);
 
-                            tmp = L + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
-
-                            if (img.at<cv::Vec3f>(y,x)[0] < 0.1)
-                            {
-                                int iii = 1;
-                            }
+                            tmp = L + 200*(val - 0.5); //0.50196081399917603
 
                             if (clipping)
                             {
@@ -771,7 +829,7 @@ void GLviewsubd::paintGL(void)
                                 {
                                     tmp = clipMax;
                                 }
-                                if (tmp < clipMin)
+                                else if (tmp < clipMin)
                                 {
                                     tmp = clipMin;
                                 }
@@ -1217,25 +1275,82 @@ void GLviewsubd::drawFrame()
 void GLviewsubd::drawLab()
 {
     unsigned int i, j, k, l, max, max2;
-    double       R, G, B, L, a, b;
+    double       R, G, B, L, a, b, Y, x, y;
     GLfloat      col[3];
 
     glDisable(GL_TEXTURE_1D);
 
-    max = 30;
-    if (flat_mesh_enabled)
+    if (ctrl_enabled)
     {
-        glPointSize(10);
-        for (i = 0 ; i <= max ; i++)
+        max = 30;
+        if (flat_mesh_enabled)
         {
+            glPointSize(10);
+            for (i = 0 ; i <= max ; i++)
+            {
+                for (j = 0 ; j <= max ; j++)
+                {
+                    for (k = 0 ; k <= max ; k++)
+                    {
+                        R = (double)i / (double)max;
+                        G = (double)j / (double)max;
+                        B = (double)k / (double)max;
+                        RGB2LAB(R, G, B, L, a, b);
+
+                        col[0] = R;
+                        col[1] = G;
+                        col[2] = B;
+
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                        glColor3fv(col);
+                        glBegin(GL_POINTS);
+        //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                        glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
+                        glEnd();
+                    }
+                }
+            }
+        }
+        else if (smooth_mesh_enabled)
+        {
+            glPointSize(8);
+            for (i = 0 ; i <= max ; i++)
+            {
+                for (j = 0 ; j <= max ; j++)
+                {
+                    for (k = 0 ; k <= max ; k++)
+                    {
+                        L = (double)i / (double)max * 500 - 200;
+                        a = (double)j / (double)max * 255 - 128;
+                        b = (double)k / (double)max * 255 - 128;
+                        LAB2RGB(L, a, b, R, G, B);
+
+                        col[0] = R;
+                        col[1] = G;
+                        col[2] = B;
+
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                        glColor3fv(col);
+                        glBegin(GL_POINTS);
+        //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                        glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
+                        glEnd();
+                    }
+                }
+            }
+        }
+        else if (edged_mesh_enabled)
+        {
+            glPointSize(6);
+            max = 170;
             for (j = 0 ; j <= max ; j++)
             {
                 for (k = 0 ; k <= max ; k++)
                 {
-                    R = (double)i / (double)max;
-                    G = (double)j / (double)max;
-                    B = (double)k / (double)max;
-                    RGB2LAB(R, G, B, L, a, b);
+                    L = 0;
+                    a = (double)j / (double)max * 255 - 128;
+                    b = (double)k / (double)max * 255 - 128;
+                    LAB2RGB(L, a, b, R, G, B);
 
                     col[0] = R;
                     col[1] = G;
@@ -1249,18 +1364,11 @@ void GLviewsubd::drawLab()
                     glEnd();
                 }
             }
-        }
-    }
-    else if (smooth_mesh_enabled)
-    {
-        glPointSize(8);
-        for (i = 0 ; i <= max ; i++)
-        {
             for (j = 0 ; j <= max ; j++)
             {
                 for (k = 0 ; k <= max ; k++)
                 {
-                    L = (double)i / (double)max * 500 - 200;
+                    L = 100;
                     a = (double)j / (double)max * 255 - 128;
                     b = (double)k / (double)max * 255 - 128;
                     LAB2RGB(L, a, b, R, G, B);
@@ -1278,74 +1386,60 @@ void GLviewsubd::drawLab()
                 }
             }
         }
-    }
-    else if (edged_mesh_enabled)
-    {
-        glPointSize(6);
-        max = 170;
-        for (j = 0 ; j <= max ; j++)
+        else if (culled_mesh_enabled)
         {
-            for (k = 0 ; k <= max ; k++)
+            glPointSize(8);
+            max = 30;
+            max2 = 3;
+            for (i = 0 ; i <= max ; i++)
             {
-                L = 0;
-                a = (double)j / (double)max * 255 - 128;
-                b = (double)k / (double)max * 255 - 128;
-                LAB2RGB(L, a, b, R, G, B);
-
-                col[0] = R;
-                col[1] = G;
-                col[2] = B;
-
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-                glColor3fv(col);
-                glBegin(GL_POINTS);
-//                glVertex3f(a/100, b/100, L/100 - 0.5);
-                glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
-                glEnd();
-            }
-        }
-        for (j = 0 ; j <= max ; j++)
-        {
-            for (k = 0 ; k <= max ; k++)
-            {
-                L = 100;
-                a = (double)j / (double)max * 255 - 128;
-                b = (double)k / (double)max * 255 - 128;
-                LAB2RGB(L, a, b, R, G, B);
-
-                col[0] = R;
-                col[1] = G;
-                col[2] = B;
-
-                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-                glColor3fv(col);
-                glBegin(GL_POINTS);
-//                glVertex3f(a/100, b/100, L/100 - 0.5);
-                glVertex3f(a/100.0, L/100.0 - 0.5, b/100.0);
-                glEnd();
-            }
-        }
-    }
-    else if (culled_mesh_enabled)
-    {
-        glPointSize(8);
-        max = 30;
-        max2 = 3;
-        for (i = 0 ; i <= max ; i++)
-        {
-            for (j = 0 ; j <= max ; j++)
-            {
-                for (k = 0 ; k <= max ; k++)
+                for (j = 0 ; j <= max ; j++)
                 {
-                    R = (double)i / (double)max;
-                    G = (double)j / (double)max;
-                    B = (double)k / (double)max;
-                    RGB2LAB(R, G, B, L, a, b);
-
-                    for (l = 0 ; l <= max2 ; l++)
+                    for (k = 0 ; k <= max ; k++)
                     {
-                        L = (double)l / (double)max2 * 300 - 100;
-                        LAB2RGB(L, a, b, R, G, B);
+                        R = (double)i / (double)max;
+                        G = (double)j / (double)max;
+                        B = (double)k / (double)max;
+                        RGB2LAB(R, G, B, L, a, b);
+
+                        for (l = 0 ; l <= max2 ; l++)
+                        {
+                            L = (double)l * 100 - 100;
+                            LAB2RGB(L, a, b, R, G, B);
+
+                            col[0] = R;
+                            col[1] = G;
+                            col[2] = B;
+
+                            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                            glColor3fv(col);
+                            glBegin(GL_POINTS);
+            //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                            glVertex3f(a/100, L/100 - 0.5, b/100);
+                            glEnd();
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        max = 30;
+        if (flat_mesh_enabled)
+        {
+            glPointSize(10);
+            for (i = 0 ; i <= max ; i++)
+            {
+                for (j = 0 ; j <= max ; j++)
+                {
+                    for (k = 0 ; k <= max ; k++)
+                    {
+                        R = (double)i / (double)max;
+                        G = (double)j / (double)max;
+                        B = (double)k / (double)max;
+                        RGB2YXY(R, G, B, Y, x, y);
 
                         col[0] = R;
                         col[1] = G;
@@ -1355,9 +1449,120 @@ void GLviewsubd::drawLab()
                         glColor3fv(col);
                         glBegin(GL_POINTS);
         //                glVertex3f(a/100, b/100, L/100 - 0.5);
-                        glVertex3f(a/100, L/100 - 0.5, b/100);
+                        glVertex3f(x, Y - 0.5, y);
                         glEnd();
+                    }
+                }
+            }
+        }
+        else if (smooth_mesh_enabled)
+        {
+            glPointSize(8);
+            for (i = 0 ; i <= max ; i++)
+            {
+                for (j = 0 ; j <= max ; j++)
+                {
+                    for (k = 0 ; k <= max ; k++)
+                    {
+                        Y = (double)i / (double)max;
+                        x = (double)j / (double)max;
+                        y = (double)k / (double)max;
+                        YXY2RGB(Y, x, y, R, G, B);
 
+                        col[0] = R;
+                        col[1] = G;
+                        col[2] = B;
+
+                        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                        glColor3fv(col);
+                        glBegin(GL_POINTS);
+        //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                        glVertex3f(x, Y - 0.5, y);
+                        glEnd();
+                    }
+                }
+            }
+        }
+        else if (edged_mesh_enabled)
+        {
+            glPointSize(6);
+            max = 170;
+            for (j = 0 ; j <= max ; j++)
+            {
+                for (k = 0 ; k <= max ; k++)
+                {
+                    Y = 0;
+                    x = (double)j / (double)max;
+                    y = (double)k / (double)max;
+                    YXY2RGB(Y, x, y, R, G, B);
+
+                    col[0] = R;
+                    col[1] = G;
+                    col[2] = B;
+
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                    glColor3fv(col);
+                    glBegin(GL_POINTS);
+    //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                    glVertex3f(x, Y - 0.5, y);
+                    glEnd();
+                }
+            }
+            for (j = 0 ; j <= max ; j++)
+            {
+                for (k = 0 ; k <= max ; k++)
+                {
+                    Y = 1;
+                    x = (double)j / (double)max;
+                    y = (double)k / (double)max;
+                    YXY2RGB(Y, x, y, R, G, B);
+
+                    col[0] = R;
+                    col[1] = G;
+                    col[2] = B;
+
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                    glColor3fv(col);
+                    glBegin(GL_POINTS);
+    //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                    glVertex3f(x, Y - 0.5, y);
+                    glEnd();
+                }
+            }
+        }
+        else if (culled_mesh_enabled)
+        {
+            glPointSize(8);
+            max = 30;
+            max2 = 3;
+            for (i = 0 ; i <= max ; i++)
+            {
+                for (j = 0 ; j <= max ; j++)
+                {
+                    for (k = 0 ; k <= max ; k++)
+                    {
+                        R = (double)i / (double)max;
+                        G = (double)j / (double)max;
+                        B = (double)k / (double)max;
+                        RGB2YXY(R, G, B, Y, x, y);
+
+                        for (l = 0 ; l <= max2 ; l++)
+                        {
+                            Y = (double)l - 1;
+                            YXY2RGB(Y, x, y, R, G, B);
+
+                            col[0] = R;
+                            col[1] = G;
+                            col[2] = B;
+
+                            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+                            glColor3fv(col);
+                            glBegin(GL_POINTS);
+            //                glVertex3f(a/100, b/100, L/100 - 0.5);
+                            glVertex3f(x, Y - 0.5, y);
+                            glEnd();
+
+                        }
                     }
                 }
             }
@@ -3027,5 +3232,84 @@ double GLviewsubd::powJiri(double b, double e)
     else
     {
         return(pow(b,e));
+    }
+}
+
+void GLviewsubd::RGB2YXY(double R, double G, double B, double &Y, double &x, double &y)
+{
+    double X, Z, s;
+
+    X = R * 0.412453 + G * 0.357580 + B * 0.180423;
+    Y = R * 0.212671 + G * 0.715160 + B * 0.072169;
+    Z = R * 0.019334 + G * 0.119193 + B * 0.950227;
+
+    s = X + Y + Z;
+
+    if (s == 0)
+    {
+        x = 0;
+        y = 0;
+    }
+    else
+    {
+        x = X / (X + Y + Z);
+        y = Y / (X + Y + Z);
+    }
+}
+
+void GLviewsubd::YXY2RGB(double Y, double x, double y, double &R, double &G, double &B)
+{
+    double X, Z;
+
+    if (y == 0)
+    {
+        X = 0;
+        Z = 0;
+    }
+    else
+    {
+        X = Y / y * x;
+        Z = Y / y * (1 - x - y);
+    }
+
+    R = X *  3.240479 + Y * (-1.537150) + Z * (-0.498535);
+    G = X * (-0.969256) + Y *  1.875992 + Z *  0.041556;
+    B = X *  0.055648 + Y * (-0.204043) + Z *  1.057311;
+
+    if (blackOut)
+    {
+        if (R < 0 || R > 1 || G < 0 || G > 1 || B < 0 || B > 1)
+        {
+            R = 0;
+            G = 0;
+            B = 0;
+        }
+    }
+    else
+    {
+        if (R > 1)
+        {
+            R = 1;
+        }
+        else if (R < 0)
+        {
+            R = 0;
+        }
+        if (G > 1)
+        {
+            G = 1;
+        }
+        else if (G < 0)
+        {
+            G = 0;
+        }
+        if (B > 1)
+        {
+            B = 1;
+        }
+        else if (B < 0)
+        {
+            B = 0;
+        }
     }
 }

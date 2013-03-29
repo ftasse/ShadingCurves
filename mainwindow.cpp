@@ -102,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->shadingHLS, SIGNAL(clicked()), ui->graphicsView, SLOT(setShadingHLS()));
     connect(ui->shadingOwn, SIGNAL(clicked()), ui->graphicsView, SLOT(setShadingOwn()));
     connect(ui->shadingMatlab, SIGNAL(clicked()), ui->graphicsView, SLOT(setShadingMatlab()));
+    connect(ui->shadingYxy, SIGNAL(clicked()), ui->graphicsView, SLOT(setShadingYxy()));
     connect(ui->blackOut, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setBlackOut(bool)));
     connect(ui->graphicsView, SIGNAL(setTimeOutput(QString)), ui->timeOutput, SLOT(setText(QString)));
     connect(ui->graphicsView, SIGNAL(setTimeOutputSub(QString)), ui->timeOutputSub, SLOT(setText(QString)));
