@@ -59,8 +59,9 @@ public:
     void write(cv::FileStorage& fs) const ;
     void read(const cv::FileNode& node);
 
-    BSpline(cv::FileNode node):BSpline()
+    BSpline(cv::FileNode node):ref(-1), has_inward_surface(false), has_outward_surface(false), has_uniform_subdivision(false), is_slope(false), generic_extent(30.0f)//:BSpline()
     {
+        thickness = 0;
         read(node);
     }
 

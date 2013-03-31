@@ -31,8 +31,10 @@ public:
         extent = height = 0.0f;
     }
 
-    Attribute(cv::FileNode node):Attribute()
+    Attribute(cv::FileNode node)//:Attribute()
     {
+        direction = INWARD_DIRECTION;
+        extent = height = 0.0f;
         this->read(node);
     }
 
@@ -47,8 +49,9 @@ public:
     ControlPoint(QPointF val);
     ControlPoint(float x, float y, float z, Attribute attributes[2]);
 
-    ControlPoint(cv::FileNode node):ControlPoint()
+    ControlPoint(cv::FileNode node):Point3d(), ref(-1), isSharp(false)//:ControlPoint()
     {
+        useDefaultAttributes();
         read(node);
     }
 
