@@ -21,6 +21,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
     shade = MATLAB;
     blackOut = false;
     subdivTime = 0;
+    flatImage = true;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -559,7 +560,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
             qDebug() << "GVT: Loading surfaces to 3D: " << timer2.elapsed() << "ms";
             timer2.restart();
 
-    glvs->indexMesh = -1;
+    glvs->indexMesh = -1; //all meshes visible
     glvs->super = superSampling; //supersampling (1, 2, or 4)
     glvs->showImg = showImg;
     glvs->writeImg = writeImg;
@@ -568,6 +569,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->clipMax = clipMax;
     glvs->shade = shade;
     glvs->blackOut = blackOut;
+    glvs->flatImage = flatImage;
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
 
     subdivTime = glvs->subdivTime;
@@ -705,4 +707,9 @@ void GraphicsView::setShadingYxy()
 void GraphicsView::setBlackOut(bool b)
 {
     blackOut = b;
+}
+
+void GraphicsView::setFlatImage(bool b)
+{
+    flatImage = b;
 }

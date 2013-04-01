@@ -81,10 +81,12 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     shade = CVLAB;
     blackOut = false;
 
+    flatImage = true;
+
     subdivTime = 0;
 
 //    //COLOUR CONVERSION TESTS
-//    double L, a, b, R, G, B;
+    double L, a, b, R, G, B, Y, x, y;
 
 //    RGB2LAB(1,1,1,L,a,b);
 //    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
@@ -130,8 +132,32 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
 //    RGB2YXY(1,1,1,L,a,b);
 //    cout << "1 1 1 RGB2Yxy = " << L << " " << a << " " << b << endl;
-//    RGB2YXY(0,0,0,L,a,b);
-//    cout << "0 0 0 RGB2Yxy = " << L << " " << a << " " << b << endl;
+
+//    R = 0;
+//    G = 0;
+//    B = 0;
+//    RGB2YXY(R,G,B,Y,x,y);
+//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
+//    YXY2RGB(Y,x,y,R,G,B);
+//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
+
+//    R = 0;
+//    G = 0;
+//    B = 0;
+//    RGB2YXY(R,G,B,Y,x,y);
+//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
+//    Y += 0.1;
+//    YXY2RGB(Y,x,y,R,G,B);
+//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
+
+//    R = 0;
+//    G = 0;
+//    B = 0;
+//    RGB2YXY(R,G,B,Y,x,y);
+//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
+//    Y -= 0.1;
+//    YXY2RGB(Y,x,y,R,G,B);
+//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -336,7 +362,7 @@ void GLviewsubd::initializeGL(void)
     QElapsedTimer timer;
     timer.start();
 
-    static const int res = 1024;
+    static const int res = 3;
     PointPrec		col[3];
     GLfloat			texture[5][res][4], alpha;
 
@@ -433,10 +459,13 @@ void GLviewsubd::paintGL(void)
         QElapsedTimer timer;
         timer.start();
 
-        double      tmp, val, valMin, valMax;
+        double      tmp, val, valMin, valMax, half;
 
-        valMin = 0.495;
-        valMax = 0.505;
+//        half = 0.501960813999176; // grey level with lum difference zero
+        half = 0.5;
+
+        valMin = 0.4999; // if grey value (lum. dif. ~ 0) is in this interval, do not apply luminance difference
+        valMax = 0.5001;
 
 //        numberPaintCalls++;
 //        cout << "PaintGL OFFscreen called: " << numberPaintCalls << endl;
@@ -453,7 +482,7 @@ void GLviewsubd::paintGL(void)
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
         glGenRenderbuffersEXT(1, &renderbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB8, super*imageWidth, super*imageHeight);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB16F, super*imageWidth, super*imageHeight); // GL_RGB32F does not work (on Z930) for high resolutions
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                          GL_RENDERBUFFER_EXT, renderbuffer);
         //depth buffer
@@ -468,7 +497,7 @@ void GLviewsubd::paintGL(void)
             qDebug("Could not draw offscreen");
 
         //Setup view
-        glClearColor(0.5, 0.5, 0.5, 0.0);
+        glClearColor(half, half, half, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
@@ -508,17 +537,21 @@ void GLviewsubd::paintGL(void)
         glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
 
 //        tmp = img.at<cv::Vec3f>(0,0)[0]; // for an empty image, use this value as `zero'
+//        cout << "Zero level: " << tmp << endl;
 
-        glClearColor(1.0, 1.0, 1.0, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //draw stuff here
-        buildFrame();
-        glCallList(frame_list);
-        buildFlatMesh();
-        glCallList(flat_mesh_list);
-        //create image
-        imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
-        glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
+        if (flatImage)
+        {
+            glClearColor(1.0, 1.0, 1.0, 0.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            //draw stuff here
+            buildFrame();
+            glCallList(frame_list);
+            buildFlatMesh();
+            glCallList(flat_mesh_list);
+            //create image
+            imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
+            glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
+        }
 
         //Clean up offscreen drawing
         glPopMatrix();
@@ -537,10 +570,25 @@ void GLviewsubd::paintGL(void)
 //        cout << imgFill.at<cv::Vec3f>(0,0)[0] << " " << imgFill.at<cv::Vec3f>(0,0)[1] <<" " << imgFill.at<cv::Vec3f>(0,0)[2] << endl;
 
         //process images
-//        inputImg->copyTo(imgShaded);
 //        cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
-        cv::flip(img, img, 0);
-        cv::flip(imgFill, imgFill, 0);
+
+//        cv::imshow("Img: Lum Dif", img);
+//        cv::imshow("Img: Filled", imgFill);
+
+
+        cv::flip(img, img, 0); // img is grey with surface height
+
+        if (flatImage)
+        {
+            cv::flip(imgFill, imgFill, 0); // imgFill is top view of image with flat surfaces on top
+        }
+        else
+        {
+            inputImg->copyTo(imgFill); // set imgFill to background image
+            imgFill.convertTo(imgFill, CV_32FC3);
+            imgFill *= 1.0 / 255.0;
+        }
+
 
 //        if (showImg)
 //        {
@@ -566,52 +614,29 @@ void GLviewsubd::paintGL(void)
             case 1:
                 break;
             case 2:
-                cv::pyrDown(img, imgPyrDown, cv::Size(imageHeight, imageWidth));
+                cv::pyrDown(img, imgPyrDown, cv::Size(imageWidth, imageHeight));
                 img = imgPyrDown;
-                cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(imageHeight, imageWidth));
-                imgFill = imgFillPyrDown;
+                if (flatImage)
+                {
+                    cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(imageWidth, imageHeight));
+                    imgFill = imgFillPyrDown;
+                }
                 break;
             case 4:
-                cv::pyrDown(img, imgPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
-                cv::pyrDown(imgPyrDown, imgPyrDown2, cv::Size(imageHeight, imageWidth));
+                cv::pyrDown(img, imgPyrDown, cv::Size(2*imageWidth, 2*imageHeight));
+                cv::pyrDown(imgPyrDown, imgPyrDown2, cv::Size(imageWidth, imageHeight));
                 img = imgPyrDown2;
-                cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(2*imageHeight, 2*imageWidth));
-                cv::pyrDown(imgFillPyrDown, imgFillPyrDown2, cv::Size(imageHeight, imageWidth));
-                imgFill = imgFillPyrDown2;
+                if (flatImage)
+                {
+                    cv::pyrDown(imgFill, imgFillPyrDown, cv::Size(2*imageWidth, 2*imageHeight));
+                    cv::pyrDown(imgFillPyrDown, imgFillPyrDown2, cv::Size(imageWidth, imageHeight));
+                    imgFill = imgFillPyrDown2;
+                }
                 break;
         }
 
         if (img.cols > 0)
         {
-//            imgShaded *= 1.0 / 255.0;
-//            cv::cvtColor(imgShaded, imgShaded, CV_BGR2Lab);
-
-//            // apply luminance adjustment
-//            for( int y = 0; y < imgShaded.rows; y++ )
-//            {
-//                for( int x = 0; x < imgShaded.cols; x++ )
-//                {
-//                    tmp = imgShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.50196081399917603); // 0.49803921580314636, 0.50196081399917603
-
-//                    if (tmp > 100)
-//                    {
-//                        tmp = 100;
-//                    }
-//                    if (tmp < 0)
-//                    {
-//                        tmp = 0;
-//                    }
-//                    imgShaded.at<cv::Vec3f>(y,x)[0] = tmp;
-//                }
-//            }
-
-//            //convert back to BGR
-//            cv::cvtColor(imgShaded, imgShaded, CV_Lab2BGR);
-////            if (showImg)
-////            {
-////                cv::imshow("Img: Shaded result", imgShaded);
-////            }
-
             imgFill.copyTo(imgFillShaded);
 
             qDebug() << "3D: IP: Prepare images: " << timer.elapsed() << "ms";
@@ -622,7 +647,7 @@ void GLviewsubd::paintGL(void)
                 // apply luminance adjustment
                 double  rr, gg, bb, L, a, b;
                 int x, y;
-                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
@@ -636,7 +661,7 @@ void GLviewsubd::paintGL(void)
                                     imgFillShaded.at<cv::Vec3f>(y,x)[0],
                                     L, a, b);
 
-                            tmp = L + 200*(val - 0.5); //0.50196081399917603
+                            tmp = L + 200*(val - half); //0.50196081399917603
 
                             if (clipping)
                             {
@@ -683,12 +708,12 @@ void GLviewsubd::paintGL(void)
 
                 // apply luminance adjustment
                 int x, y;
-                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax)
+                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603, 0.498039215803146
+                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - half); //0.50196081399917603, 0.498039215803146
 
                         if (clipping)
                         {
@@ -716,12 +741,12 @@ void GLviewsubd::paintGL(void)
 
                 // apply luminance adjustment
                 int x, y;
-                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax)
+                #pragma omp parallel for default(none) private(x, y, val, tmp) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[1] + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[1] + 2*(img.at<cv::Vec3f>(y,x)[0] - half); //0.50196081399917603
 
                         if (clipping)
                         {
@@ -750,7 +775,7 @@ void GLviewsubd::paintGL(void)
                 double  rr, gg, bb, L, a, b;
                 int x, y;
 
-                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     //paralellising the inner loop gives slower results
@@ -769,7 +794,7 @@ void GLviewsubd::paintGL(void)
 //                            tmp = L + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
 
                             // L in [0,1], tmp should lie in [0,log10(2)]
-                            tmp = log10(L + 1) + log10(2)*2*(val - 0.5);
+                            tmp = log10(L + 1) + log10(2)*2*(val - half);
 
                             // clip
                             if (clipping)
@@ -805,7 +830,7 @@ void GLviewsubd::paintGL(void)
                 double  rr, gg, bb, L, a, b;
                 int x, y;
 
-                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax)
+                #pragma omp parallel for default(none) private(x, y, val, L, a, b, bb, gg, rr, tmp) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     //paralellising the inner loop gives slower results
@@ -821,7 +846,7 @@ void GLviewsubd::paintGL(void)
                                           imgFillShaded.at<cv::Vec3f>(y,x)[0],
                                           L, a, b);
 
-                            tmp = L + 200*(val - 0.5); //0.50196081399917603
+                            tmp = L + 200*(val - half); //0.50196081399917603
 
                             if (clipping)
                             {
@@ -1945,6 +1970,10 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 	MeshFacet		*facet;
     Mesh 			tri;
     float           eps, epsG, epsZ;
+    bool            useTexture;
+    GLfloat         heightClr[3];
+
+    useTexture = false;
 
 //    GLfloat ambientParams[4] = {0.2, 0.2, 0.2, 1};
     GLfloat ambientParams[4] = {0.1, 0.1, 0.1, 1};
@@ -2090,9 +2119,17 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glEnable(GL_POLYGON_OFFSET_FILL);
                 glPolygonOffset(2 + index, 1);
             }
-            glDisable(GL_TEXTURE_GEN_S);
-            glEnable(GL_TEXTURE_1D);
-            glBindTexture(GL_TEXTURE_1D, textID[clr]);
+            if (type == HEIGHT && useTexture)
+            {
+                glDisable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_1D);
+                glBindTexture(GL_TEXTURE_1D, textID[clr]);
+            }
+            else
+            {
+                glDisable(GL_TEXTURE_1D);
+                glDisable(GL_LIGHTING);
+            }
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
@@ -2194,7 +2231,19 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                     {
                         value = facet->my_corners[j].my_vertex->my_point.getZ();
                         value = 0.5 + value / 200.0;
-                        glTexCoord1f(value); // relies on clamping to (0,1)
+                        if (useTexture)
+                        {
+                            glTexCoord1f(value); // relies on clamping to (0,1)
+                        }
+                        else
+                        {
+                            heightClr[0] = value;
+                            heightClr[1] = value;
+                            heightClr[2] = value;
+                            heightClr[3] = 0;
+                            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, heightClr);
+                            glColor3fv(heightClr);
+                        }
                     }
                     else
                     {

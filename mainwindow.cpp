@@ -108,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->graphicsView, SIGNAL(setTimeOutputSub(QString)), ui->timeOutputSub, SLOT(setText(QString)));
     connect(ui->interactiveShading, SIGNAL(clicked(bool)), scene, SLOT(setInteractiveShading(bool)));
     connect(scene, SIGNAL(triggerShading()), ui->graphicsView, SLOT(applyShading()));
+    connect(ui->flatImage, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setFlatImage(bool)));
 }
 
 MainWindow::~MainWindow()

@@ -76,6 +76,7 @@ public:
     bool    clipping, blackOut;
     int     clipMin, clipMax;
     int     subdivTime;
+    bool    flatImage;
 
     ShadingType shade;
 

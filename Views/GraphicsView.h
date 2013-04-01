@@ -75,6 +75,7 @@ public slots:
     void setShadingMatlab();
     void setShadingYxy();
     void setBlackOut(bool b);
+    void setFlatImage(bool b);
 
 private:
     QPointF currentCenterPoint;
@@ -84,7 +85,7 @@ private:
     GLviewsubd      *glvs;
 
     int superSampling, surfSubdLevel, clipMin, clipMax, subdivTime;
-    bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut, interactiveShading;
+    bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut, interactiveShading, flatImage;
 
     ShadingType     shade;
 };
