@@ -151,6 +151,38 @@ void Surface::recompute(cv::Mat dt)
         normals.pop_front();
         QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false, true, true);
 
+        if (points.last().size() > points2.last().size())
+        {
+            for (int i=0; i<points2.last().size(); ++i)
+            {
+                Point3d p1 = vertices[points.last()[i]];
+                Point3d p2 = vertices[points2.last()[i]];
+                if (fabs(p1.x()-p2.x()) > 1e-3 || fabs(p1.y()-p2.y()) > 1e-3 || fabs(p1.z()-p2.z()) > 1e-3)
+                {
+                    for (int k=0; k<points2.size(); ++k)
+                    {
+                        points2[k].insert(i, points2[k][i]);
+                    }
+                    ++i;
+                }
+            }
+        } else if (points.last().size() < points2.last().size())
+        {
+            for (int i=0; i<points.last().size(); ++i)
+            {
+                Point3d p1 = vertices[points.last()[i]];
+                Point3d p2 = vertices[points2.last()[i]];
+                if (fabs(p1.x()-p2.x()) > 1e-3 || fabs(p1.y()-p2.y()) > 1e-3 || fabs(p1.z()-p2.z()) > 1e-3)
+                {
+                    for (int k=0; k<points.size(); ++k)
+                    {
+                        points[k].insert(i, points[k][i]);
+                    }
+                    ++i;
+                }
+            }
+        }
+
         // merge the two grids
         for(int i=0;i<points2.size()-1;i++)
             for(int j=points2[i].size()-2;j>=1;j--)
@@ -213,7 +245,10 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
     for (int k=0; k<controlPoints.size(); ++k)
     {
-        original_cpts_ids.push_back( addVertex(controlPoints[k],controlPoints[k].attribute(direction).height) );
+        float height = controlPoints[k].attribute(direction).height;
+        if (k==0 && start_has_zero_height)  height = 0.0f;
+        else if (k==controlPoints.size()-1 && end_has_zero_height)  height = 0.0f;
+        original_cpts_ids.push_back( addVertex(controlPoints[k], height) );
         if (controlPoints[k].isSharp)
                 sharpCorners.insert(original_cpts_ids.last());
     }

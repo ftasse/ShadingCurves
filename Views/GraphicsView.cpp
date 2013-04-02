@@ -312,7 +312,6 @@ void GraphicsView::loadProject()
         my_scene->changeResolution(my_scene->splineGroup().imageSize.width, my_scene->splineGroup().imageSize.height);
 
         my_scene->curSplineRef() = -1; my_scene->selectedObjects.clear();
-        my_scene->recomputeAllSurfaces();
     }
 }
 
