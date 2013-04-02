@@ -482,6 +482,11 @@ void BSplineGroup::scale(float xs, float ys)
     {
         controlPoint(i).setX(xs*controlPoint(i).x());
         controlPoint(i).setY(ys*controlPoint(i).y());
+
+        for (int k=0; k<2; ++k)
+        {
+            controlPoint(i).attributes[k].extent *= std::min(xs, ys);
+        }
     }
 
     for (int i=0; i<colorMapping.size(); ++i)

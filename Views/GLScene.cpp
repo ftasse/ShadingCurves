@@ -886,7 +886,7 @@ void GLScene::adjustDisplayedImageSize()
     imSize = m_scale*QSizeF(displayImage()->cols, displayImage()->rows);
 }
 
-void GLScene::changeResolution(int resWidth, int resHeight)
+void GLScene::changeResolution(int resWidth, int resHeight, bool update)
 {
     float xs = resWidth / ((float) currentImage().cols);
     float ys = resHeight / ((float) currentImage().rows);
@@ -894,7 +894,9 @@ void GLScene::changeResolution(int resWidth, int resHeight)
     cv::resize(orgBlankImage, orgBlankImage, cv::Size(resWidth, resHeight));
     adjustDisplayedImageSize();
     m_splineGroup.scale(xs, ys);
-    recomputeAllSurfaces();
+
+    if (shadingProfileView !=NULL) shadingProfileView->updatePath();
+    if (update) recomputeAllSurfaces();
 }
 
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)

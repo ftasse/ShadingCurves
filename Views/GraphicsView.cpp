@@ -236,15 +236,13 @@ void GraphicsView::loadBackgroungImage()
     if (!fileName.isEmpty())
     {
         GLScene *my_scene = (GLScene *) scene();
-        my_scene->orgBlankImage = cv::imread(fileName.toStdString());
+        cv::Mat backgoundImage = cv::imread(fileName.toStdString());
 
-        float xs = my_scene->orgBlankImage.cols / ((float) my_scene->currentImage().cols);
-        float ys = my_scene->orgBlankImage.rows / ((float) my_scene->currentImage().rows);
-
-        my_scene->currentImage() = my_scene->orgBlankImage.clone();
         my_scene->splineGroup().colorMapping.clear();
-        my_scene->splineGroup().scale(xs, ys);
-        my_scene->adjustDisplayedImageSize();
+        my_scene->changeResolution(backgoundImage.cols, backgoundImage.rows, false);
+
+        my_scene->orgBlankImage = backgoundImage.clone();
+        my_scene->currentImage() = my_scene->orgBlankImage.clone();
         my_scene->recomputeAllSurfaces();
     }
 }

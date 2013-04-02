@@ -58,7 +58,7 @@ public:
     void draw_surface(int surface_id);
     void draw_ellipse(QPointF center, float size, QBrush brush);
 
-    void changeResolution(int resWidth, int resHeight);
+    void changeResolution(int resWidth, int resHeight, bool update = true);
     void adjustDisplayedImageSize();
 
     unsigned int getImageHeight() {return m_curImage.cols;}
