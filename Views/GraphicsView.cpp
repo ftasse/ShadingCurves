@@ -237,7 +237,14 @@ void GraphicsView::loadBackgroungImage()
     {
         GLScene *my_scene = (GLScene *) scene();
         my_scene->orgBlankImage = cv::imread(fileName.toStdString());
+
+        float xs = my_scene->orgBlankImage.cols / ((float) my_scene->currentImage().cols);
+        float ys = my_scene->orgBlankImage.rows / ((float) my_scene->currentImage().rows);
+
         my_scene->currentImage() = my_scene->orgBlankImage.clone();
+        my_scene->splineGroup().colorMapping.clear();
+        my_scene->splineGroup().scale(xs, ys);
+        my_scene->adjustDisplayedImageSize();
         my_scene->recomputeAllSurfaces();
     }
 }

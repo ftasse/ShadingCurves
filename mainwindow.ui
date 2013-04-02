@@ -1094,7 +1094,7 @@
   </action>
   <action name="actionOpen_Backgroung_Image">
    <property name="text">
-    <string>Open Backgroung Image</string>
+    <string>Open Background Image</string>
    </property>
   </action>
  </widget>
