@@ -1048,10 +1048,13 @@ void GLScene::recomputeAllSurfaces()
     dt_timing = t.elapsed();
     t.restart();
 
+    cv::Mat luminance;
+    cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
+
     for (int i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
-            spline(i).computeSurfaces(dt);
+            spline(i).computeSurfaces(dt, luminance);
     }
     surfaces_timing = t.elapsed();
 
@@ -1271,7 +1274,7 @@ void GLScene::update_region_coloring()
     cv::Mat mask_vals(mask, cv::Range(1, m_curImage.rows+1), cv::Range(1, m_curImage.cols+1));
     curv_img.copyTo(mask_vals);
     //cv::imshow("Mask", mask);
-    cv::imwrite("mask.png", mask);
+    //cv::imwrite("mask.png", mask);
 
     cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
 
