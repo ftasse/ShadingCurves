@@ -344,7 +344,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             if(color.isValid())
             {
                 m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
-                update_region_coloring();
+                recomputeAllSurfaces();
             }
         }
     }
@@ -413,7 +413,6 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_R)
    {
        recomputeAllSurfaces();
-       update_region_coloring();
        update();
        return;
    } else if (event->key() == Qt::Key_S)
@@ -1059,7 +1058,7 @@ void GLScene::recomputeAllSurfaces()
     stats = timings;
     emit setStatusMessage("");
 
-    qDebug("\n%s", stats.toStdString().c_str());
+    qDebug("\n************************************************************\n%s", stats.toStdString().c_str());
     qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
     std::cout << std::flush;
 
@@ -1806,7 +1805,7 @@ bool GLScene::openCurves(std::string fname)
         delete_all();
     if (m_splineGroup.load(fname))
     {
-        update_region_coloring();
+        recomputeAllSurfaces();
         update();
         return true;
 
@@ -1902,7 +1901,7 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
         if (_thickness != bspline.thickness)
         {
             bspline.thickness = _thickness;
-            update_region_coloring();
+            has_changed = true;
         }
     }
 
