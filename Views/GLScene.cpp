@@ -240,13 +240,20 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 
     inPanMode = false;
-    if (hasMoved)
+    /*if (hasMoved)
     {
         recomputeAllSurfaces();
         hasMoved = false;
         event->accept();
     } else if (sketchmode() == ADD_CURVE_MODE)
+        recomputeAllSurfaces();*/
+
+    if (hasMoved || sketchmode() != ADD_CURVE_MODE)
+    {
         recomputeAllSurfaces();
+        if (hasMoved) hasMoved = false;
+        event->accept();
+    }
 }
 
 void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -1605,6 +1612,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
                         hasZeroHeight = true;
                 else if (!junction_is_first && bspline.end_has_zero_height[direction])
                         hasZeroHeight = true;
+
                 if (isSharp)
                 {
                     if (bspline.pointAt(0).num_splines()>2)
@@ -1617,18 +1625,22 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     }
                 }
 
-                int first = mergedSurface.controlMesh.first().first();
-                int last = mergedSurface.controlMesh.first().last();
                 for (int l=0; l<surf.controlMesh.size(); ++l)
                 {
                     QVector<int> row = surf.controlMesh[l];
                     if (bspline.start_has_zero_height[direction])
                     {
-                        row.prepend(surf.controlMesh.first().first());
+                        if (prepend && reverse)
+                            row.prepend(surf.controlMesh.first().first());
+                        else if (!prepend && !reverse)
+                            row.prepend(surf.controlMesh.first().first());
                     }
                     if (bspline.end_has_zero_height[direction])
                     {
-                        row.append(surf.controlMesh.first().last());
+                        if (prepend && !reverse)
+                            row.append(surf.controlMesh.first().last());
+                        else if (!prepend && reverse)
+                            row.append(surf.controlMesh.first().last());
                     }
 
                     if (reverse)   std::reverse(row.begin(), row.end());
@@ -1645,7 +1657,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
                         }
                     }
                 }
-
 
 
                 /*if (close)

@@ -82,8 +82,8 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 
-unix:QMAKE_CXXFLAGS += -std=c++11
-unix:QMAKE_CFLAGS += -std=c++11
+unix:QMAKE_CXXFLAGS += -std=c++0x
+unix:QMAKE_CFLAGS += -std=c++0x
 
 unix:LIBS += -fopenmp
 QMAKE_CXXFLAGS_RELEASE += -O3
