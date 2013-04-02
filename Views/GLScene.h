@@ -166,6 +166,14 @@ public:
         return m_splineGroup;
     }
 
+private:
+    void createMergeGroups(QVector< QVector<int> > &mergedGroups,
+                           QVector< QVector<int> > &mergedGroups_JIds,
+                           QVector<bool> &surface_is_merged);
+
+    QVector< QVector<int> > mergeSurfaces(QVector< QVector<int> > &mergedGroups,
+                       std::vector<std::string> &surface_strings);
+
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
