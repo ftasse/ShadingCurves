@@ -82,11 +82,12 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     blackOut = false;
 
     flatImage = true;
+    clrVsTxtr = true;
 
     subdivTime = 0;
 
 //    //COLOUR CONVERSION TESTS
-    double L, a, b, R, G, B, Y, x, y;
+//    double L, a, b, R, G, B, Y, x, y;
 
 //    RGB2LAB(1,1,1,L,a,b);
 //    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
@@ -162,7 +163,7 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
 GLviewsubd::~GLviewsubd()
 {
-    int i, j;
+    unsigned int i, j;
 
     for (i = 0 ; i < meshSubd.size() ; i++)
     {
@@ -362,7 +363,7 @@ void GLviewsubd::initializeGL(void)
     QElapsedTimer timer;
     timer.start();
 
-    static const int res = 3;
+    static const int res = 1023;
     PointPrec		col[3];
     GLfloat			texture[5][res][4], alpha;
 
@@ -820,6 +821,55 @@ void GLviewsubd::paintGL(void)
                             imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
                             imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
                             imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                        }
+                    }
+                }
+            }
+            else if (shade == RGB)
+            {
+                // apply luminance adjustment
+                double  R, G, B;
+                int x, y;
+
+                #pragma omp parallel for default(none) private(x, y, val, R, G, B, tmp) shared(valMin, valMax, half)
+                for( y = 0; y < imgFillShaded.rows; y++ )
+                {
+                    //paralellising the inner loop gives slower results
+                    //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
+                    for( x = 0; x < imgFillShaded.cols; x++ )
+                    {
+                        val = img.at<cv::Vec3f>(y,x)[0];
+
+                        if (val < valMin || val > valMax)
+                        {
+                            B = imgFillShaded.at<cv::Vec3f>(y,x)[0];
+                            G = imgFillShaded.at<cv::Vec3f>(y,x)[1];
+                            R = imgFillShaded.at<cv::Vec3f>(y,x)[2];
+                            if (val < valMin)
+                            {
+                                //make darker
+                                tmp = 2 * val;
+                                B *= tmp;
+                                G *= tmp;
+                                R *= tmp;
+                            }
+                            else
+                            {
+                                //make brighter
+                                tmp = 2 * (1 - val);
+                                B = 1 - B;
+                                G = 1 - G;
+                                R = 1 - R;
+                                B *= tmp;
+                                G *= tmp;
+                                R *= tmp;
+                                B = 1 - B;
+                                G = 1 - G;
+                                R = 1 - R;
+                            }
+                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = B;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = G;
+                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = R;
                         }
                     }
                 }
@@ -1970,10 +2020,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 	MeshFacet		*facet;
     Mesh 			tri;
     float           eps, epsG, epsZ;
-    bool            useTexture;
     GLfloat         heightClr[3];
-
-    useTexture = false;
 
 //    GLfloat ambientParams[4] = {0.2, 0.2, 0.2, 1};
     GLfloat ambientParams[4] = {0.1, 0.1, 0.1, 1};
@@ -2119,7 +2166,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glEnable(GL_POLYGON_OFFSET_FILL);
                 glPolygonOffset(2 + index, 1);
             }
-            if (type == HEIGHT && useTexture)
+            if (type == HEIGHT && !clrVsTxtr)
             {
                 glDisable(GL_TEXTURE_GEN_S);
                 glEnable(GL_TEXTURE_1D);
@@ -2231,7 +2278,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                     {
                         value = facet->my_corners[j].my_vertex->my_point.getZ();
                         value = 0.5 + value / 200.0;
-                        if (useTexture)
+                        if (!clrVsTxtr)
                         {
                             glTexCoord1f(value); // relies on clamping to (0,1)
                         }
@@ -2240,7 +2287,6 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                             heightClr[0] = value;
                             heightClr[1] = value;
                             heightClr[2] = value;
-                            heightClr[3] = 0;
                             glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, heightClr);
                             glColor3fv(heightClr);
                         }
@@ -3201,8 +3247,8 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
            fX, fY, fZ, X, Y, Z;
     bool XT, YT, ZT;
 
-    int tmp;
-    double tmp2;
+//    int tmp;
+//    double tmp2;
 
     //Compute Y
     fY = powJiri((L + 16.0) / 116.0, 3.0);
@@ -3210,9 +3256,9 @@ void GLviewsubd::matlabLAB2RGB(double L, double a, double b, double &R, double &
     fY = ((int)!YT) * (L / 903.3) + (int)YT * fY;
     Y = fY;
 
-    tmp = (int)YT;
-    tmp = (int)!YT;
-    tmp2 = powJiri(fY, 0.333333);
+//    tmp = (int)YT;
+//    tmp = (int)!YT;
+//    tmp2 = powJiri(fY, 0.333333);
 
     // Alter fY slightly for further calculations
     fY = (int)YT * (powJiri(fY, 0.333333)) + ((int)!YT) * (7.787 * fY + 0.137931);

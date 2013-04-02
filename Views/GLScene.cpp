@@ -415,7 +415,11 @@ void GLScene::keyPressEvent(QKeyEvent *event)
        update_region_coloring();
        update();
        return;
-   }
+   } else if (event->key() == Qt::Key_S)
+    {
+        emit triggerShading();
+        return;
+    }
 
     if (event->key() == Qt::Key_Up)
     {
