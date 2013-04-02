@@ -543,16 +543,17 @@ void GraphicsView::applyShading()
 
 void GraphicsView::applyShading(bool showImg, bool writeImg)
 {
-            QElapsedTimer timer, timer2;
-            qDebug() << endl;// << "GVT: Timer started";
-            timer.start();
-            timer2.start();
 
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
 
-            qDebug() << "GVT: Surface OFF stream creation: " << timer2.elapsed() << "ms";
-            timer2.restart();
+//            qDebug() << "GVT: Surface OFF stream creation: " << timer2.elapsed() << "ms";
+//            timer2.restart();
+
+            QElapsedTimer timer, timer2;
+            qDebug(); // << endl;// << "GVT: Timer started";
+            timer.start();
+            timer2.start();
 
     glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
 
@@ -588,10 +589,6 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
             qDebug() << "GVT: Subdivision and shading: " << timer2.elapsed() << "ms";
             timer2.restart();
 
-            qDebug() << "GVTALL: Complete shading: " << timer.elapsed() << "ms";
-            emit setTimeOutput(QString::number(timer.elapsed()));
-            emit setTimeOutputSub(QString::number(subdivTime));
-
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
 
@@ -600,6 +597,15 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     my_scene->changeDisplayModeText();
 //    myadjustDisplayedImageSize();
     my_scene->update();
+
+            qDebug() << "GVTALL: Complete shading: " << timer.elapsed() << "ms";
+            emit setTimeOutput(QString::number(timer.elapsed()));
+            emit setTimeOutputSub(QString::number(subdivTime));
+
+            char timing[50];
+            sprintf(timing, " | Shading: %d ms", timer.elapsed());
+            my_scene->stats += timing;
+            my_scene->emitSetStatusMessage("");
 
     delete glvs;
 }

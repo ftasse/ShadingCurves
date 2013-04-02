@@ -211,6 +211,7 @@ public slots:
     }
 
     void setInteractiveShading(bool b);
+    void emitSetStatusMessage(QString message);
 
 private:
     cv::Mat m_curImage;

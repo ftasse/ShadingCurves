@@ -1055,18 +1055,23 @@ void GLScene::recomputeAllSurfaces()
     surfaces_timing = t.elapsed();
 
     char timings[1024];
-    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+
+    if (interactiveShading)
+    {
+        t.restart();
+        emit triggerShading();
+        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms, Shading: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed(), t.elapsed());
+    }
+    else
+    {
+        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+    }
     stats = timings;
     emit setStatusMessage("");
 
     qDebug("\n%s", stats.toStdString().c_str());
     qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
     std::cout << std::flush;
-
-    if (interactiveShading)
-    {
-        emit triggerShading();
-    }
 
     update();
 }
@@ -1913,4 +1918,9 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
 void GLScene::setInteractiveShading(bool b)
 {
     interactiveShading = b;
+}
+
+void GLScene::emitSetStatusMessage(QString message)
+{
+    emit setStatusMessage(message);
 }
