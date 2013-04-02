@@ -344,7 +344,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             if(color.isValid())
             {
                 m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
-                update_region_coloring();
+                recomputeAllSurfaces();
             }
         }
     }
@@ -413,7 +413,6 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_R)
    {
        recomputeAllSurfaces();
-       update_region_coloring();
        update();
        return;
    } else if (event->key() == Qt::Key_S)
@@ -887,7 +886,7 @@ void GLScene::adjustDisplayedImageSize()
     imSize = m_scale*QSizeF(displayImage()->cols, displayImage()->rows);
 }
 
-void GLScene::changeResolution(int resWidth, int resHeight)
+void GLScene::changeResolution(int resWidth, int resHeight, bool update)
 {
     float xs = resWidth / ((float) currentImage().cols);
     float ys = resHeight / ((float) currentImage().rows);
@@ -895,7 +894,9 @@ void GLScene::changeResolution(int resWidth, int resHeight)
     cv::resize(orgBlankImage, orgBlankImage, cv::Size(resWidth, resHeight));
     adjustDisplayedImageSize();
     m_splineGroup.scale(xs, ys);
-    recomputeAllSurfaces();
+
+    if (shadingProfileView !=NULL) shadingProfileView->updatePath();
+    if (update) recomputeAllSurfaces();
 }
 
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)
@@ -1069,7 +1070,7 @@ void GLScene::recomputeAllSurfaces()
     stats = timings;
     emit setStatusMessage("");
 
-    qDebug("\n%s", stats.toStdString().c_str());
+    qDebug("\n************************************************************\n%s", stats.toStdString().c_str());
     qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
     std::cout << std::flush;
 
@@ -1102,10 +1103,9 @@ void GLScene::subdivide_current_spline(){
         BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
         bool has_uniform_subd = spline.has_uniform_subdivision;
 
-        QVector<ControlPoint> org_points, new_points;
-        org_points = spline.getControlPoints();
+        QVector<ControlPoint> new_points;
 
-        new_points = subDivide(org_points,1, has_uniform_subd);
+        new_points = subDivide(spline.getControlPoints(),1, has_uniform_subd);
 
         while (spline.cptRefs.size() > 0)
             m_splineGroup.removeControlPoint(spline.cptRefs[0]);
@@ -1114,12 +1114,20 @@ void GLScene::subdivide_current_spline(){
         for (int i=0; i<new_points.size(); ++i)
         {
             int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0);
+            for (int k=0; k<2; ++k)
+                controlPoint(new_cpt_id).attributes[k] = new_points[i].attributes[k];
             if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id))
                 break;
         }
-        //spline.recompute();
-        //m_splineGroup.garbage_collection();
 
+        shadingProfileView->cpts_ids.clear();
+        for (int i=0; i<spline.num_cpts(); ++i)
+        {
+            shadingProfileView->cpts_ids.push_back(spline.pointAt(i).ref);
+        }
+        shadingProfileView->updatePath();
+
+        //m_splineGroup.garbage_collection();
         recomputeAllSurfaces();
     }
 }
@@ -1278,6 +1286,19 @@ void GLScene::update_region_coloring()
         QPoint seed = m_splineGroup.colorMapping[l].first;
         QColor qcolor = m_splineGroup.colorMapping[l].second;
         cv::Scalar color(qcolor.blue(), qcolor.green(), qcolor.red());
+
+        cv::Vec3b def_color = orgBlankImage.at<cv::Vec3b>(seed.y(), seed.x());
+        cv::Vec3b cur_color = result.at<cv::Vec3b>(seed.y(), seed.x());
+
+        if (!(def_color[0] == cur_color[0] && def_color[1] == cur_color[1] && def_color[2] == cur_color[2]))
+        {
+            //if (!(def_color[0] == color[0] && def_color[1] == color[1] && def_color[2] == color[2]))
+
+            m_splineGroup.colorMapping.erase(m_splineGroup.colorMapping.begin()+l);
+
+            continue;
+        }
+
         cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
 
         QVector<QPoint> neighbours;
@@ -1285,13 +1306,13 @@ void GLScene::update_region_coloring()
             {
                 for (int j=0; j<result.cols; ++j)
                 {
-                    if (mask.at<uchar>(i+1,j+1) > 128)
+                    if (curv_img.at<uchar>(i,j) > 128)
                     {
                         bool neighbouring = false;
 
-                        for (int m=-1; m<=1; ++m)
+                        for (int m=-2; m<=2; ++m)
                         {
-                            for (int n=-1; n<=1; ++n)
+                            for (int n=-2; n<=2; ++n)
                             {
 
                                 if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
@@ -1309,7 +1330,7 @@ void GLScene::update_region_coloring()
                         if (neighbouring)
                         {
                            neighbours.push_back(QPoint(i,j));
-                           mask.at<uchar>(i+1,j+1) = 0;
+                           curv_img.at<uchar>(i,j) = 0;
                         }
                     }
                 }
@@ -1425,9 +1446,43 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
     QVector< QVector<int> > mergedGroups;
     QVector< QVector<int> > mergedGroups_JIds;
-
-    QVector<CurveJunctionInfo> junctionInfos  = m_splineGroup.junctionInfos;
     QVector<bool> surface_is_merged(num_surfaces(), false);
+
+    createMergeGroups(mergedGroups, mergedGroups_JIds, surface_is_merged);
+
+    for (int i=0; i< num_surfaces(); ++i)
+        if (surface(i).vertices.size() > 0 && !surface_is_merged[i])
+        {
+            Surface &surface1 = surface(i);
+            QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first()[surface1.controlMesh.first().size()/2]];
+            cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
+            {
+                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
+            }*/
+            surface_strings.push_back( surface(i).surfaceToOFF(color) );
+
+            //qDebug("%s", surface_strings.back().c_str());
+        }
+
+    QVector< QVector<int> > skippedSurfaces =  mergeSurfaces(mergedGroups, surface_strings);
+
+    while (skippedSurfaces.size() > 0)
+        skippedSurfaces = mergeSurfaces(skippedSurfaces, surface_strings);
+
+    char timing[50];
+    sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
+    stats += timing;
+    emit setStatusMessage("");
+
+    return surface_strings;
+}
+
+void GLScene::createMergeGroups(QVector< QVector<int> > &mergedGroups,
+                                QVector< QVector<int> > &mergedGroups_JIds,
+                                QVector<bool> &surface_is_merged)
+{
+    QVector<CurveJunctionInfo> junctionInfos  = m_splineGroup.junctionInfos;
 
     for (int k=0; k<junctionInfos.size(); ++k)
     {
@@ -1499,23 +1554,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
         }
     }
 
-    for (int i=0; i< num_surfaces(); ++i)
-        if (surface(i).vertices.size() > 0 && !surface_is_merged[i])
-        {
-            BSpline& bspline = spline(surface(i).splineRef);
-            QPointF normal  = bspline.get_normal(1, true, surface(i).direction == INWARD_DIRECTION);
-
-            QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
-            cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
-            {
-                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-            }*/
-            surface_strings.push_back( surface(i).surfaceToOFF(color) );
-
-            //qDebug("%s", surface_strings.back().c_str());
-        }
-
     //Merging: (Join suitable merge groups and then create the different merged surfaces
     while (true)
     {
@@ -1554,10 +1592,16 @@ std::vector<std::string> GLScene::OFFSurfaces()
         } else
             break;
     }
+}
 
+QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGroups,
+                            std::vector<std::string> &surface_strings)
+{
+    QVector< QVector<int> > skippedSurfaces;
     for (int i=0; i<mergedGroups.size(); ++i)
     {
         QVector<int> surf_ids = mergedGroups[i];
+        QVector<int> skipped;
         Surface mergedSurface;
         int cptRefFront = -1;
         int cptRefBack = -1;
@@ -1611,9 +1655,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
                 } else
                 {
                     qDebug("Could connect surface %d to merged surface.", surf.ref);
+                    skipped.push_back(surf.ref);
+                    continue;
                 }
 
-                QVector<int> new_vert_ids;
+                QVector<int> new_vert_ids;Surface &surface1 = surface(mergedGroups[i].first());
+                QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first().size()/2];
                 for (int j=0; j<surf.vertices.size(); ++j)
                 {
                     new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
@@ -1624,7 +1671,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     mergedSurface.sharpCorners.insert(new_vert_ids[*it]);
                 }
 
-                CurveJunctionInfo& junction = junctionInfos[mergedGroups_JIds[i][k]];
                 int direction = (surf.direction == OUTWARD_DIRECTION)?1:0;
                 BSpline& bspline = spline(surf.splineRef);
 
@@ -1684,22 +1730,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
                     }
                 }
 
-
-                /*if (close)
-                {
-                    for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
-                    {
-                        if (prepend)
-                        {
-                            mergedSurface.controlMesh[i].prepend(mergedSurface.controlMesh[i].last());
-                        }
-                        else
-                        {
-                            mergedSurface.controlMesh[i].append(mergedSurface.controlMesh[i].first());
-                        }
-                    }
-                }*/
-
             }
             ++k;
         }
@@ -1721,9 +1751,7 @@ std::vector<std::string> GLScene::OFFSurfaces()
         mergedSurface.computeFaceIndices();
 
         Surface &surface1 = surface(mergedGroups[i].first());
-        BSpline& bspline = spline(surface1.splineRef);
-        QPointF normal  = bspline.get_normal(1, true, surface1.direction == INWARD_DIRECTION);
-        QPointF pixelPoint = (QPointF)bspline.getPoints()[1] + 5*normal;
+        QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first()[surface1.controlMesh.first().size()/2]];
         cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
         /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
         {
@@ -1731,19 +1759,15 @@ std::vector<std::string> GLScene::OFFSurfaces()
         }*/
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
+        if (skipped.size()>0)   skippedSurfaces.push_back(skipped);
+
         /*std::stringstream ss;
         ss << "MergedSurface_"<<i<<".off";
         std::ofstream ofs(ss.str().c_str());
         ofs << surface_strings.back();
         ofs.close();*/
     }
-
-    char timing[50];
-    sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
-    stats += timing;
-    emit setStatusMessage("");
-
-    return surface_strings;
+    return skippedSurfaces;
 }
 
 //Public Slots
@@ -1811,7 +1835,7 @@ bool GLScene::openCurves(std::string fname)
         delete_all();
     if (m_splineGroup.load(fname))
     {
-        update_region_coloring();
+        recomputeAllSurfaces();
         update();
         return true;
 
@@ -1907,7 +1931,7 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
         if (_thickness != bspline.thickness)
         {
             bspline.thickness = _thickness;
-            update_region_coloring();
+            has_changed = true;
         }
     }
 
