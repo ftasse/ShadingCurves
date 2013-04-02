@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <stdio.h>
 #include <QDebug>
 
 #include "../Utilities/SurfaceUtils.h"
@@ -502,7 +503,8 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
 
                 recomputeAllSurfaces();
-                emit setStatusMessage("Idle Mode");
+                modeText = "Idle Mode";
+                emit setStatusMessage("");
                 break;
             }
             default:
@@ -1004,11 +1006,12 @@ void GLScene::createBSpline()
 
 void GLScene::recomputeAllSurfaces()
 {
-    QTime t;
-    t.start();
+    QTime t, t2;
+    t.start(); t2.start();
 
     m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
-    int npoints=0, ncurves=0, nsurfaces=0;
+    int npoints=0, ncurves=0, nsurfaces=0, nslopecurves = 0;
+    int curves_timing, coloring_timing, dt_timing, surfaces_timing;
 
     for (int i=0; i<num_cpts(); ++i)
         if (controlPoint(i).num_splines()>0)    ++npoints;
@@ -1017,6 +1020,7 @@ void GLScene::recomputeAllSurfaces()
         if (spline(i).num_cpts() > 1)
         {
             ncurves++;
+            if (spline(i).is_slope) nslopecurves++;
             if (spline(i).has_inward_surface)  nsurfaces++;
             if (spline(i).has_outward_surface)  nsurfaces++;
             spline(i).recompute();
@@ -1027,7 +1031,12 @@ void GLScene::recomputeAllSurfaces()
             spline(i).computeControlPointNormals();
 
     m_splineGroup.computeJunctions();
+    curves_timing = t.elapsed();
+    t.restart();
+
     update_region_coloring();
+    coloring_timing = t.elapsed();
+    t.restart();
 
     // HENRIK, include distrance transform image
     cv::Mat curvesGrayIm = curvesImage();
@@ -1035,14 +1044,24 @@ void GLScene::recomputeAllSurfaces()
 
     cv::Mat dt;
     cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
+    dt_timing = t.elapsed();
+    t.restart();
 
     for (int i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
             spline(i).computeSurfaces(dt);
     }
+    surfaces_timing = t.elapsed();
 
-    qDebug("Recomputed all surfaces: (%d points, %d curves, %d surfaces) %d ms", npoints, ncurves, nsurfaces, t.elapsed());
+    char timings[1024];
+    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+    stats = timings;
+    emit setStatusMessage("");
+
+    qDebug("\n%s", stats.toStdString().c_str());
+    qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
+    std::cout << std::flush;
 
     if (interactiveShading)
     {
@@ -1224,8 +1243,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves)
     cv::Mat img = curvesImageBGR(only_closed_curves, 1.5);
 
     cv::cvtColor(img, img, CV_BGR2RGB);
-    cv::cvtColor(img, img, CV_RGB2GRAY);   cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
     return img;
 }
 
@@ -1395,6 +1414,8 @@ bool cmp_junctions (CurveJunctionInfo i, CurveJunctionInfo j)
 
 std::vector<std::string> GLScene::OFFSurfaces()
 {
+    QTime t;
+    t.start();
     std::vector<std::string> surface_strings;
 
     QVector< QVector<int> > mergedGroups;
@@ -1705,12 +1726,17 @@ std::vector<std::string> GLScene::OFFSurfaces()
         }*/
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
-        std::stringstream ss;
+        /*std::stringstream ss;
         ss << "MergedSurface_"<<i<<".off";
         std::ofstream ofs(ss.str().c_str());
         ofs << surface_strings.back();
-        ofs.close();
+        ofs.close();*/
     }
+
+    char timing[50];
+    sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
+    stats += timing;
+    emit setStatusMessage("");
 
     return surface_strings;
 }

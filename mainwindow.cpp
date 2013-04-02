@@ -196,5 +196,12 @@ void MainWindow::center()
 
 void MainWindow::showStatusMessage(QString message)
 {
+    if (message.size() == 0)
+    {
+        message = scene->modeText;
+        if (message.size() == 0)    message = "Idle Mode";
+        if (scene->stats.size() > 0)
+            message += " [" + scene->stats + "]";
+    }
     statusBar()->showMessage(message, 0);
 }

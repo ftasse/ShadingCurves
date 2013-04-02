@@ -47,9 +47,6 @@ public:
     QSet<int> sharpCorners;
     QVector< QVector<int> > controlMesh;
     QVector<QVector<int> > faceIndices;
-
-    QVector<int> columnBreaks;
-    QVector<bool> hasBreak;
 };
 
 #endif // SURFACE_H

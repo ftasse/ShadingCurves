@@ -254,6 +254,8 @@ public:
     QList<std::pair<uint, uint> > selectedObjects;
     QLabel *displayModeLabel;
     QGLWidget *glWidget;
+    QString stats;
+    QString modeText;
 
     bool interactiveShading;
 

@@ -41,52 +41,31 @@ void Surface::computeFaceIndices()
     if (controlMesh.size() == 0 || controlMesh[0].size() == 0)
         return;
 
-    if (columnBreaks.size() == 0 && hasBreak.size() == controlMesh[0].size())
-    {
-        for (int i=0; i<hasBreak.size(); ++i)
-        {
-            if (hasBreak[i])
-                columnBreaks.append(i);
-        }
-    }
-
-    QVector<int> breaks = columnBreaks;
-    breaks.append(controlMesh[0].size()-1);
-
     //Compute faces indices
     //bool flip_face = true;
     for (int k=0; k<controlMesh.size()-1; ++k)
     {
-        int l = 0;
-        for (int i=0; i<breaks.size(); ++i)
+        for (int l=0; l<controlMesh[k].size()-1; ++l)
         {
-            int next_break = breaks[i];
-            while (l < next_break)
-            {
-                QVector<int> indices;
+            QVector<int> indices;
 
-                indices.push_back(controlMesh[k][l]);
-                if (controlMesh[k][l+1] != indices.back())
-                    indices.push_back(controlMesh[k][l+1]);
+            indices.push_back(controlMesh[k][l]);
+            if (controlMesh[k][l+1] != indices.back())
+                indices.push_back(controlMesh[k][l+1]);
 
-                if (controlMesh[k+1][l+1] != indices.back())
-                    indices.push_back(controlMesh[k+1][l+1]);
+            if (controlMesh[k+1][l+1] != indices.back())
+                indices.push_back(controlMesh[k+1][l+1]);
 
-                if (controlMesh[k+1][l] != indices.back() && controlMesh[k+1][l] != indices.front())
-                    indices.push_back(controlMesh[k+1][l]);
+            if (controlMesh[k+1][l] != indices.back() && controlMesh[k+1][l] != indices.front())
+                indices.push_back(controlMesh[k+1][l]);
 
-                /*if (flip_face)
+            /*if (flip_face)
                 {
                     std::reverse(indices.begin(), indices.end());
                 }*/
 
-                if (indices.size() > 2)
-                    faceIndices.push_back(indices);
-
-                ++l;
-            }
-            ++l;
-
+            if (indices.size() > 2)
+                faceIndices.push_back(indices);
         }
     }
 
@@ -215,9 +194,9 @@ void Surface::recompute(cv::Mat dt)
     }*/
 
     computeFaceIndices();
-    std::ofstream ofs("debug_surface.off");
+    /*std::ofstream ofs("debug_surface.off");
     writeOFF(ofs);
-    ofs.close();
+    ofs.close();*/
 }
 
 QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints, QVector<QPointF> normals, cv::Mat dt, bool inward, bool loop, bool start_has_zero_height, bool end_has_zero_height)

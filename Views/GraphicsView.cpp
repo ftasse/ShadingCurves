@@ -182,7 +182,8 @@ void GraphicsView::create_bspline()
     my_scene->createBSpline();
     my_scene->brush = false;
 
-    emit setStatusMessage("Add Curve Mode");
+    my_scene->modeText = "Add Curve Mode";
+    emit setStatusMessage("");
 }
 
 void GraphicsView::edit_bspline()
@@ -191,7 +192,8 @@ void GraphicsView::edit_bspline()
     my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
     my_scene->brush = false;
 
-    emit setStatusMessage("Edit Curve Mode");
+    my_scene->modeText = "Edit Curve Mode";
+    emit setStatusMessage("");
 }
 
 void GraphicsView::move_bsplines()
@@ -200,7 +202,8 @@ void GraphicsView::move_bsplines()
     my_scene->sketchmode() = GLScene::IDLE_MODE;
     my_scene->brush = false;
 
-    emit setStatusMessage("Move Curve Mode");
+    my_scene->modeText = "Move Curve Mode";
+    emit setStatusMessage("");
 }
 
 void GraphicsView::loadImage()
@@ -602,7 +605,8 @@ void GraphicsView::setBrush()
 /*    QBrush brush(QColor(255,0,0),Qt::Dense3Pattern);
     my_scene->setForegroundBrush(brush);*/
 
-    emit setStatusMessage("Brush Mode");
+    my_scene->modeText = "Brush mode";
+    emit setStatusMessage("");
 }
 
 void GraphicsView::changeBrushLightness(int type)
