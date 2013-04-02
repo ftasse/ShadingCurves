@@ -639,16 +639,19 @@ void GraphicsView::changeBrushTypeD(bool val)
 void GraphicsView::setSuper1()
 {
     superSampling = 1;
+    applyShading();
 }
 
 void GraphicsView::setSuper2()
 {
     superSampling = 2;
+    applyShading();
 }
 
 void GraphicsView::setSuper4()
 {
     superSampling = 4;
+    applyShading();
 }
 
 void GraphicsView::setImgShowAll(bool b)
@@ -684,44 +687,53 @@ void GraphicsView::setClipMax(int max)
 void GraphicsView::setShadingLab()
 {
     shade = CVLAB;
+    applyShading();
 }
 
 void GraphicsView::setShadingHLS()
 {
     shade = CVHLS;
+    applyShading();
 }
 
 void GraphicsView::setShadingOwn()
 {
     shade = OWN;
+    applyShading();
 }
 
 void GraphicsView::setShadingMatlab()
 {
     shade = MATLAB;
+    applyShading();
 }
 
 void GraphicsView::setShadingYxy()
 {
     shade = YXY;
+    applyShading();
 }
 
 void GraphicsView::setShadingRGB()
 {
     shade = RGB;
+    applyShading();
 }
 
 void GraphicsView::setBlackOut(bool b)
 {
     blackOut = b;
+    applyShading();
 }
 
 void GraphicsView::setFlatImage(bool b)
 {
     flatImage = b;
+    applyShading();
 }
 
 void GraphicsView::setClrVsTxtr(bool b)
 {
     clrVsTxtr = b;
+    applyShading();
 }
