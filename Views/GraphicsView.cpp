@@ -22,6 +22,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
     blackOut = false;
     subdivTime = 0;
     flatImage = true;
+    clrVsTxtr = true;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -570,6 +571,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     glvs->shade = shade;
     glvs->blackOut = blackOut;
     glvs->flatImage = flatImage;
+    glvs->clrVsTxtr = clrVsTxtr;
     glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
 
     subdivTime = glvs->subdivTime;
@@ -704,6 +706,11 @@ void GraphicsView::setShadingYxy()
     shade = YXY;
 }
 
+void GraphicsView::setShadingRGB()
+{
+    shade = RGB;
+}
+
 void GraphicsView::setBlackOut(bool b)
 {
     blackOut = b;
@@ -712,4 +719,9 @@ void GraphicsView::setBlackOut(bool b)
 void GraphicsView::setFlatImage(bool b)
 {
     flatImage = b;
+}
+
+void GraphicsView::setClrVsTxtr(bool b)
+{
+    clrVsTxtr = b;
 }

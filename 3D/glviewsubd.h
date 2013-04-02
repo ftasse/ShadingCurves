@@ -12,7 +12,7 @@
 
 enum ShadingType
 {
-    CVLAB, CVHLS, OWN, MATLAB, YXY
+    CVLAB, CVHLS, OWN, MATLAB, YXY, RGB
 };
 
 class GLviewsubd : public GLviewport
@@ -76,7 +76,7 @@ public:
     bool    clipping, blackOut;
     int     clipMin, clipMax;
     int     subdivTime;
-    bool    flatImage;
+    bool    flatImage, clrVsTxtr;
 
     ShadingType shade;
 
