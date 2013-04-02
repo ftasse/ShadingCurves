@@ -248,7 +248,7 @@ void GLScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     } else if (sketchmode() == ADD_CURVE_MODE)
         recomputeAllSurfaces();*/
 
-    if (hasMoved || sketchmode() != ADD_CURVE_MODE)
+    if (hasMoved)
     {
         recomputeAllSurfaces();
         if (hasMoved) hasMoved = false;
