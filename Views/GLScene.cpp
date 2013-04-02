@@ -1098,10 +1098,9 @@ void GLScene::subdivide_current_spline(){
         BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
         bool has_uniform_subd = spline.has_uniform_subdivision;
 
-        QVector<ControlPoint> org_points, new_points;
-        org_points = spline.getControlPoints();
+        QVector<ControlPoint> new_points;
 
-        new_points = subDivide(org_points,1, has_uniform_subd);
+        new_points = subDivide(spline.getControlPoints(),1, has_uniform_subd);
 
         while (spline.cptRefs.size() > 0)
             m_splineGroup.removeControlPoint(spline.cptRefs[0]);
@@ -1110,12 +1109,20 @@ void GLScene::subdivide_current_spline(){
         for (int i=0; i<new_points.size(); ++i)
         {
             int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0);
+            for (int k=0; k<2; ++k)
+                controlPoint(new_cpt_id).attributes[k] = new_points[i].attributes[k];
             if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id))
                 break;
         }
-        //spline.recompute();
-        //m_splineGroup.garbage_collection();
 
+        shadingProfileView->cpts_ids.clear();
+        for (int i=0; i<spline.num_cpts(); ++i)
+        {
+            shadingProfileView->cpts_ids.push_back(spline.pointAt(i).ref);
+        }
+        shadingProfileView->updatePath();
+
+        //m_splineGroup.garbage_collection();
         recomputeAllSurfaces();
     }
 }
