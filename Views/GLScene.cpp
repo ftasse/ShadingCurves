@@ -1009,6 +1009,7 @@ void GLScene::recomputeAllSurfaces()
 {
     QTime t, t2;
     t.start(); t2.start();
+    int tm;
 
     m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
     int npoints=0, ncurves=0, nsurfaces=0, nslopecurves = 0;
@@ -1048,33 +1049,37 @@ void GLScene::recomputeAllSurfaces()
     dt_timing = t.elapsed();
     t.restart();
 
+    cv::Mat luminance;
+    cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
+
     for (int i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
-            spline(i).computeSurfaces(dt);
+            spline(i).computeSurfaces(dt, luminance);
     }
     surfaces_timing = t.elapsed();
+    tm = t2.elapsed();
 
     char timings[1024];
-
     if (interactiveShading)
     {
         t.restart();
         emit triggerShading();
-        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms, Shading: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed(), t.elapsed());
+        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms, shading %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, tm, t.elapsed());
+        // update() called in ApplyShading
     }
     else
     {
-        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+        sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, tm);
+        update();
     }
+//    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
     stats = timings;
     emit setStatusMessage("");
 
     qDebug("\n************************************************************\n%s", stats.toStdString().c_str());
     qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
     std::cout << std::flush;
-
-    update();
 }
 
 void GLScene::delete_all()
@@ -1276,7 +1281,7 @@ void GLScene::update_region_coloring()
     cv::Mat mask_vals(mask, cv::Range(1, m_curImage.rows+1), cv::Range(1, m_curImage.cols+1));
     curv_img.copyTo(mask_vals);
     //cv::imshow("Mask", mask);
-    cv::imwrite("mask.png", mask);
+    //cv::imwrite("mask.png", mask);
 
     cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
 
@@ -1472,8 +1477,8 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
     char timing[50];
     sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
-    stats += timing;
-    emit setStatusMessage("");
+    //stats += timing;
+    //emit setStatusMessage("");
 
     return surface_strings;
 }

@@ -107,7 +107,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     return true;
 }
 
-void Surface::recompute(cv::Mat dt)
+void Surface::recompute(cv::Mat dt, cv::Mat luminance)
 {
 
     vertices.clear();
@@ -120,6 +120,29 @@ void Surface::recompute(cv::Mat dt)
 
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
     QVector<QPointF> normals = bspline.getNormals(inward);
+
+    if (luminance.cols > 0)
+    {
+        //Clip heights according to luminance
+        for (int i=0; i<subdivided_points.size(); ++i)
+        {
+            for (int k=0; k<2; ++k)
+            {
+                float height = subdivided_points[i].attributes[k].height;
+                float l = (luminance.at<cv::Vec3b>(subdivided_points[i].y(), subdivided_points[i].x())[0])*100.0/255;
+
+                if (height >= 0.0 && height > (100-l))
+                {
+                    height = 100-l;
+                    subdivided_points[i].attributes[k].height = height;
+                } else if (height <=0 && height < -l)
+                {
+                    height =-l;
+                    subdivided_points[i].attributes[k].height = height;
+                }
+            }
+        }
+    }
 
     QVector<QVector<int> > points = setSurfaceCP(subdivided_points, normals, dt,inward,bspline.has_loop(), bspline.start_has_zero_height[!inward], bspline.end_has_zero_height[!inward]);
 

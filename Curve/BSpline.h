@@ -16,7 +16,7 @@ class BSpline
 public:
     BSpline();
     void recompute();
-    void computeSurfaces(cv::Mat dt);
+    void computeSurfaces(cv::Mat dt, cv::Mat luminance);
     void fix_orientation();
     void change_generic_extent(float extent);
     void change_bspline_type(bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward);

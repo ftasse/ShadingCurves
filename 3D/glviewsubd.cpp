@@ -3334,6 +3334,12 @@ void GLviewsubd::RGB2YXY(double R, double G, double B, double &Y, double &x, dou
 {
     double X, Z, s;
 
+    //fix black
+    if (R + B + G == 0)
+    {
+        R = G = B = 0.0001;
+    }
+
     X = R * 0.412453 + G * 0.357580 + B * 0.180423;
     Y = R * 0.212671 + G * 0.715160 + B * 0.072169;
     Z = R * 0.019334 + G * 0.119193 + B * 0.950227;

@@ -167,7 +167,7 @@ void BSpline::recompute()
 
 }
 
-void BSpline::computeSurfaces(cv::Mat dt)
+void BSpline::computeSurfaces(cv::Mat dt, cv::Mat luminance)
 {
     bool recomputed_inward_surface = false;
     bool recomputed_outward_surface = false;
@@ -179,7 +179,7 @@ void BSpline::computeSurfaces(cv::Mat dt)
         {
             if (has_inward_surface)
             {
-                surfaceAt(k).recompute(dt);
+                surfaceAt(k).recompute(dt, luminance);
                 recomputed_inward_surface = true;
                 ++k;
             }
@@ -191,7 +191,7 @@ void BSpline::computeSurfaces(cv::Mat dt)
         {
             if (!is_slope  && has_outward_surface)
             {
-                surfaceAt(k).recompute(dt);
+                surfaceAt(k).recompute(dt, luminance);
                 recomputed_outward_surface = true;
                 ++k;
             } else
@@ -206,13 +206,13 @@ void BSpline::computeSurfaces(cv::Mat dt)
     if (has_inward_surface  && !recomputed_inward_surface)
     {
         int surf_id = m_splineGroup->addSurface(ref, INWARD_DIRECTION);
-        m_splineGroup->surface(surf_id).recompute(dt);
+        m_splineGroup->surface(surf_id).recompute(dt, luminance);
     }
 
     if (!is_slope && has_outward_surface && !recomputed_outward_surface)
     {
         int surf_id = m_splineGroup->addSurface(ref, OUTWARD_DIRECTION);
-        m_splineGroup->surface(surf_id).recompute(dt);
+        m_splineGroup->surface(surf_id).recompute(dt, luminance);
     }
 }
 

@@ -1,0 +1,14 @@
+Things to discuss with Henrik when he gets back:
+
+- Timings 		
+	- is 300ms OK for the Monster image with the default settings?
+	- should we try harder to improve it?
+	- timings across different runs vary by as much as 30%
+
+- DT and tracing
+	- the new idea (follow normals while going up in the DT)
+	- try to do tracing in parallel (using OpenMP)
+
+- Luminance adjustment
+	- delta L in Lab and Yxy space results in non-RGB colours (clipping?)
+	- clipping of heights of CPs over a flat/textured image
