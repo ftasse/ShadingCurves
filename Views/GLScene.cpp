@@ -274,8 +274,10 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
     {
         inPanMode  = false;
-        if (!(event->modifiers() & Qt::ControlModifier))
+
+        if (!(event->modifiers() & Qt::ControlModifier) && (nodeId != IMAGE_NODE_ID))
             selectedObjects.clear();
+
         if (nodeId != IMAGE_NODE_ID)
         {
             selectedObjects.push_back(std::pair<uint, uint>(nodeId, targetId));
