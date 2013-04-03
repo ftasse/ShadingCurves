@@ -221,6 +221,7 @@ public slots:
     void applyBlackCurves();
 
     void setInteractiveShading(bool b);
+    void setClipHeight(bool b);
     void emitSetStatusMessage(QString message);
 
 private:
@@ -268,8 +269,8 @@ public:
     QString stats;
     QString modeText;
 
-    bool interactiveShading;
-
+    bool interactiveShading,
+         clipHeight;
 };
 
 void nurbsError(uint errorCode);

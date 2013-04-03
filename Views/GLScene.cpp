@@ -80,6 +80,7 @@ GLScene::GLScene(QObject *parent) :
     connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
 
     interactiveShading = false;
+    clipHeight = true;
 }
 
 GLScene:: ~GLScene()
@@ -1058,12 +1059,15 @@ void GLScene::recomputeAllSurfaces()
     t.restart();
 
     cv::Mat luminance;
-    cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
+    if (clipHeight)
+    {
+        cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
+    }
 
     for (int i=0; i<num_splines(); ++i)
     {
         if (spline(i).num_cpts() > 1)
-            spline(i).computeSurfaces(dt, luminance);
+            spline(i).computeSurfaces(dt, luminance, clipHeight);
     }
     surfaces_timing = t.elapsed();
     tm = t2.elapsed();
@@ -2037,6 +2041,16 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
 void GLScene::setInteractiveShading(bool b)
 {
     interactiveShading = b;
+}
+
+void GLScene::setClipHeight(bool b)
+{
+    clipHeight = b;
+    recomputeAllSurfaces();
+    if (!interactiveShading)
+    {
+        emit triggerShading();
+    }
 }
 
 void GLScene::emitSetStatusMessage(QString message)
