@@ -121,25 +121,25 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
     QVector<QPointF> normals = bspline.getNormals(inward);
 
+    QPointF point = (QPointF)subdivided_points[0] + std::min(subdivided_points[0].attribute(direction).extent,10.0f)*normals[0];
+    int lightness = luminance.at<cv::Vec3b>(point.y(), point.x())[0];
+    float l = lightness*100.0/255;
+
     if (clipHeight && luminance.cols > 0)
     {
         //Clip heights according to luminance
         for (int i=0; i<subdivided_points.size(); ++i)
         {
-            for (int k=0; k<2; ++k)
-            {
-                float height = subdivided_points[i].attributes[k].height;
-                float l = (luminance.at<cv::Vec3b>(subdivided_points[i].y(), subdivided_points[i].x())[0])*100.0/255;
+            float height = subdivided_points[i].attribute(direction).height;
 
-                if (height >= 0.0 && height > (100-l))
-                {
-                    height = 100-l;
-                    subdivided_points[i].attributes[k].height = height;
-                } else if (height <=0 && height < -l)
-                {
-                    height =-l;
-                    subdivided_points[i].attributes[k].height = height;
-                }
+            if (height >= 0.0 && height > (100-l))
+            {
+                height = 100-l;
+                subdivided_points[i].attribute(direction).height = height;
+            } else if (height <=0 && height < -l)
+            {
+                height = -l;
+                subdivided_points[i].attribute(direction).height = height;
             }
         }
     }
