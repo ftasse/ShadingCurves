@@ -258,7 +258,7 @@ public:
     float brushSize;
     bool freehand;
     cv::Mat surfaceImg;
-    cv::Mat resultImg;
+    cv::Mat resultImg, shadedImg;
     cv::Mat orgBlankImage;
     bool discreteB;
 

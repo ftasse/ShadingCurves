@@ -1153,12 +1153,12 @@ void GLScene::subdivide_current_spline(){
 
 void GLScene::applyBlackCurves()
 {
-    if (resultImg.cols == 0)
+    if (shadedImg.cols == 0)
         return;
 
     glWidget->makeCurrent();
-    GLuint imageWidth = resultImg.cols,
-           imageHeight = resultImg.rows;
+    GLuint imageWidth = shadedImg.cols,
+           imageHeight = shadedImg.rows;
 
     GLenum inputColourFormat;
     #ifdef GL_BGR
@@ -1210,7 +1210,7 @@ void GLScene::applyBlackCurves()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, 3,resultImg.cols, resultImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, resultImg.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3,shadedImg.cols, shadedImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, shadedImg.data);
 
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, imageHeight);
@@ -2032,7 +2032,8 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
         if (_thickness != bspline.thickness)
         {
             bspline.thickness = _thickness;
-            has_changed = true;
+            applyBlackCurves();
+            update();
         }
     }
 
