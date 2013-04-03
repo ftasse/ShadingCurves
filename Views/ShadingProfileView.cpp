@@ -225,7 +225,7 @@ void ShadingProfileView::refreshPath()
     }
     {
         QPointF P1, P3 = right;
-        if (cpt.attributes[0].height > 0)   P1 =top;
+        if (cpt.attributes[0].height >= 0)   P1 =top;
         else P1 = bottom;
         QPainterPath path;
         if (my_scene->greenShapePoints.size() == 1)
@@ -288,7 +288,7 @@ void ShadingProfileView::refreshPath()
     }
     {
         QPointF P1, P3 = left;
-        if (cpt.attributes[1].height > 0)   P1 =top;
+        if (cpt.attributes[1].height >= 0)   P1 =top;
         else P1 = bottom;
         QPainterPath path;
         if (my_scene->redShapePoints.size() == 1)

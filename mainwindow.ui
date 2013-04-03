@@ -268,7 +268,7 @@
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(0, 255, 0);
-background-color: rgb(126, 126, 126);</string>
+background-color: rgba(126, 126, 126, 0);</string>
             </property>
             <property name="text">
              <string>Boundary, 1. direction</string>
@@ -288,7 +288,7 @@ background-color: rgb(126, 126, 126);</string>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(255, 0, 0);
-background-color: rgb(127, 127, 127);</string>
+background-color: rgba(127, 127, 127, 0);</string>
             </property>
             <property name="text">
              <string>Boundary, 2. direction</string>
