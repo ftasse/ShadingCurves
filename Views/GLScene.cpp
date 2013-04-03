@@ -1145,6 +1145,102 @@ void GLScene::subdivide_current_spline(){
     }
 }
 
+void GLScene::applyBlackCurves()
+{
+    if (resultImg.cols == 0)
+        return;
+
+    glWidget->makeCurrent();
+    GLuint imageWidth = resultImg.cols,
+           imageHeight = resultImg.rows;
+
+    GLenum inputColourFormat;
+    #ifdef GL_BGR
+        inputColourFormat = GL_BGR;
+    #else
+        #ifdef GL_BGR_EXT
+            inputColourFormat = GL_BGR_EXT;
+        #else
+            #define GL_BGR 0x80E0
+            inputColourFormat = GL_BGR;
+        #endif
+    #endif
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+
+    //Setup for offscreen drawing if fbos are supported
+    GLuint framebuffer, renderbuffer;
+    GLenum status;
+    glGenFramebuffersEXT(1, &framebuffer);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+    glGenRenderbuffersEXT(1, &renderbuffer);
+    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                     GL_RENDERBUFFER_EXT, renderbuffer);
+    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+        qDebug("Could not draw offscreen");
+
+    //Drawing
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);    glLoadIdentity();
+    glViewport(0, 0, imageWidth, imageHeight);
+    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+    glMatrixMode(GL_MODELVIEW);     glLoadIdentity();
+    glRenderMode(GL_RENDER);
+
+    //Render result image
+    GLuint texId;
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, 3,resultImg.cols, resultImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, resultImg.data);
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, imageHeight);
+    glTexCoord2f(1.0f, 1.0f); glVertex2f(imageWidth, imageHeight);
+    glTexCoord2f(1.0f, 0.0f); glVertex2f(imageWidth, 0.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+    glEnd();
+
+    glDeleteTextures(1, &texId);
+
+    //Draw black curves
+    int old_curveSubdLevels  = curveSubdLevels;
+    curveSubdLevels = 5;
+    for (int i=0; i<num_splines(); ++i)
+    {
+        if (m_splineGroup.spline(i).num_cpts() <=1)   continue;
+        if (spline(i).thickness <= 0)
+                continue;
+        glLineWidth(spline(i).thickness);
+        draw_spline(i, true, false);
+    }
+    curveSubdLevels = old_curveSubdLevels;
+
+    cv::Mat img;
+    img.create(imageHeight, imageWidth, CV_8UC3);
+    glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+
+    //Clean up offscreen drawing
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glDeleteRenderbuffersEXT(1, &renderbuffer);
+
+    cv::flip(img, img, 0);
+
+    resultImg = img.clone();
+}
+
 void GLScene::updateConnectedSurfaces(int cptRef)
 {
     recomputeAllSurfaces();
@@ -1445,12 +1541,6 @@ void GLScene::update_region_coloring()
     update();
 }
 
-
-bool cmp_junctions (CurveJunctionInfo i, CurveJunctionInfo j)
-{
-    return (i.cptRef<j.cptRef);
-}
-
 std::vector<std::string> GLScene::OFFSurfaces()
 {
     QTime t;
@@ -1469,10 +1559,6 @@ std::vector<std::string> GLScene::OFFSurfaces()
             Surface &surface1 = surface(i);
             QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first()[surface1.controlMesh.first().size()/2]];
             cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-            /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
-            {
-                if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-            }*/
             surface_strings.push_back( surface(i).surfaceToOFF(color) );
 
             //qDebug("%s", surface_strings.back().c_str());
@@ -1766,10 +1852,6 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
         Surface &surface1 = surface(mergedGroups[i].first());
         QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first()[surface1.controlMesh.first().size()/2]];
         cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
-        /*if (color[0] == 255 && color[1] == 255 && color [2] == 255)
-        {
-            if (bspline.thickness > 0)  { currentImage().at<cv::Vec3b>(bspline.getPoints()[1].y(), bspline.getPoints()[1].x()); }
-        }*/
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
 
         if (skipped.size()>0)   skippedSurfaces.push_back(skipped);

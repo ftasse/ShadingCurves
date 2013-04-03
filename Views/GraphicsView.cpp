@@ -590,6 +590,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
 
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
+    my_scene->applyBlackCurves();
 
     // switch to result in my_scene
     my_scene->curDisplayMode = 3;

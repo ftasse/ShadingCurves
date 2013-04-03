@@ -218,6 +218,8 @@ public slots:
         }
     }
 
+    void applyBlackCurves();
+
     void setInteractiveShading(bool b);
     void emitSetStatusMessage(QString message);
 
