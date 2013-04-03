@@ -820,7 +820,15 @@ void GLScene::draw_surface(int surface_id)
     //Display Control Polygon
     if (showControlMesh)
     {
-        glColor3f(0.65,0.65,0.65);
+//        glColor3f(0.65,0.65,0.65);
+        if (surf.direction == INWARD_DIRECTION)
+        {
+            glColor3f(0,0.45,0);
+        }
+        else
+        {
+            glColor3f(0.45,0,0);
+        }
         glPushMatrix();
         glTranslatef(0.0,0.0,-500.0f);
         glLineWidth(2.0);

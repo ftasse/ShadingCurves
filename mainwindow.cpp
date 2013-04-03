@@ -111,6 +111,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(scene, SIGNAL(triggerShading()), ui->graphicsView, SLOT(applyShading()));
     connect(ui->flatImage, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setFlatImage(bool)));
     connect(ui->clrVsTxtr, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClrVsTxtr(bool)));
+
+//    QPalette    plt;
+
+//    plt.setColor(QPalette::Window, Qt::red);
+//    plt.setColor(QPalette::WindowText, Qt::blue);
+
+//    plt.setColor(QPalette::Text, Qt::red);
+//    plt.setColor(QPalette::Background, Qt::blue);
+
+
+//    ui->super1->setAutoFillBackground(true);
+//    ui->super1->setPalette(plt);
+//    ui->super1->setText("1x");
 }
 
 MainWindow::~MainWindow()

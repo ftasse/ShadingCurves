@@ -8,11 +8,24 @@
 
 #define POINT_SIZE 10.0
 
-void updateSliderLabelText(QScrollBar *slider, QLabel *label, std::string title)
+void updateSliderLabelText(QScrollBar *slider, QLabel *label, std::string title, bool green)
 {
     std::stringstream ss;
+
+    if (green)
+    {
+        ss << "<font color='red'>";
+    }
+    else
+    {
+        ss << "<font color='green'>";
+    }
+
     ss << title << " [" << slider->minimum() << " to " << slider->maximum() << "]" << "\n";
     ss << "Value: " << slider->value();
+
+    ss << "</font>";
+
     label->setText(ss.str().c_str());
     label->setWordWrap(true);
 }
@@ -48,12 +61,16 @@ ShadingProfileView::ShadingProfileView()
 
     inwardExtentWidget = new QScrollBar(Qt::Horizontal);    //inwardExtentWidget->setTracking(false);
     inwardExtentLabel = new QLabel ("Direction 1 Extent");
+//    inwardExtentLabel->setText("<font color='green'>Direction 1 Extent</font>");
     outwardExtentWidget = new QScrollBar(Qt::Horizontal);   //outwardExtentWidget->setTracking(false);
     outwardExtentLabel = new QLabel ("Direction 2 Extent");
+//    outwardExtentLabel->setText("<font color='red'>Direction 1 Extent</font>");
     inwardHeightWidget = new QScrollBar(Qt::Horizontal);    //inwardHeightWidget->setTracking(false);
     inwardHeightLabel = new QLabel ("Direction 1 Height");
+//    inwardHeightLabel->setText("<font color='green'>Direction 1 Extent</font>");
     outwardHeightWidget = new QScrollBar(Qt::Horizontal);   //outwardHeightWidget->setTracking(false);
     outwardHeightLabel = new QLabel ("Direction 2 Height");
+//    outwardHeightLabel->setText("<font color='red'>Direction 1 Extent</font>");
 
     childLayout2->addWidget(inwardExtentLabel); childLayout2->addWidget(inwardExtentWidget);
 
@@ -102,10 +119,10 @@ void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
 
 void ShadingProfileView::updateLabels()
 {
-    updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Direction 1 Extent");
-    updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Direction 2 Extent");
-    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Direction 1 Height");
-    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Direction 2 Height");
+    updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Direction 1 Extent", false);
+    updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Direction 2 Extent", true);
+    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Direction 1 Height", false);
+    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Direction 2 Height", true);
 }
 
 void ShadingProfileView::updatePath()
