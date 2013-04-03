@@ -770,7 +770,7 @@ background-color: rgb(127, 127, 127);</string>
             <rect>
              <x>100</x>
              <y>10</y>
-             <width>111</width>
+             <width>101</width>
              <height>24</height>
             </rect>
            </property>
@@ -783,7 +783,7 @@ background-color: rgb(127, 127, 127);</string>
             <rect>
              <x>100</x>
              <y>30</y>
-             <width>92</width>
+             <width>101</width>
              <height>23</height>
             </rect>
            </property>
