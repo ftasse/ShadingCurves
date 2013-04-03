@@ -1059,7 +1059,7 @@ void GLScene::recomputeAllSurfaces()
     surfaces_timing = t.elapsed();
 
     char timings[1024];
-    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces | Surf Perf: %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
     stats = timings;
     emit setStatusMessage("");
 
@@ -1470,8 +1470,8 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
     char timing[50];
     sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
-    stats += timing;
-    emit setStatusMessage("");
+    //stats += timing;
+    //emit setStatusMessage("");
 
     return surface_strings;
 }

@@ -590,6 +590,10 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
             emit setTimeOutput(QString::number(timer.elapsed()));
             emit setTimeOutputSub(QString::number(subdivTime));
 
+            emit setStatusMessage(my_scene->modeText + " [" + my_scene->stats + "]" +
+                                  "  [Shading: " + QString::number(timer.elapsed()) +
+                                  " ms (incl subdivision time " + QString::number(subdivTime)  + " ms)]");
+
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->resultImg = glvs->imgFillShaded.clone();
 

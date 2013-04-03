@@ -129,8 +129,7 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance)
             for (int k=0; k<2; ++k)
             {
                 float height = subdivided_points[i].attributes[k].height;
-                int l = (int)(luminance.at<cv::Vec3b>(subdivided_points[i].y(), subdivided_points[i].x())[0]);
-                l = (int) (l*100.0/255);
+                float l = (luminance.at<cv::Vec3b>(subdivided_points[i].y(), subdivided_points[i].x())[0])*100.0/255;
 
                 if (height >= 0.0 && height > (100-l))
                 {
