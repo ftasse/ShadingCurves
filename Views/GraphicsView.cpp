@@ -512,6 +512,7 @@ void GraphicsView::show3Dwidget()
 {
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+    GLviewsubd  *glvs;
 
     glw = new MainWindow3D(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
     glw->setWindowTitle("3D View");
@@ -530,7 +531,22 @@ void GraphicsView::show3Dwidget()
 
     glw->ctrlWidget1->checkClear->setChecked(true);
     glw->ctrlWidget1->meshMenu->setCurrentIndex(0);
+
+    glvs = glw->glwidget1;
+    glvs->indexMesh = -1; //all meshes visible
+    glvs->super = superSampling; //supersampling (1, 2, or 4)
+    glvs->showImg = true;
+    glvs->writeImg = true;
+    glvs->clipping = clipping;
+    glvs->clipMin = clipMin;
+    glvs->clipMax = clipMax;
+    glvs->shade = shade;
+    glvs->blackOut = blackOut;
+    glvs->flatImage = flatImage;
+    glvs->clrVsTxtr = clrVsTxtr;
+
     glw->ctrlWidget1->subdLevelSpinbox->setValue(2);
+
     glw->show();
 }
 
