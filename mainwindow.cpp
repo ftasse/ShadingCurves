@@ -108,9 +108,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->graphicsView, SIGNAL(setTimeOutput(QString)), ui->timeOutput, SLOT(setText(QString)));
     connect(ui->graphicsView, SIGNAL(setTimeOutputSub(QString)), ui->timeOutputSub, SLOT(setText(QString)));
     connect(ui->interactiveShading, SIGNAL(clicked(bool)), scene, SLOT(setInteractiveShading(bool)));
+    connect(ui->clipHeight, SIGNAL(clicked(bool)), scene, SLOT(setClipHeight(bool)));
     connect(scene, SIGNAL(triggerShading()), ui->graphicsView, SLOT(applyShading()));
     connect(ui->flatImage, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setFlatImage(bool)));
     connect(ui->clrVsTxtr, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClrVsTxtr(bool)));
+
 
 //    QPalette    plt;
 

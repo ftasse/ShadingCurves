@@ -12,7 +12,7 @@ class Surface
 public:
     Surface();
 
-    void recompute(cv::Mat dt, cv::Mat luminance);
+    void recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight);
     QVector<QVector<int> > setSurfaceCP(QVector<ControlPoint> controlPoints,
                                         QVector<QPointF> normals, cv::Mat dt,
                                         bool inward, bool loop,

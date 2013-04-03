@@ -107,7 +107,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     return true;
 }
 
-void Surface::recompute(cv::Mat dt, cv::Mat luminance)
+void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
 {
 
     vertices.clear();
@@ -121,7 +121,7 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance)
     QVector<ControlPoint> subdivided_points = bspline.getPoints();
     QVector<QPointF> normals = bspline.getNormals(inward);
 
-    if (luminance.cols > 0)
+    if (clipHeight && luminance.cols > 0)
     {
         //Clip heights according to luminance
         for (int i=0; i<subdivided_points.size(); ++i)
