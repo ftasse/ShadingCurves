@@ -122,21 +122,21 @@ public slots:
     void changeLapSmValue   (int);
 //    void clear(void);
 
-    void setShowMesh		(const bool b)  { mesh_enabled = b; updateAll(); }
-    void setShowFlatMesh	(const bool b)  { flat_mesh_enabled = b; if (b) {buildFlatMesh(); updateGL();} }
-    void setShowSmoothMesh	(const bool b)  { smooth_mesh_enabled = b; if (b) {buildSmoothMesh(); updateGL();} }
-    void setShowEdgedMesh	(const bool b)  { edged_mesh_enabled = b; if (b) {buildEdgedMesh(); updateGL();} }
-    void setShowCulledMesh	(const bool b)  { culled_mesh_enabled = b; if (b) {buildCulledMesh(); updateGL();} }
-    void setShowCurvMMesh	(const bool b)  { curvM_mesh_enabled = b; if (b) {buildCurvMMesh(); updateGL();} }
-    void setShowCurvGMesh	(const bool b)  { curvG_mesh_enabled = b; if (b) {buildCurvGMesh(); updateGL();} }
-    void setShowHeightMesh	(const bool b)  { height_mesh_enabled = b; if (b) {buildHeightMesh(); updateGL();} }
-    void setShowFeatureLines(const bool b)  { feature_lines_enabled = b; if (b) {buildFeatureLines();} updateGL(); }
+    void setShowMesh		(const bool b)  { mesh_enabled = b; buildAll(); updateGL();}
+    void setShowFlatMesh	(const bool b)  { flat_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowSmoothMesh	(const bool b)  { smooth_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowEdgedMesh	(const bool b)  { edged_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowCulledMesh	(const bool b)  { culled_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowCurvMMesh	(const bool b)  { curvM_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowCurvGMesh	(const bool b)  { curvG_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowHeightMesh	(const bool b)  { height_mesh_enabled = b; buildAll(); updateGL();}
+    void setShowFeatureLines(const bool b)  { feature_lines_enabled = b; buildAll(); updateGL();}
     void setShowIPMesh		(const bool b);
-	void setShowTriang		(const bool b)  { triang_enabled = b; updateAll(); }
-	void setShowTriang2		(const bool b)  { triang2_enabled = b; updateAll(); }
-    void setShowCtrl		(const bool b)  { ctrl_enabled = b; if (b) {buildCtrl();} updateGL(); }
-    void setShowOld         (const bool b)  { old_enabled = b ; if (b) {buildOld();} updateGL(); }
-    void setShowLab         (const bool b)  { Lab_enabled = b ; if (b) {buildLab();} updateGL(); }
+    void setShowTriang		(const bool b)  { triang_enabled = b; updateAll(); updateGL();}
+    void setShowTriang2		(const bool b)  { triang2_enabled = b; updateAll(); updateGL();}
+    void setShowCtrl		(const bool b)  { ctrl_enabled = b; buildAll(); updateGL();}
+    void setShowOld         (const bool b)  { old_enabled = b ; buildAll(); updateGL();}
+    void setShowLab         (const bool b)  { Lab_enabled = b ; buildAll(); updateGL();}
     void setCC              (const bool b);
     void setCCB             (const bool b);
     void setICC             (const bool b);
@@ -149,7 +149,7 @@ public slots:
 
 	void setClear(const bool b) { clear = b; }
 
-    void setShowFrame		(const bool b)  { frame_enabled = b; if (b) {buildFrame();} updateGL(); }
+    void setShowFrame		(const bool b)  { frame_enabled = b; buildAll(); updateGL();}
 //    void setSubdivLevel		(unsigned int newLevel);
 	void setSubdivLevel		(int newLevel);
 	void setClr				(int newColor);
