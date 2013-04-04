@@ -1868,6 +1868,19 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
             if (isSharp) mergedSurface.sharpCorners.insert(mergedSurface.controlMesh[0][l]);
         }
 
+        int intersectingVertices = 0;
+        int vertex_id = -1;
+        for (int i=0; i<mergedSurface.controlMesh.size(); ++i)
+        {
+            if (mergedSurface.controlMesh[i].first() == mergedSurface.controlMesh[i].last())
+            {
+                vertex_id = mergedSurface.controlMesh[i].first();
+                intersectingVertices++;
+            }
+        }
+        if (intersectingVertices == 1)  mergedSurface.sharpCorners.insert(vertex_id);
+
+
         mergedSurface.computeFaceIndices();
 
         Surface &surface1 = surface(mergedGroups[i].first());
