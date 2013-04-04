@@ -2016,8 +2016,8 @@ void GLviewsubd::buildLab()
 
 void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, unsigned int ctrlType)
 {
-    if (mesh->isGhost && !offScreen)
-        return;
+//    if (mesh->isGhost && !offScreen)
+//        return;
 
     unsigned int 	i, j;
     PointPrec 		val1, val2, value, minz, maxz;
@@ -2093,6 +2093,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 	else
 	{
 		glLineWidth(1);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_edges);
         glColor3fv(col_edges);
 	}
 

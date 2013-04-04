@@ -1204,7 +1204,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 {
     unsigned int 				i, j, k, cnt, num, numCorners, bndCnt;
     MeshFacet 					*facet, face;
-    MeshVertex					*vertex, vert;//, *prev0, *prev1, *next0, *next1;
+    MeshVertex					*vertex, vert, *prev0, *prev1, *next0, *next1;
     MeshCorner					*cencrn, *prevcrn, *crn;
     Point_3D					Fpoi, Epoi, Vpoi, Favrg, Eavrg;
 //    PointPrec                   x, y, z;
@@ -1277,24 +1277,57 @@ void Mesh::CatmullClark(Mesh *smesh)
             {
                 Vpoi = 6 * vertex->my_point;
 
-                std::vector<MeshVertex*> vertices;
-                getEdgeConnectedV(vertex, &vertices);
-
-                bndCnt = 0;
-                for (j = 0 ; j < vertices.size() ; j ++)
+                if (isGhost)
                 {
-                    if (vertices[j]->isOnBoundary)
+                    //old code that does not hadle EVs at boundary correctly
+                    Vpoi = 6 * vertex->my_point;
+                    crn = findCorner(vertex, vertex->my_facets[0]);
+                    next0 = crn->my_nextCorner->my_vertex;
+                    for (j = 0 ; j < vertex->my_facets[0]->my_valency - 1 ; j++)
                     {
-                        Vpoi += vertices[j]->my_point;
-                        bndCnt++;
+                        crn = crn->my_nextCorner;
                     }
+                    prev0 = crn->my_vertex;
+
+                    crn = findCorner(vertex, vertex->my_facets[1]);
+                    next1 = crn->my_nextCorner->my_vertex;
+                    for (j = 0 ; j < vertex->my_facets[1]->my_valency - 1 ; j++)
+                    {
+                        crn = crn->my_nextCorner;
+                    }
+                    prev1 = crn->my_vertex;
+
+                    if (next0->my_index == prev1->my_index)
+                    {
+                        Vpoi += prev0->my_point + next1->my_point;
+                    }
+                    else
+                    {
+                        Vpoi += prev1->my_point + next0->my_point;
+                    }
+                    Vpoi *= 0.125;
                 }
-//                              assert(bndCnt == 2);
-//                if (bndCnt != 2)
-//                {
-//                    cout << "Warning: bndCnt != 2" << endl;
-//                }
-                Vpoi *= 1.0 / (6.0 + (double)bndCnt);
+                else
+                {
+                    std::vector<MeshVertex*> vertices;
+                    getEdgeConnectedV(vertex, &vertices);
+
+                    bndCnt = 0;
+                    for (j = 0 ; j < vertices.size() ; j ++)
+                    {
+                        if (vertices[j]->isOnBoundary)
+                        {
+                            Vpoi += vertices[j]->my_point;
+                            bndCnt++;
+                        }
+                    }
+    //                              assert(bndCnt == 2);
+    //                if (bndCnt != 2)
+    //                {
+    //                    cout << "Warning: bndCnt != 2" << endl;
+    //                }
+                    Vpoi *= 1.0 / (6.0 + (double)bndCnt);
+                }
 
                 //old code that does not hadle EVs at boundary correctly
 //                Vpoi = 6 * vertex->my_point;
