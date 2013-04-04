@@ -1969,6 +1969,9 @@ bool GLScene::openCurves(std::string fname)
     if (m_splineGroup.load(fname))
     {
         recomputeAllSurfaces();
+        curDisplayMode = 0;
+        changeDisplayModeText();
+        adjustDisplayedImageSize();
         update();
         return true;
 

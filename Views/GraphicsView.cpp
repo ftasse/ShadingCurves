@@ -317,9 +317,12 @@ void GraphicsView::loadProject()
         my_scene->splineGroup().loadAll(fileName.toStdString());
         cv::resize(my_scene->orgBlankImage, my_scene->orgBlankImage, my_scene->splineGroup().imageSize);
         cv::resize(my_scene->currentImage(), my_scene->currentImage(), my_scene->splineGroup().imageSize);
+        my_scene->curDisplayMode = 0;
+        my_scene->changeDisplayModeText();
         my_scene->changeResolution(my_scene->splineGroup().imageSize.width, my_scene->splineGroup().imageSize.height);
 
-        my_scene->curSplineRef() = -1; my_scene->selectedObjects.clear();
+        my_scene->curSplineRef() = -1;
+        my_scene->selectedObjects.clear();
     }
 }
 
