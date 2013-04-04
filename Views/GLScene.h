@@ -86,7 +86,7 @@ public:
 
     std::vector<std::string> OFFSurfaces();
 
-    cv::Mat curvesImage(bool only_closed_curves = false);
+    cv::Mat curvesImage(bool only_closed_curves = false, float thickness = 1.0);
     cv::Mat curvesImageBGR(bool only_closed_curves=false, float thickness = -1);
 
     void update_region_coloring();

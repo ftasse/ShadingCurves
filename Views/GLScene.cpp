@@ -1316,11 +1316,14 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
     glLoadIdentity();
     glRenderMode(GL_RENDER);
 
-    //if (thickness < 0.0)
+    if (thickness<0.0 || fabs(thickness-1.0)>1e-8)
     {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         glEnable(GL_LINE_SMOOTH);
+    } else
+    {
+        glDisable(GL_LINE_SMOOTH);
     }
 
     int old_curveSubdLevels  = curveSubdLevels;
@@ -1366,9 +1369,9 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
     return img;
 }
 
-cv::Mat GLScene::curvesImage(bool only_closed_curves)
+cv::Mat GLScene::curvesImage(bool only_closed_curves, float thickness)
 {
-    cv::Mat img = curvesImageBGR(only_closed_curves, 1.5);
+    cv::Mat img = curvesImageBGR(only_closed_curves, thickness);
 
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
@@ -1382,7 +1385,7 @@ void GLScene::update_region_coloring()
     //curvesImageBGR(false, -1);;
     m_curImage = orgBlankImage.clone();
 
-    cv::Mat curv_img = curvesImage(false);   //cv::imwrite("curv_img.png", curv_img);
+    cv::Mat curv_img = curvesImage(false, 1.05);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
 
     //cv::imshow("Closed Curves", curv_img);
@@ -1425,9 +1428,9 @@ void GLScene::update_region_coloring()
                     {
                         bool neighbouring = false;
 
-                        for (int m=-2; m<=2; ++m)
+                        for (int m=-1; m<=1; ++m)
                         {
-                            for (int n=-2; n<=2; ++n)
+                            for (int n=-1; n<=1; ++n)
                             {
 
                                 if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
@@ -1574,6 +1577,18 @@ std::vector<std::string> GLScene::OFFSurfaces()
 
     while (skippedSurfaces.size() > 0)
         skippedSurfaces = mergeSurfaces(skippedSurfaces, surface_strings);
+
+    for (int i=0; i<num_splines(); ++i)
+    {
+        if (!spline(i).is_slope && spline(i).num_cpts() > 1)
+        {
+            if (spline(i).has_inward_surface != spline(i).has_outward_surface)
+            {
+                if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION));
+                else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION));
+            }
+        }
+    }
 
     char timing[50];
     sprintf(timing, " | Surf Streams(incl merging): %d ms", t.elapsed());
