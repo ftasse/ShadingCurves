@@ -207,6 +207,11 @@ void Mesh::load(istream &is, unsigned int iH)
         colFlat[2] /= 255.0;
         colFlat[3] = 0.0;
 
+        //read ghost flag
+        std::string str;
+        isGhost = false;
+        isGhost = (is >> str && str.compare("ghost") == 0);
+
 //        for (i = 0 ; i < my_numV ; i++)
 //        {
 //            if (my_vertices[i].my_faceIndices.size() < 3)

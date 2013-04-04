@@ -221,6 +221,7 @@ public slots:
     void applyBlackCurves();
 
     void setInteractiveShading(bool b);
+    void setGhostSurfacesEnabled(bool b);
     void setClipHeight(bool b);
     void emitSetStatusMessage(QString message);
 
@@ -270,6 +271,7 @@ public:
     QString modeText;
 
     bool interactiveShading,
+         ghostSurfacesEnabled,
          clipHeight;
 };
 

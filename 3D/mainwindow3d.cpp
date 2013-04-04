@@ -201,15 +201,19 @@ void MainWindow3D::load1(std::istream &is)
 	resetSliders1();
 
 	qs = QString(glwidget1->meshCtrl[glwidget1->indexMesh]->my_s.c_str());
+    bool isGhost = glwidget1->meshCtrl[glwidget1->indexMesh]->isGhost;
 
 	if (glwidget1->clear)
 	{
 		ctrlWidget1->meshMenu->clear();
         ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), "All meshes");
 	}
-		qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
-		ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
-		ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
+        if (!isGhost)
+        {
+            qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
+            ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
+            ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
+        }
 }
 
 void MainWindow3D::loadBatch1(std::istream &is)

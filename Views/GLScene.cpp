@@ -80,6 +80,7 @@ GLScene::GLScene(QObject *parent) :
     connect(shadingProfileView, SIGNAL(controlPointAttributesChanged(int)), this, SLOT(updateConnectedSurfaces(int)));
 
     interactiveShading = false;
+    ghostSurfacesEnabled = true;
     clipHeight = true;
 }
 
@@ -1578,14 +1579,17 @@ std::vector<std::string> GLScene::OFFSurfaces()
     while (skippedSurfaces.size() > 0)
         skippedSurfaces = mergeSurfaces(skippedSurfaces, surface_strings);
 
-    for (int i=0; i<num_splines(); ++i)
+    if (ghostSurfacesEnabled)
     {
-        if (!spline(i).is_slope && spline(i).num_cpts() > 1)
+        for (int i=0; i<num_splines(); ++i)
         {
-            if (spline(i).has_inward_surface != spline(i).has_outward_surface)
+            if (!spline(i).is_slope && spline(i).num_cpts() > 1)
             {
-                if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION));
-                else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION));
+                if (spline(i).has_inward_surface != spline(i).has_outward_surface)
+                {
+                    if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION));
+                    else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION));
+                }
             }
         }
     }
@@ -2072,6 +2076,14 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
 void GLScene::setInteractiveShading(bool b)
 {
     interactiveShading = b;
+}
+
+void GLScene::setGhostSurfacesEnabled(bool b)
+{
+    bool shading = (ghostSurfacesEnabled != b);
+    ghostSurfacesEnabled = b;
+    if (shading)
+        emit triggerShading();
 }
 
 void GLScene::setClipHeight(bool b)

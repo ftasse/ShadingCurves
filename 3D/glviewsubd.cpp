@@ -236,6 +236,7 @@ void GLviewsubd::setSubdivLevel(int newLevel)
 				for (j = 0 ; j < meshCurr.size() ; j++)
 				{
 					nextMesh = new Mesh();
+                    nextMesh->isGhost = meshCurr[j]->isGhost;
                     meshCurr[j]->CatmullClark(nextMesh);
 
                     if (!showMessageCF && !showMessageCCint)
@@ -2015,6 +2016,9 @@ void GLviewsubd::buildLab()
 
 void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, unsigned int ctrlType)
 {
+    if (mesh->isGhost && !offScreen)
+        return;
+
     unsigned int 	i, j;
     PointPrec 		val1, val2, value, minz, maxz;
 	MeshFacet		*facet;

@@ -175,20 +175,23 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction)
     QVector<QPointF> normals = getNormals(direction == INWARD_DIRECTION);
     surf.controlMesh.push_back(QVector<int>());
     surf.controlMesh.push_back(QVector<int>());
-    surf.controlMesh.push_back(QVector<int>());
 
     for (int i=0; i<subd_points.size(); ++i)
     {
-        for (int k=0; k<surf.controlMesh.size(); ++k)
+        surf.controlMesh.last().push_back(surf.vertices.size());
+        QPointF translated =  (QPointF)subd_points[i]-0.5*normals[i];
+        surf.vertices.push_back(Point3d(translated.x(), translated.y(), 50.0));
+
+        for (int k=surf.controlMesh.size()-2; k>=0; --k)
         {
             surf.controlMesh[k].push_back(surf.vertices.size());
-            QPointF translated =  (QPointF)subd_points[i]+k*normals[i];
+            translated =  (QPointF)subd_points[i]+(surf.controlMesh.size()-1-k)*normals[i];
             surf.vertices.push_back(Point3d(translated.x(), translated.y(), 0.0));
         }
     }
 
     surf.computeFaceIndices();
-    std::string str = surf.surfaceToOFF(cv::Vec3b(255, 255, 255));
+    std::string str = surf.surfaceToOFF(cv::Vec3b(255, 255, 255))+"ghost";
     return str;
 }
 

@@ -34,7 +34,6 @@ public:
         std::stringstream ss;
         writeOFF(ss);
         ss << (int)color(0) << " " << (int)color(1) << " " << (int)color(2) << "\n";
-        if (controlMesh.size() == 2)    ss << "ghost\n";
         return ss.str();
     }
 
