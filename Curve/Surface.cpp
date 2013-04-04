@@ -122,11 +122,11 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
     QVector<QPointF> normals = bspline.getNormals(inward);
 
     QPointF point = (QPointF)subdivided_points[0] + std::min(subdivided_points[0].attribute(direction).extent,10.0f)*normals[0];
-    int lightness = luminance.at<cv::Vec3b>(point.y(), point.x())[0];
-    float l = lightness*100.0/255;
 
     if (clipHeight && luminance.cols > 0)
     {
+        int lightness = luminance.at<cv::Vec3b>(point.y(), point.x())[0];
+        float l = lightness*100.0/255;
         //Clip heights according to luminance
         for (int i=0; i<subdivided_points.size(); ++i)
         {
