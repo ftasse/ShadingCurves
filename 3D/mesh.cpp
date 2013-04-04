@@ -1261,7 +1261,7 @@ void Mesh::CatmullClark(Mesh *smesh)
 //    times("Edge average loop");
 
     // compute new vertex-points
-    #pragma omp parallel for default(none) private(i,j,vertex,Vpoi,crn,cencrn,Favrg,Eavrg,bndCnt)
+    #pragma omp parallel for default(none) private(i,j,vertex,Vpoi,crn,cencrn,Favrg,Eavrg,bndCnt,next0,prev0,next1,prev1)
     for (i = 0 ; i < my_numV ; i++)
     {
         vertex = &my_vertices[i];
