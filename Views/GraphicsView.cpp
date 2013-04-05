@@ -23,6 +23,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
     subdivTime = 0;
     flatImage = true;
     clrVsTxtr = true;
+    pathToData = "../imageshading/Data";
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -212,7 +213,7 @@ void GraphicsView::loadImage()
     QString selectedFilter;
     QString fileName = QFileDialog::getOpenFileName(this,
                                     tr("Open Image Files"),
-                                    "",
+                                    pathToData,
                                     tr("Image files (*.jpg *.jpeg *.png *.gif *.bmp)"),
                                     &selectedFilter,
                                     options);
@@ -229,7 +230,7 @@ void GraphicsView::loadBackgroungImage()
     QString selectedFilter;
     QString fileName = QFileDialog::getOpenFileName(this,
                                     tr("Open Background Image Files"),
-                                    "",
+                                    pathToData,
                                     tr("Background Image files (*.jpg *.jpeg *.png *.gif *.bmp)"),
                                     &selectedFilter,
                                     options);
@@ -253,7 +254,7 @@ void GraphicsView::saveImage()
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
                                     tr("Save Image"),
-                                    "",
+                                    pathToData,
                                     tr("Image files (*.jpg *.jpeg *.png *.gif *.bmp)"),
                                     &selectedFilter,
                                     options);
@@ -270,7 +271,7 @@ void GraphicsView::loadCurves()
     QString selectedFilter;
     QString fileName = QFileDialog::getOpenFileName(this,
                                     tr("Open SplineGroup Files"),
-                                    "",
+                                    pathToData,
                                     tr("SplineGroup files (*.curv)"),
                                     &selectedFilter,
                                     options);
@@ -288,7 +289,7 @@ void GraphicsView::saveCurves()
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
                                     tr("Save SplineGroup"),
-                                    "",
+                                    pathToData,
                                     tr("SplineGroup files (*.curv)"),
                                     &selectedFilter,
                                     options);
@@ -306,7 +307,7 @@ void GraphicsView::loadProject()
     QString selectedFilter;
     QString fileName = QFileDialog::getOpenFileName(this,
                                     tr("Open Image Shading Project Files"),
-                                    "",
+                                    pathToData,
                                     tr("Image Shading Project files (*.xml *.yml *.yaml)"),
                                     &selectedFilter,
                                     options);
@@ -332,7 +333,7 @@ void GraphicsView::saveProject()
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
                                     tr("Save Image Shading Project"),
-                                    "",
+                                    pathToData,
                                     tr("Image Shading Project Files (*.xml *.yml *.yaml)"),
                                     &selectedFilter,
                                     options);
@@ -350,7 +351,7 @@ void GraphicsView::saveOff()
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
                                     tr("Save to OFF"),
-                                    "",
+                                    pathToData,
                                     tr("OFF files (*.off)"),
                                     &selectedFilter,
                                     options);

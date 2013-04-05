@@ -13,6 +13,8 @@ using namespace std;
 
 MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 {
+    pathToData = "../imageshading/Data";
+
 	widget = new QWidget;
     setCentralWidget(widget);
 
@@ -331,7 +333,7 @@ void MainWindow3D::open1()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "./Data",
+                                                pathToData,
                                                 tr("(*.off *.ply)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -358,7 +360,7 @@ void MainWindow3D::openBatch1()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "./Data",
+                                                pathToData,
 												tr("(*.bat)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -385,7 +387,7 @@ void MainWindow3D::open2()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "./Data",
+                                                pathToData,
                                                 tr("(*.off *.ply)"));
 	if (!meshFileName.isEmpty())
 	{
@@ -412,7 +414,7 @@ void MainWindow3D::openBatch2()
 
 	meshFileName = QFileDialog::getOpenFileName(this,
 												tr("Open File"),
-                                                "./Data",
+                                                pathToData,
                                                 tr("(*.bat)"));
 	if (!meshFileName.isEmpty())
     {
@@ -436,12 +438,9 @@ void MainWindow3D::save1()
 	QByteArray 	bytes;
 	char 		*file_name;
 	QStringList filters;
-	QString		inp;
 	bool		isPly;
 
-    inp = "./Data";
-
-	if (glwidget1->indexMesh < 0)
+    if (glwidget1->indexMesh < 0)
 	{
         std::cout << "I have no data -> not saving!" << endl;
 		QMessageBox msgBox;
@@ -453,7 +452,7 @@ void MainWindow3D::save1()
 		filters << "OFF file (*.off)"
 				<< "PLY file (*.ply)";
 
-		QFileDialog fileDialog(this, tr("Save as..."), inp + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save as..."), pathToData + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -486,10 +485,7 @@ void MainWindow3D::save2()
 	QByteArray 	bytes;
 	char 		*file_name;
 	QStringList filters;
-	QString		inp;
 	bool		isPly;
-
-    inp = "./Data";
 
 	if (glwidget2->indexMesh < 0)
 	{
@@ -503,7 +499,7 @@ void MainWindow3D::save2()
 		filters << "OFF file (*.off)"
 				<< "PLY file (*.ply)";
 
-        QFileDialog fileDialog(this, tr("Save as..."), inp + glwidget2->meshCtrl[glwidget2->indexMesh]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save as..."), pathToData + glwidget2->meshCtrl[glwidget2->indexMesh]->my_save.c_str(), NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -536,10 +532,7 @@ void MainWindow3D::saveLim1()
 	QByteArray 	bytes;
 	char 		*file_name;
 	QStringList filters;
-	QString		inp;
 	bool		isPly;
-
-    inp = "./Data";
 
 	if (glwidget1->indexMesh < 0)
 	{
@@ -553,7 +546,7 @@ void MainWindow3D::saveLim1()
 		filters << "OFF file (*.off)"
 				<< "PLY file (*.ply)";
 
-		QFileDialog fileDialog(this, tr("Save as..."), inp + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save as..."), pathToData + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -586,10 +579,7 @@ void MainWindow3D::saveLim2()
     QByteArray 	bytes;
     char 		*file_name;
     QStringList filters;
-    QString		inp;
     bool		isPly;
-
-    inp = "./Data";
 
     if (glwidget2->indexMesh < 0)
     {
@@ -603,7 +593,7 @@ void MainWindow3D::saveLim2()
         filters << "OFF file (*.off)"
                 << "PLY file (*.ply)";
 
-        QFileDialog fileDialog(this, tr("Save as..."), inp + glwidget2->meshCtrl[glwidget2->indexMesh]->my_save.c_str(), NULL);
+        QFileDialog fileDialog(this, tr("Save as..."), pathToData + glwidget2->meshCtrl[glwidget2->indexMesh]->my_save.c_str(), NULL);
         fileDialog.setFilters(filters);
         fileDialog.setFileMode(QFileDialog::AnyFile);
         fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -647,7 +637,7 @@ void MainWindow3D::saveImg1()
         filters << "Raster image files (*.png)";
 
 //		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget1->meshCtrl[glwidget1->indexMesh]->my_save.c_str(), NULL);
-        QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath(), NULL);
+        QFileDialog fileDialog(this, tr("Save image"), pathToData, NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -684,7 +674,7 @@ void MainWindow3D::saveImg2()
         filters << "Raster image files (*.png)";
 
 //		QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath() + "/" + glwidget2->meshCtrl[0]->my_save.c_str(), NULL);
-        QFileDialog fileDialog(this, tr("Save image"), QDir::currentPath(), NULL);
+        QFileDialog fileDialog(this, tr("Save image"), pathToData, NULL);
 		fileDialog.setFilters(filters);
 		fileDialog.setFileMode(QFileDialog::AnyFile);
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -710,7 +700,7 @@ void MainWindow3D::saveBar()
 	QStringList filters;
     filters << "Raster image files (*.png)";
 
-	QFileDialog fileDialog(this, tr("Save collor bar"), QDir::currentPath(), NULL);
+    QFileDialog fileDialog(this, tr("Save collor bar"), pathToData, NULL);
 	fileDialog.setFilters(filters);
 	fileDialog.setFileMode(QFileDialog::AnyFile);
 	fileDialog.setAcceptMode(QFileDialog::AcceptSave);

@@ -111,6 +111,8 @@ private:
     QToolBar    *toolBar1a,*toolBar2a;
 
 	bool NotFullScr;
+
+    QString pathToData;
 };
 
 #endif

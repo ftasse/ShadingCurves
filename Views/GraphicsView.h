@@ -90,6 +90,7 @@ private:
     bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut, interactiveShading, flatImage, clrVsTxtr;
 
     ShadingType     shade;
+    QString         pathToData;
 };
 
 #endif // GRAPHICSVIEW_H
