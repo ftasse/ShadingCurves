@@ -117,14 +117,21 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
     bool inward = (direction == INWARD_DIRECTION);
 
     BSpline& bspline = m_splineGroup->spline(splineRef);
-
-    QVector<ControlPoint> subdivided_points = bspline.getPoints();
+    QVector<ControlPoint> original_points = bspline.getControlPoints();
     QVector<QPointF> normals = bspline.getNormals(inward);
 
-    QPointF point = (QPointF)subdivided_points[0] + std::min(subdivided_points[0].attribute(direction).extent,10.0f)*normals[0];
+    for (int k=0; k<2; ++k)
+    {
+        if (bspline.start_has_zero_height[k] || bspline.is_slope)
+            original_points.first().attributes[k].height = 0.0;
+        if (bspline.end_has_zero_height[k] || bspline.is_slope)
+            original_points.last().attributes[k].height = 0.0;
+    }
+    QVector<ControlPoint> subdivided_points = subDivide(original_points, 2, bspline.has_uniform_subdivision);
 
     if (clipHeight && luminance.cols > 0)
     {
+        QPointF point = (QPointF)subdivided_points[0] + std::min(subdivided_points[0].attribute(direction).extent,10.0f)*normals[0];
         int lightness = luminance.at<cv::Vec3b>(point.y(), point.x())[0];
         float l = lightness*100.0/255;
         //Clip heights according to luminance

@@ -581,9 +581,10 @@ void GLScene::display(bool only_show_splines)
     glTranslatef(m_translation.x(), m_translation.y(), 0.0f);
 
     glInitNames();
-    glEnable(GL_POINT_SMOOTH);
     glPointSize(pointSize);
 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
 
     if (displayImage()->cols > 0)
     {
@@ -609,6 +610,8 @@ void GLScene::display(bool only_show_splines)
     }
 
     glLineWidth(pointSize/5.0);
+    glPointSize(pointSize);
+    glEnable(GL_POINT_SMOOTH);
     for (int i=0; i<num_splines(); ++i)
     {
         bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
@@ -702,7 +705,6 @@ void GLScene::draw_control_point(int point_id)
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
-    glPointSize(pointSize);
     glColor3d(0.0, 0.0, 1.0);
     if (selectedObjects.contains(std::pair<uint, uint>(CPT_NODE_ID, point_id)))
     {
@@ -1317,15 +1319,9 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
     glLoadIdentity();
     glRenderMode(GL_RENDER);
 
-    if (thickness<0.0 || fabs(thickness-1.0)>1e-8)
-    {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-        glEnable(GL_LINE_SMOOTH);
-    } else
-    {
-        glDisable(GL_LINE_SMOOTH);
-    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
 
     int old_curveSubdLevels  = curveSubdLevels;
     curveSubdLevels = 5;
@@ -1386,7 +1382,7 @@ void GLScene::update_region_coloring()
     //curvesImageBGR(false, -1);;
     m_curImage = orgBlankImage.clone();
 
-    cv::Mat curv_img = curvesImage(false, 1.05);   //cv::imwrite("curv_img.png", curv_img);
+    cv::Mat curv_img = curvesImage(false, 1.5);   //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
 
     //cv::imshow("Closed Curves", curv_img);
@@ -1587,8 +1583,8 @@ std::vector<std::string> GLScene::OFFSurfaces()
             {
                 if (spline(i).has_inward_surface != spline(i).has_outward_surface)
                 {
-                    if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION));
-                    else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION));
+                    if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION, currentImage()));
+                    else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION, currentImage()));
                 }
             }
         }

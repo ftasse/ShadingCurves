@@ -7,6 +7,9 @@
 #include "ShadingProfileView.h"
 
 #define POINT_SIZE 10.0
+#define PARAMETER_EXTENT 0
+#define PARAMETER_HEIGHT 1
+#define PARAMETER_SHAPE 2
 
 void updateSliderLabelText(QScrollBar *slider, QLabel *label, std::string title, bool green)
 {
@@ -79,15 +82,15 @@ ShadingProfileView::ShadingProfileView()
     childLayout2->addWidget(outwardHeightLabel); childLayout2->addWidget(outwardHeightWidget);
     childLayout2->addSpacing(30);
 
-    connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
-    connect(outwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
-    connect(inwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
-    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateControlPointParameters()));
+    connect(inwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateInwardExtent()));
+    connect(outwardExtentWidget, SIGNAL(sliderReleased()), this, SLOT(updateOutwardExtent()));
+    connect(inwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateInwardHeight()));
+    connect(outwardHeightWidget, SIGNAL(sliderReleased()), this, SLOT(updateOutwardHeight()));
 
-    connect(inwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
-    connect(outwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
-    connect(inwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
-    connect(outwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateControlPointParameters()));
+    connect(inwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateInwardExtent()));
+    connect(outwardExtentWidget, SIGNAL(valueChanged(int)), this, SLOT(updateOutwardExtent()));
+    connect(inwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateInwardHeight()));
+    connect(outwardHeightWidget, SIGNAL(valueChanged(int)), this, SLOT(updateOutwardHeight()));
 
     splineGroup = NULL;
 }
@@ -98,7 +101,7 @@ int ShadingProfileView::representativeCptRef()
     return cpts_ids[mid];
 }
 
-void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
+void ShadingProfileView::propagateAttributes(ControlPoint& cpt, NormalDirection direction, int parameter)
 {
 
     for (int i=0; i<cpts_ids.size(); ++i)
@@ -106,15 +109,11 @@ void ShadingProfileView::propagateAttributes(ControlPoint& cpt)
         if (cpts_ids[i] == cpt.ref) continue;
         ControlPoint& other = splineGroup->controlPoint(cpts_ids[i]);
 
-        for (int k=0; k<2; ++k)
-        {
-            other.attributes[k].height = cpt.attributes[k].height;
-            other.attributes[k].extent = cpt.attributes[k].extent;
-            other.attributes[k].shapePointAtr = cpt.attributes[k].shapePointAtr;
-        }
+        if (parameter == PARAMETER_HEIGHT) other.attribute(direction).height = cpt.attribute(direction).height;
+        if (parameter == PARAMETER_EXTENT) other.attribute(direction).extent = cpt.attribute(direction).extent;
+        if (parameter == PARAMETER_SHAPE) other.attribute(direction).shapePointAtr = cpt.attribute(direction).shapePointAtr;
     }
 
-    emit controlPointAttributesChanged(cpt.ref);
 }
 
 void ShadingProfileView::updateLabels()
@@ -138,7 +137,6 @@ void ShadingProfileView::updatePath()
         return;
 
     ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
-    //propagateAttributes(cpt);
 
     inwardExtentWidget->blockSignals( true );
     inwardExtentWidget->setMinimum(min_extent); inwardExtentWidget->setMaximum(max_extent);
@@ -333,6 +331,7 @@ void ShadingProfileView::add_shape_point(QPointF point)
     my_scene->greenShapePoints.clear();
     my_scene->redShapePoints.clear();
     refreshPath();
+    updateShape(true, true);
 }
 
 void ShadingProfileView::remove_shape_point(QVector<int> indices)
@@ -352,25 +351,72 @@ void ShadingProfileView::remove_shape_point(QVector<int> indices)
     my_scene->redShapePoints.clear();
 
     refreshPath();
+    updateShape(true, true);
 }
 
-void ShadingProfileView::updateControlPointParameters()
+void ShadingProfileView::updateInwardHeight()
 {
     ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
+    cpt.attributes[0].height = inwardHeightWidget->value();
+    if (inwardHeightWidget->isSliderDown())
+    {
+        updateLabels();
+        return;
+    }
+    propagateAttributes(cpt, INWARD_DIRECTION, PARAMETER_HEIGHT);
+    updatePath();
+    emit controlPointAttributesChanged(cpt.ref);
+}
 
-   cpt.attributes[0].extent = inwardExtentWidget->value();
-   cpt.attributes[1].extent = outwardExtentWidget->value();
-   cpt.attributes[0].height = inwardHeightWidget->value();
-   cpt.attributes[1].height = outwardHeightWidget->value();
+void ShadingProfileView::updateOutwardHeight()
+{
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
+    cpt.attributes[1].height = outwardHeightWidget->value();
+    if (outwardHeightWidget->isSliderDown())
+    {
+        updateLabels();
+        return;
+    }
+    propagateAttributes(cpt, OUTWARD_DIRECTION, PARAMETER_HEIGHT);
+    updatePath();
+    emit controlPointAttributesChanged(cpt.ref);
+}
 
-   if (inwardExtentWidget->isSliderDown() || outwardExtentWidget->isSliderDown() ||
-           inwardHeightWidget->isSliderDown() || outwardHeightWidget->isSliderDown())
-   {
-       updateLabels();
-       return;
-   }
-   propagateAttributes(cpt);
-   updatePath();
+void ShadingProfileView::updateInwardExtent()
+{
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
+    cpt.attributes[0].extent = inwardExtentWidget->value();
+    if (inwardExtentWidget->isSliderDown())
+    {
+        updateLabels();
+        return;
+    }
+    propagateAttributes(cpt, INWARD_DIRECTION, PARAMETER_EXTENT);
+    updatePath();
+    emit controlPointAttributesChanged(cpt.ref);
+}
+
+void ShadingProfileView::updateOutwardExtent()
+{
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
+    cpt.attributes[1].extent = outwardExtentWidget->value();
+    if (outwardExtentWidget->isSliderDown())
+    {
+        updateLabels();
+        return;
+    }
+    propagateAttributes(cpt, OUTWARD_DIRECTION, PARAMETER_EXTENT);
+    updatePath();
+    emit controlPointAttributesChanged(cpt.ref);
+}
+
+void ShadingProfileView::updateShape(bool update_inward, bool update_outward)
+{
+    ControlPoint& cpt = splineGroup->controlPoint(representativeCptRef());
+    if (update_inward) propagateAttributes(cpt, INWARD_DIRECTION, PARAMETER_SHAPE);
+    if (update_outward) propagateAttributes(cpt, OUTWARD_DIRECTION, PARAMETER_SHAPE);
+    updatePath();
+    emit controlPointAttributesChanged(cpt.ref);
 }
 
 void ShadingProfileScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -378,7 +424,11 @@ void ShadingProfileScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mouseReleaseEvent(event);
     //if (event->isAccepted())    return;
 
-    shadingProfileView->updateControlPointParameters();
+    if (edited_inward || edited_outward)
+    {
+        shadingProfileView->updateShape(edited_inward, edited_outward);
+        edited_inward = edited_outward = false;
+    }
 }
 
 void ShadingProfileScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -396,6 +446,7 @@ void ShadingProfileScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         diff /= 100;
         ControlPoint& cpt = shadingProfileView->splineGroup->controlPoint(shapeItem->cpt_id);
         cpt.attribute(shapeItem->direction).shapePointAtr[shapeItem->index] += diff;
+        edited_inward = true;
     }
 
     for (int i=0; i<redShapePoints.size(); ++i)
@@ -409,6 +460,7 @@ void ShadingProfileScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         diff /= 100;
         ControlPoint& cpt = shadingProfileView->splineGroup->controlPoint(shapeItem->cpt_id);
         cpt.attribute(shapeItem->direction).shapePointAtr[shapeItem->index] += diff;
+        edited_outward = true;
     }
 
     shadingProfileView->refreshPath();

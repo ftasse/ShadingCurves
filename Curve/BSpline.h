@@ -30,7 +30,7 @@ public:
     void computeControlPointNormals();
     void computeJunctionNormals(QVector<ControlPoint>& cpts, int i, QPointF& in_normal, QPointF& out_normal);
 
-    std::string ghostSurfaceString(NormalDirection direction);
+    std::string ghostSurfaceString(NormalDirection direction, cv::Mat img);
 
     ControlPoint& pointAt(int index);
     Surface& surfaceAt(int index);

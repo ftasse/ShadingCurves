@@ -167,7 +167,7 @@ void BSpline::recompute()
 
 }
 
-std::string BSpline::ghostSurfaceString(NormalDirection direction)
+std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 {
     Surface surf;
 
@@ -191,7 +191,9 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction)
     }
 
     surf.computeFaceIndices();
-    std::string str = surf.surfaceToOFF(cv::Vec3b(255, 255, 255))+"ghost"; // NOT ALWAYS WHITE!!!
+    QPointF pixelPoint = surf.vertices[surf.controlMesh.first()[surf.controlMesh.first().size()/2]];
+    cv::Vec3b color = img.at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
+    std::string str = surf.surfaceToOFF(color)+"ghost";
     return str;
 }
 

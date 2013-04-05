@@ -41,9 +41,11 @@ public:
     QGraphicsPathItem *redPathItem_Info, *greenPathItem_Info;
     QVector<ShapePointItem *> redShapePoints, greenShapePoints;
     ShadingProfileView *shadingProfileView;
+    bool edited_inward, edited_outward;
 
     ShadingProfileScene():QGraphicsScene()
     {
+        edited_inward = edited_outward = false;
     }
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -82,8 +84,8 @@ private:
     QPointF top, bottom, left, right;
     QRectF rect ;
 
-    void propagateAttributes(ControlPoint& cpt);
     int representativeCptRef();
+    void propagateAttributes(ControlPoint& cpt, NormalDirection direction, int parameter);
 
 protected:
 
@@ -98,7 +100,11 @@ public slots:
 
     void add_shape_point(QPointF point);
     void remove_shape_point(QVector<int> indices);
-    void updateControlPointParameters();
+    void updateInwardHeight();
+    void updateOutwardHeight();
+    void updateInwardExtent();
+    void updateOutwardExtent();
+    void updateShape(bool update_inward, bool update_outward);
 };
 
 #endif // SHADINGPROFILEITEM_H
