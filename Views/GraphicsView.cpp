@@ -377,6 +377,12 @@ void GraphicsView::createDistanceTransformDEBUG()
     cv::Mat dt_normalized;
     cv::normalize(dt, dt_normalized, 0.0, 255.0, cv::NORM_MINMAX);
     dt_normalized.convertTo(dt_normalized, CV_8UC1);
+
+//    cv::Mat edges;
+//    cv::blur(dt_normalized, edges, cv::Size(10, 10));
+//    cv::Canny(edges, edges, 2, 6, 3);
+//    cv::imshow("Edges (Canny) in the DT", edges);
+
     cv::cvtColor(dt_normalized, dt_normalized, CV_GRAY2RGB);
 
     //Uncomment this to display image in an opencv windiw

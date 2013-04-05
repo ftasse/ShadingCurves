@@ -6,6 +6,7 @@ const double GLviewport::minScale        = 0.005;
 const double GLviewport::scaleDragSpeed  = 1 / 200.0;
 const double GLviewport::scaleWheelSpeed = 1 / 500.0;
 const double GLviewport::rotateSpeed     = 90.0;
+const double GLviewport::panningScale    = 3;
 
 using namespace std;
 
@@ -292,7 +293,7 @@ void GLviewport::setRotXp(void)
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
 //	glRotatef(rotIncr, 1, 0, 0);
-    glTranslatef(10 * my_scale, 0, 0);
+    glTranslatef(panningScale * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
@@ -305,7 +306,7 @@ void GLviewport::setRotXm(void)
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
 //	glRotatef(-rotIncr, 1, 0, 0);
-    glTranslatef(-10 * my_scale, 0, 0);
+    glTranslatef(-panningScale * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
@@ -319,7 +320,7 @@ void GLviewport::setRotYp(void)
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
 //	glRotatef(rotIncr, 0, 1, 0);
-    glTranslatef(0, 10 * my_scale, 0);
+    glTranslatef(0, panningScale * my_scale, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
 }
@@ -332,7 +333,7 @@ void GLviewport::setRotYm(void)
     glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
     glLoadIdentity();
 //	glRotatef(-rotIncr, 0, 1, 0);
-    glTranslatef(0, -10 * my_scale, 0);
+    glTranslatef(0, -panningScale * my_scale, 0);
     glMultMatrixd(currentMatrix);
     updateGL();
 }

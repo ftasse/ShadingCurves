@@ -64,6 +64,7 @@ protected:
 	static const double scaleDragSpeed;
 	static const double scaleWheelSpeed;
 	static const double rotateSpeed;
+    static const double panningScale;
 
 	float      	lightAmbient[4];
 	float       lightDiffuse[4];
