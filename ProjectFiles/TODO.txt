@@ -8,6 +8,8 @@ Things to discuss with Henrik when he gets back:
 - DT and tracing
 	- the new idea (follow normals while going up in the DT)
 	- try to do tracing in parallel (using OpenMP)
+	- in tracing, never cross tracing paths (i.e. at each pixel, there must be a well-defined and unique exit direction that does not depend on the normal)
+	- start tracing closer to the curve to avoid spilling at sharp T-junctions
 
 - Luminance adjustment
 	- delta L in Lab and Yxy space results in non-RGB colours (clipping?)
