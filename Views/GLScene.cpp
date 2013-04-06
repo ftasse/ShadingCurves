@@ -1135,7 +1135,7 @@ void GLScene::recomputeAllSurfaces()
     dt.release();
 
     qDebug("\n************************************************************");
-    qDebug("Garbage Collection: %d ms\nSubdivide Curves: %d ms\nOffscreen Rendering: %d ms\nUpdate Region Coloring: %d ms\nCompute distance transform: %d ms\nCompute surfaces (incl tracing): %d ms\n",
+    qDebug("Garbage Collection: %d ms\nSubdivide Curves: %d ms\nOffscreen Rendering: %d ms\nUpdate Region Coloring: %d ms\nCompute distance transform: %d ms\nCompute surfaces (incl tracing): %d ms",
            garbage_collection_timing, curves_timing, offscreen_rendering_timing, coloring_timing, dt_timing, surfaces_timing);
 
     if (interactiveShading)
@@ -1155,7 +1155,10 @@ void GLScene::recomputeAllSurfaces()
     emit setStatusMessage("");
 
 
-    qDebug("\n%s\n\n%s", memory_info().toStdString().c_str(), stats.toStdString().c_str());
+#ifdef QT_DEBUG
+    qDebug("\n[Debug Mode] %s", memory_info().toStdString().c_str());
+#endif
+    qDebug("\n%s", stats.toStdString().c_str());
     qDebug("************************************************************");
 }
 

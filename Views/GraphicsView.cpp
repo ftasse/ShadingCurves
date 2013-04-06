@@ -393,6 +393,7 @@ void GraphicsView::createDistanceTransformDEBUG()
 
     dbw->setWindowTitle("Distance Transform");
     dbw->setImage(image);
+    dbw->setAttribute( Qt::WA_DeleteOnClose );
     dbw->show();
 }
 
@@ -457,6 +458,8 @@ void GraphicsView::showDistanceTransform3D()
     glw->ctrlWidget1->checkCtrl->setChecked(false);
     glw->ctrlWidget1->radioMeshHeight->setChecked(true);
     glw->ctrlWidget1->checkFrame->setChecked(false);
+
+    glw->setAttribute( Qt::WA_DeleteOnClose );
     glw->show();
 }
 
@@ -515,6 +518,7 @@ void GraphicsView::showCurvesImage3D()
     glw->ctrlWidget1->checkCtrl->setChecked(false);
     glw->ctrlWidget1->radioMeshHeight->setChecked(true);
     glw->ctrlWidget1->checkFrame->setChecked(false);
+    glw->setAttribute( Qt::WA_DeleteOnClose );
     glw->show();
 }
 
@@ -557,6 +561,7 @@ void GraphicsView::show3Dwidget()
 
     glw->ctrlWidget1->subdLevelSpinbox->setValue(2);
 
+    glw->setAttribute( Qt::WA_DeleteOnClose );
     glw->show();
 }
 

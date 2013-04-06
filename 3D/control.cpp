@@ -414,7 +414,73 @@ ControlW::ControlW(QGLWidget *colorBar, QToolBar *toolBara)
 
 ControlW::~ControlW()
 {
+//    delete buffer2imgButton;
+    delete ctrlGroupBox;
+//    delete checkCtrl;
+    delete checkOld;
+//    delete checkFeature;
+    delete checkLine;
+    delete radioCtrlShaded;
+    delete radioCtrlEdges;
+    delete radioCtrlCulled;
+//    delete checkFrame;
+    delete checkFull;
+    delete checkOnCtrl;
+//    delete checkTransf;
+//    delete checkClear;
 
+    delete meshGroupBox;
+//    delete checkMesh;
+//    delete radioMeshFlat;
+//    delete radioMeshSmooth;
+//    delete radioMeshEdges;
+//    delete radioMeshCulled;
+    delete radioMeshCurvM;
+    delete radioMeshCurvG;
+//    delete radioMeshHeight;
+    delete radioMeshIP;
+
+//    delete subdLevelSpinbox;
+//    delete lapSmButton1;
+//    delete lapSmButton10;
+//    delete lapSmButton100;
+
+//    delete colorMenu;
+//    delete meshMenu;
+//    delete laplGroupBox;
+
+    delete sliderLap;
+    delete miscGroupBox;
+    delete slidWidget;
+
+//    delete sliderX;
+//    delete sliderY;
+//    delete sliderZ;
+    delete sliderSm;
+
+//    delete sliderRld ;
+//    delete sliderCurv1 ;
+//    delete sliderCurv2 ;
+
+//    delete xpButton ;
+//    delete xmButton ;
+//    delete ypButton ;
+//    delete ymButton ;
+    delete zpButton ;
+    delete zmButton ;
+//    delete zerButton ;
+//    delete gridL ;
+//    delete gridW ;
+//    delete barWidget;
+
+//    delete numV ;
+//    delete numF ;
+//    delete numVsub ;
+//    delete numFsub ;
+    delete numWidget ;
+    delete numSWidget ;
+
+//    delete checkLab;
 }
 
 

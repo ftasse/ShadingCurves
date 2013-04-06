@@ -17,6 +17,7 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 
 	widget = new QWidget;
     setCentralWidget(widget);
+    mainWindowPixmap = NULL;
 
     glwidget1  = new GLviewsubd(iW, iH, timg);
     glwidget2  = new GLviewsubd(iW, iH, timg);
@@ -104,14 +105,26 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 
 MainWindow3D::~MainWindow3D()
 {
+    delete open1Act; delete open2Act; delete openBatch1Act; delete openBatch2Act;
+    delete save1Act; delete save2Act; delete saveBarAct;
+    delete saveImg1Act; delete saveImg2Act;
+    delete saveLim1Act; delete saveLim2Act;
+    delete exitAct; delete fullScreenAct; delete sub1Act;
+    delete darkAct; delete helpAct; delete aboutAct;
+    delete tool1aAct; delete tool2aAct;
+    delete panxpAct; delete panxmAct; delete panypAct; delete panymAct;
+
+
     delete mainWindowPixmap;
     delete vline;
     delete horLayout;
     delete mainLayout;
-    delete glBar1;
-    delete glBar2;
     delete ctrlWidget1;
     delete ctrlWidget2;
+    delete glBar1;
+    delete glBar2;
+    delete toolBar1a;
+    delete toolBar2a;
     delete glwidget1;
     delete glwidget2;
     delete horWidget;
