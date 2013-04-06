@@ -46,7 +46,7 @@ public:
     void computeJunctions();
 
     void scale(float xs, float ys);
-    void garbage_collection();
+    void garbage_collection(bool keepOldIds = false);
 
     //IO
     bool load(std::string fname);
@@ -107,6 +107,9 @@ public:
     std::vector< std::pair<QPoint, QColor> > colorMapping;
     QVector<CurveJunctionInfo> junctionInfos;
 
+    std::map<int, int> new_cpt_indices;
+    std::map<int, int> new_spline_indices;
+    std::map<int, int> new_surface_indices;
 private:
     QList<Surface> m_surfaces;
     QList<BSpline> m_splines;

@@ -504,16 +504,16 @@ void BSplineGroup::scale(float xs, float ys)
     }
 }
 
-void BSplineGroup::garbage_collection()
+void BSplineGroup::garbage_collection(bool keepOldIds)
 {
     if (runningGarbageCollection)
         return;
     else
         runningGarbageCollection = true;
 
-    std::map<int, int> new_cpt_indices;
-    std::map<int, int> new_spline_indices;
-    std::map<int, int> new_surface_indices;
+    new_cpt_indices.clear();
+    new_spline_indices.clear();
+    new_surface_indices.clear();
     std::vector<int> remove_cpt_ids, remove_spline_ids, remove_surface_ids;
 
     junctionInfos.clear();
@@ -610,6 +610,13 @@ void BSplineGroup::garbage_collection()
     }
 
     runningGarbageCollection = false;
+
+    if (!keepOldIds)
+    {
+        new_cpt_indices.clear();
+        new_spline_indices.clear();
+        new_surface_indices.clear();
+    }
 }
 
 

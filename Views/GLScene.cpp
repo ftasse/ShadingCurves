@@ -464,12 +464,12 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 if (nodeId == CPT_NODE_ID)
                 {
                     m_splineGroup.removeControlPoint(targetId);
-                    qDebug("Delete cpt %d", targetId);
+                    //qDebug("Delete cpt %d", targetId);
 
                 } else if (nodeId == SPLINE_NODE_ID)
                 {
                     if (m_curSplineIdx == (int)targetId) m_curSplineIdx = -1;
-                    qDebug("Delete spline %d", targetId);
+                    //qDebug("Delete spline %d", targetId);
                     m_splineGroup.removeSpline(targetId);
                     currentSplineChanged();
                 } else if (nodeId == SURFACE_NODE_ID)
@@ -479,16 +479,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                 }
             }
 
-            if (shadingProfileView != NULL){
-                shadingProfileView->cpts_ids.clear();
-                shadingProfileView->updatePath();
-                shadingProfileView->centralWidget->setEnabled(false);
-            }
-            selectedObjects.clear();
-            m_splineGroup.garbage_collection();
-            if (m_curSplineIdx+1 > num_splines())
-                m_curSplineIdx = -1;
-            recomputeAllSurfaces();
+           recomputeAllSurfaces();
         }
         return;
     } else
@@ -1019,6 +1010,66 @@ void GLScene::createBSpline()
     update();
 }
 
+void GLScene::cleanMemory()
+{
+    qDebug("\nClean memory");
+    m_splineGroup.garbage_collection(true);
+    shadingProfileView->cpts_ids.clear();
+
+    for (int k=0; k<selectedObjects.size(); ++k)
+    {
+        if (selectedObjects[k].first == SPLINE_NODE_ID)
+        {
+            if (m_splineGroup.new_spline_indices.find(selectedObjects[k].second)!= m_splineGroup.new_spline_indices.end())
+            {
+                selectedObjects[k].second = m_splineGroup.new_spline_indices[selectedObjects[k].second];
+                for (int i=0; i<spline(selectedObjects[k].second).num_cpts(); ++i)
+                {
+                    shadingProfileView->cpts_ids.push_back(spline(selectedObjects[k].second).cptRefs[i]);
+                }
+            }
+            else
+            {
+                selectedObjects.erase(selectedObjects.begin() + k);
+                --k;
+            }
+        } else if (selectedObjects[k].first == CPT_NODE_ID)
+        {
+            if (m_splineGroup.new_cpt_indices.find(selectedObjects[k].second)!= m_splineGroup.new_cpt_indices.end())
+            {
+                selectedObjects[k].second = m_splineGroup.new_cpt_indices[selectedObjects[k].second];
+                shadingProfileView->cpts_ids.push_back(selectedObjects[k].second);
+            }
+            else
+            {
+                selectedObjects.erase(selectedObjects.begin() + k);
+                --k;
+            }
+        }
+    }
+
+    int old_spline_idx = m_curSplineIdx;
+    if (m_splineGroup.new_spline_indices.find(m_curSplineIdx)!= m_splineGroup.new_spline_indices.end())
+    {
+        m_curSplineIdx = m_splineGroup.new_spline_indices[m_curSplineIdx];
+    } else
+    {
+        m_curSplineIdx = -1;
+    }
+
+    m_splineGroup.new_cpt_indices.clear();
+    m_splineGroup.new_spline_indices.clear();
+    m_splineGroup.new_surface_indices.clear();
+
+    if (m_curSplineIdx != old_spline_idx)
+    {
+        currentSplineChanged();
+    }
+
+    selectedPointChanged();
+    shadingProfileView->updatePath();
+}
+
 void GLScene::recomputeAllSurfaces()
 {
     QTime t, t2;
@@ -1027,7 +1078,23 @@ void GLScene::recomputeAllSurfaces()
 
     m_splineGroup.imageSize = cv::Size(currentImage().cols, currentImage().rows);
     int npoints=0, ncurves=0, nsurfaces=0, nslopecurves = 0;
-    int curves_timing, coloring_timing, dt_timing, surfaces_timing;
+    int curves_timing, coloring_timing, dt_timing, surfaces_timing, garbage_collection_timing, offscreen_rendering_timing;
+
+    for (int k=0; k<num_surfaces(); ++k)
+    {
+        int curveRef = surface(k).splineRef;
+        if (surface(k).ref >= 0 && curveRef>=0 && surface(k).controlMesh.size()>0)
+        {
+            if (spline(curveRef).num_cpts()<=1 ||
+                    (surface(k).direction==INWARD_DIRECTION && !spline(curveRef).has_inward_surface) ||
+                    (surface(k).direction==OUTWARD_DIRECTION && !spline(curveRef).has_outward_surface))
+                m_splineGroup.removeSurface(k);
+        }
+    }
+
+    cleanMemory();
+    garbage_collection_timing = t.elapsed();
+    t.restart();
 
     for (int i=0; i<num_cpts(); ++i)
         if (controlPoint(i).num_splines()>0)    ++npoints;
@@ -1050,29 +1117,37 @@ void GLScene::recomputeAllSurfaces()
     curves_timing = t.elapsed();
     t.restart();
 
-    update_region_coloring();
+    cv::Mat curvesIm = curvesImage();
+    offscreen_rendering_timing = t.elapsed();
+    t.restart();
+
+    update_region_coloring(curvesIm.clone());
     coloring_timing = t.elapsed();
     t.restart();
 
-    // HENRIK, include distrance transform image
-    cv::Mat curvesGrayIm = curvesImage();
-    cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
-
     cv::Mat dt;
-    cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
+    if (nsurfaces > 0)
+    {
+        cv::Mat curvesGrayIm = curvesIm.clone();
+        cv::normalize(curvesGrayIm, curvesGrayIm, 0.0, 1.0, cv::NORM_MINMAX);
+        cv::distanceTransform(curvesGrayIm,dt,CV_DIST_L2,CV_DIST_MASK_PRECISE);
+    }
     dt_timing = t.elapsed();
     t.restart();
 
-    cv::Mat luminance;
-    if (clipHeight)
+    if (nsurfaces>0)
     {
-        cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
-    }
+        cv::Mat luminance;
+        if (clipHeight)
+        {
+            cv::cvtColor(currentImage(), luminance, CV_BGR2Lab);
+        }
 
-    for (int i=0; i<num_splines(); ++i)
-    {
-        if (spline(i).num_cpts() > 1)
-            spline(i).computeSurfaces(dt, luminance, clipHeight);
+        for (int i=0; i<num_splines(); ++i)
+        {
+            if (spline(i).num_cpts() > 1)
+                spline(i).computeSurfaces(dt, luminance, clipHeight);
+        }
     }
     surfaces_timing = t.elapsed();
     tm = t2.elapsed();
@@ -1095,7 +1170,7 @@ void GLScene::recomputeAllSurfaces()
     emit setStatusMessage("");
 
     qDebug("\n************************************************************\n%s", stats.toStdString().c_str());
-    qDebug(" Subdivide Curves: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", curves_timing, coloring_timing, dt_timing, surfaces_timing);
+    qDebug(" Garbage Collection: %d ms\n Subdivide Curves: %d ms\n Offscreen Rendering: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", garbage_collection_timing, curves_timing, offscreen_rendering_timing, coloring_timing, dt_timing, surfaces_timing);
     std::cout << std::flush;
 }
 
@@ -1142,14 +1217,6 @@ void GLScene::subdivide_current_spline(){
                 break;
         }
 
-        shadingProfileView->cpts_ids.clear();
-        for (int i=0; i<spline.num_cpts(); ++i)
-        {
-            shadingProfileView->cpts_ids.push_back(spline.pointAt(i).ref);
-        }
-        shadingProfileView->updatePath();
-
-        //m_splineGroup.garbage_collection();
         recomputeAllSurfaces();
     }
 }
@@ -1377,14 +1444,16 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves, float thickness)
 }
 
 
-void GLScene::update_region_coloring()
+void GLScene::update_region_coloring(cv::Mat curv_img)
 {
     //curvesImageBGR(false, -1);;
     m_curImage = orgBlankImage.clone();
 
-    cv::Mat curv_img = curvesImage(false, 1.5);   //cv::imwrite("curv_img.png", curv_img);
-    cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
+    if (curv_img.cols == 0)
+        curv_img = curvesImage(false, 1.5);
 
+    //cv::imwrite("curv_img.png", curv_img);
+    cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
     //cv::imshow("Closed Curves", curv_img);
 
     cv::Mat mask(m_curImage.rows+2, m_curImage.cols+2, curv_img.type(), cv::Scalar(0));
@@ -1425,9 +1494,9 @@ void GLScene::update_region_coloring()
                     {
                         bool neighbouring = false;
 
-                        for (int m=-1; m<=1; ++m)
+                        for (int m=-2; m<=2; ++m)
                         {
-                            for (int n=-1; n<=1; ++n)
+                            for (int n=-2; n<=2; ++n)
                             {
 
                                 if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
@@ -1567,7 +1636,12 @@ std::vector<std::string> GLScene::OFFSurfaces()
             cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
             surface_strings.push_back( surface(i).surfaceToOFF(color) );
 
-            //qDebug("%s", surface_strings.back().c_str());
+            /*std::stringstream ss;
+            ss << "Surface" << i << ".off";
+            std::ofstream ofs(ss.str().c_str());
+            ofs << surface_strings.back();
+            ofs.close();
+            */
         }
 
     QVector< QVector<int> > skippedSurfaces =  mergeSurfaces(mergedGroups, surface_strings);

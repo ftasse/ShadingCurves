@@ -42,6 +42,7 @@ public:
 
     //Sketching functions
     void createBSpline();
+    void cleanMemory();
     void setSurfaceWidth(float _surface_width);
     void recomputeAllSurfaces();
     int registerPointAtScenePos(QPointF scenePos);
@@ -89,7 +90,7 @@ public:
     cv::Mat curvesImage(bool only_closed_curves = false, float thickness = 1.0);
     cv::Mat curvesImageBGR(bool only_closed_curves=false, float thickness = -1);
 
-    void update_region_coloring();
+    void update_region_coloring(cv::Mat curv_img= cv::Mat());
 
     cv::Mat& currentImage()
     {
