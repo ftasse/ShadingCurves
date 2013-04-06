@@ -29,9 +29,18 @@ QVector<Vec> subDivide(QVector<Vec> spline, int steps, bool closed)
     }
 
     if(spline.count()==3) {
-        newVec.append(0.25*spline.first()+0.75*spline.at(1));
-        newVec.append(0.25*spline.last()+0.75*spline.at(1));
+        /*newVec.append(0.25*spline.first()+0.75*spline.at(1));
+        newVec.append(0.125*spline.first()+0.75*spline.at(1) + 0.125*spline.last());
+        newVec.append(0.25*spline.last()+0.75*spline.at(1));*/
+        newVec.append(0.5*spline.first()+0.5*spline.at(1));
+        newVec.append(0.125*spline.first()+0.75*spline.at(1) + 0.125*spline.last());
+        newVec.append(0.5*spline.last()+0.5*spline.at(1));
+
         newVec.append(spline.last());
+        if (spline.at(1).isSharp)
+        {
+            newVec[newVec.size()/2] = spline.at(1);
+        }
         newVec = subDivide(newVec,steps-1, closed);
         return newVec;
     }
@@ -40,6 +49,10 @@ QVector<Vec> subDivide(QVector<Vec> spline, int steps, bool closed)
     {
         Vec new1 = 0.5*spline.at(i-1)+0.5*spline.at(i);
         Vec new2 = 0.125*spline.at(i-1)+0.75*spline.at(i)+0.125*spline.at(i+1);
+        if (spline.at(i).isSharp)
+        {
+            new2 = spline.at(i);
+        }
         newVec.append(new1);
         newVec.append(new2);
     }
