@@ -280,7 +280,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
         QPointF tmp = lp.at(k)+normal*4;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-        QPointF new_cpt = traceDT(dt,lp.at(k),current,normalL,extent,false);
+        QPointF new_cpt = traceDT(dt,current,extent);
 
         // curvature check: add point if angle is above cT and check intersection with previous CP
         if(k>0) {
@@ -301,7 +301,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
                 normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
                 tmp = lp.at(k)+normal*5;
                 current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-                tmp = traceDT(dt,lp.at(k),current,normalL,extent,true);
+                tmp = traceDT(dt,current,extent);
 
                 translated_cpts_ids.push_back(addVertex(tmp));
 
@@ -373,99 +373,46 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     return points;
 }
 
-QPointF Surface::traceDT(cv::Mat dt,QPointF limit,QPoint current,QLineF normalL,float width,bool normal)
+QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width)
 {
-    // thresholds
-    float Td = .000001f;
-    float Ta = .000001f;
-    if(normal) { // trace along the normal direction by setting the thresholds
- //       a = setThresholds(normalL);
- //       Td = a*0.75f+(1-a)*0.6;
- //       Ta = a*0.1f+(1-a)*0.75f;
-        Td = .8f;
-        Ta = 1.0f;
-    }
-
     float currentD = 0;
     QPointF new_cpt;
-    QList<QPoint> visited;
-//    float counter = 0;
 
     while(true) {
         float oldD = currentD;
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
-                            ,&currentD,normalL,visited,Td,Ta);
+                            ,&currentD);
 
         // check lines
-//        QLineF currentL(limit,m);
-//        float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        if(fabs(oldD-currentD)<EPSILON || currentD >= width) { // || angle > angleT || counter>width) {
+        if(fabs(oldD-currentD)<EPSILON || currentD >= width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
             break;
         } else {
-            visited.append(current);
             current = m;
- //           counter++;
         }
     }
 
     return new_cpt;
 }
 
-QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta)
+QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD)
 {
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();
     float m = *oldD;
-    QList<QPoint> cand; // candidates
+    QPoint winner = QPoint(sx+1,sy+1);
     for(int x=sx;x<=N.width;x++)
         for(int y=sy;y<=N.height;y++) {
             if(x<0 || x>=S.width || y<0 || y>=S.height)
                 continue;
             float d = I.at<float>(y,x);
-            bool visCheck = visited.contains(QPoint(x,y));
-            if(fabs(d-m)<Td && !visCheck)
-                cand.append(QPoint(x,y));
-            else if(d>m) {
-                m=d;
-                cand.clear();
-                cand.append(QPoint(x,y));
-            }
-            assert(!(d-m>EPSILON && visCheck));
-        }
-
-    if(cand.count()==0)
-        return QPoint(sx+1,sy+1);
-
-    // find smallest angle
-    float sa = 360; // smallest angle
-    int index;
-    QList<float> angles;
-    for (int i = 0;i<cand.count();i++) {
-        QLineF currentL(normalL.p1(),cand.at(i));
-        float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
-        angles.append(angle);
-        if(angle<sa) {
-            sa = angle;
-            index = i;
-        }
-    }
-
-    // pick max candidate
-    QPoint winner = cand[index];
-    m = -1;
-    for (int i = 0;i<cand.count();i++) {
-        if(angles.at(i)<sa+Ta) {
-            QPoint tmp = cand.at(i);
-            float d = I.at<float>(tmp.y(),tmp.x());
             if(d>m) {
-                winner = tmp;
-                m = d;
+                m=d;
+                winner = QPoint(x,y);
             }
         }
-    }
 
     *oldD = m;
     return winner;
