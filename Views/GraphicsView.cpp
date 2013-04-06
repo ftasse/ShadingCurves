@@ -616,14 +616,15 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
 
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->shadedImg = glvs->imgFillShaded.clone();
+
+    delete glvs;
+
     my_scene->applyBlackCurves();
 
     // switch to result in my_scene
     my_scene->curDisplayMode = 3;
     my_scene->changeDisplayModeText();
     my_scene->update();
-
-    delete glvs;
 }
 
 void GraphicsView::setBrush()

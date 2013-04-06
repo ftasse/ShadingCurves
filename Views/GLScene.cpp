@@ -12,16 +12,12 @@
 #include <set>
 #include <stdio.h>
 #include <QDebug>
-
-#include "../Utilities/SurfaceUtils.h"
+#include <QProcess>
+#include <QThread>
 
 #include "GLScene.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include "glew/GL/glew.h"
-#include <GL/glu.h>
+#include "../Utilities/SurfaceUtils.h"
+#include "../Utilities/GLUtils.h"
 
 #include <QGLWidget>
 
@@ -31,11 +27,6 @@ static const unsigned int  IMAGE_NODE_ID = 0;
 static const unsigned int  CPT_NODE_ID = 1;
 static const unsigned int  SPLINE_NODE_ID = 2;
 static const unsigned int  SURFACE_NODE_ID = 3;
-
-bool isEqual(Point3d p, Point3d q)
-{
-    return (fabs(p.x()-q.x()) < 1e-05 && fabs(p.y()-q.y()) < 1e-05); // && fabs(p.z()-q.z()) < 1e-05
-}
 
 GLScene::GLScene(QObject *parent) :
     QGraphicsScene(parent)
@@ -423,6 +414,10 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     {
         emit triggerShading();
         return;
+    } else if (event->key() == Qt::Key_M)
+    {
+        qDebug("\n%s\n", memory_info().toStdString().c_str());
+        return;
     }
 
     if (event->key() == Qt::Key_Up)
@@ -643,17 +638,7 @@ void GLScene::draw_image(cv::Mat& image)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        GLenum inputColourFormat;
-        #ifdef GL_BGR
-            inputColourFormat = GL_BGR;
-        #else
-            #ifdef GL_BGR_EXT
-                inputColourFormat = GL_BGR_EXT;
-            #else
-                #define GL_BGR 0x80E0
-                inputColourFormat = GL_BGR;
-            #endif
-        #endif
+        GLenum inputColourFormat = BGRColourFormat();
         if (image.channels() == 1)  inputColourFormat = GL_LUMINANCE;
 
         glTexImage2D(GL_TEXTURE_2D, 0, 3,image.cols, image.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, image.data);
@@ -864,17 +849,7 @@ void GLScene::draw_ellipse(QPointF center, float size, QBrush brush)
     /*GLuint objectID;
     glGenTextures(1, &objectID);
     glBindTexture(GL_TEXTURE_2D, objectID);
-    GLenum inputColourFormat;
-    #ifdef GL_BGR
-        inputColourFormat = GL_BGR;
-    #else
-        #ifdef GL_BGR_EXT
-            inputColourFormat = GL_BGR_EXT;
-        #else
-            #define GL_BGR 0x80E0
-            inputColourFormat = GL_BGR;
-        #endif
-    #endif
+    GLenum inputColourFormat = BGRColourFormat();
     glTexImage2D(GL_TEXTURE_2D, 0, 3,image.cols, image.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, image.data);*/
 
     //glEnable(GL_POINT_SPRITE);
@@ -1012,7 +987,8 @@ void GLScene::createBSpline()
 
 void GLScene::cleanMemory()
 {
-    qDebug("\nClean memory");
+    //qDebug("\nCleanMemory\n%s", memory_info().toStdString().c_str());
+
     m_splineGroup.garbage_collection(true);
     shadingProfileView->cpts_ids.clear();
 
@@ -1117,15 +1093,15 @@ void GLScene::recomputeAllSurfaces()
     curves_timing = t.elapsed();
     t.restart();
 
-    cv::Mat curvesIm = curvesImage();
+    cv::Mat dt, curvesIm;
+    curvesIm = curvesImage();
     offscreen_rendering_timing = t.elapsed();
     t.restart();
 
-    update_region_coloring(curvesIm.clone());
+    update_region_coloring(curvesIm);
     coloring_timing = t.elapsed();
     t.restart();
 
-    cv::Mat dt;
     if (nsurfaces > 0)
     {
         cv::Mat curvesGrayIm = curvesIm.clone();
@@ -1150,9 +1126,18 @@ void GLScene::recomputeAllSurfaces()
         }
     }
     surfaces_timing = t.elapsed();
-    tm = t2.elapsed();
 
+    tm = t2.elapsed();
     char timings[1024];
+
+    //Cleanup
+    curvesIm.release();
+    dt.release();
+
+    qDebug("\n************************************************************");
+    qDebug("Garbage Collection: %d ms\nSubdivide Curves: %d ms\nOffscreen Rendering: %d ms\nUpdate Region Coloring: %d ms\nCompute distance transform: %d ms\nCompute surfaces (incl tracing): %d ms\n",
+           garbage_collection_timing, curves_timing, offscreen_rendering_timing, coloring_timing, dt_timing, surfaces_timing);
+
     if (interactiveShading)
     {
         t.restart();
@@ -1169,9 +1154,9 @@ void GLScene::recomputeAllSurfaces()
     stats = timings;
     emit setStatusMessage("");
 
-    qDebug("\n************************************************************\n%s", stats.toStdString().c_str());
-    qDebug(" Garbage Collection: %d ms\n Subdivide Curves: %d ms\n Offscreen Rendering: %d ms\n Update Region Coloring: %d ms\n Compute distance transform: %d ms\n Compute surfaces (incl tracing): %d ms", garbage_collection_timing, curves_timing, offscreen_rendering_timing, coloring_timing, dt_timing, surfaces_timing);
-    std::cout << std::flush;
+
+    qDebug("\n%s\n\n%s", memory_info().toStdString().c_str(), stats.toStdString().c_str());
+    qDebug("************************************************************");
 }
 
 void GLScene::delete_all()
@@ -1230,91 +1215,70 @@ void GLScene::applyBlackCurves()
     GLuint imageWidth = shadedImg.cols,
            imageHeight = shadedImg.rows;
 
-    GLenum inputColourFormat;
-    #ifdef GL_BGR
-        inputColourFormat = GL_BGR;
-    #else
-        #ifdef GL_BGR_EXT
-            inputColourFormat = GL_BGR_EXT;
-        #else
-            #define GL_BGR 0x80E0
-            inputColourFormat = GL_BGR;
-        #endif
-    #endif
-
+    GLenum inputColourFormat = BGRColourFormat();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
 
     //Setup for offscreen drawing if fbos are supported
-    GLuint framebuffer, renderbuffer;
-    GLenum status;
-    glGenFramebuffersEXT(1, &framebuffer);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
-    glGenRenderbuffersEXT(1, &renderbuffer);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                     GL_RENDERBUFFER_EXT, renderbuffer);
-    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-        qDebug("Could not draw offscreen");
-
-    //Drawing
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);    glLoadIdentity();
-    glViewport(0, 0, imageWidth, imageHeight);
-    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
-    glMatrixMode(GL_MODELVIEW);     glLoadIdentity();
-    glRenderMode(GL_RENDER);
-
-    //Render result image
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
-
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, 3,shadedImg.cols, shadedImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, shadedImg.data);
-
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, imageHeight);
-    glTexCoord2f(1.0f, 1.0f); glVertex2f(imageWidth, imageHeight);
-    glTexCoord2f(1.0f, 0.0f); glVertex2f(imageWidth, 0.0f);
-    glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-    glEnd();
-
-    glDeleteTextures(1, &texId);
-
-    //Draw black curves
-    int old_curveSubdLevels  = curveSubdLevels;
-    curveSubdLevels = 5;
-    for (int i=0; i<num_splines(); ++i)
+    GLuint framebuffer, renderbuffer, depthbuffer;
+    if (setupFrameBuffer(framebuffer, renderbuffer, depthbuffer, imageWidth, imageHeight))
     {
-        if (m_splineGroup.spline(i).num_cpts() <=1)   continue;
-        if (spline(i).thickness <= 0)
-                continue;
-        glLineWidth(spline(i).thickness);
-        draw_spline(i, true, false);
-    }
-    curveSubdLevels = old_curveSubdLevels;
+        //Drawing
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);    glLoadIdentity();
+        glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+        glMatrixMode(GL_MODELVIEW);     glLoadIdentity();
 
-    cv::Mat img;
-    img.create(imageHeight, imageWidth, CV_8UC3);
-    glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+        //Render result image
+        GLuint texId;
+        glGenTextures(1, &texId);
+        glBindTexture(GL_TEXTURE_2D, texId);
+
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, 3,shadedImg.cols, shadedImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, shadedImg.data);
+
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, imageHeight);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(imageWidth, imageHeight);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(imageWidth, 0.0f);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+        glEnd();
+
+        glDeleteTextures(1, &texId);
+
+        //Draw black curves
+        int old_curveSubdLevels  = curveSubdLevels;
+        curveSubdLevels = 5;
+        for (int i=0; i<num_splines(); ++i)
+        {
+            if (m_splineGroup.spline(i).num_cpts() <=1)   continue;
+            if (spline(i).thickness <= 0)
+                continue;
+            glLineWidth(spline(i).thickness);
+            draw_spline(i, true, false);
+        }
+        curveSubdLevels = old_curveSubdLevels;
+
+        cv::Mat img;
+        img.create(imageHeight, imageWidth, CV_8UC3);
+        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+        cv::flip(img, img, 0);
+        resultImg = img.clone();
+    } else
+    {
+        resultImg = shadedImg.clone();
+    }
 
     //Clean up offscreen drawing
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glDeleteRenderbuffersEXT(1, &renderbuffer);
+    cleanupFrameBuffer(framebuffer, renderbuffer, depthbuffer);
 
-    cv::flip(img, img, 0);
-
-    resultImg = img.clone();
 }
 
 void GLScene::updateConnectedSurfaces(int cptRef)
@@ -1359,76 +1323,58 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
 {
     glWidget->makeCurrent();
     GLuint imageWidth = m_curImage.cols,
-           imageHeight = m_curImage.rows;
-
-    //Setup for offscreen drawing if fbos are supported
-    GLuint framebuffer, renderbuffer;
-    GLenum status;
-    glGenFramebuffersEXT(1, &framebuffer);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
-    glGenRenderbuffersEXT(1, &renderbuffer);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, imageWidth, imageHeight);
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                     GL_RENDERBUFFER_EXT, renderbuffer);
-    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
-        qDebug("Could not draw offscreen");
-
-    //Drawing
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glViewport(0, 0, imageWidth, imageHeight);
-    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glRenderMode(GL_RENDER);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-
-    int old_curveSubdLevels  = curveSubdLevels;
-    curveSubdLevels = 5;
-    for (int i=0; i<num_splines(); ++i)
-    {
-        if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
-        if (only_closed_curves && !spline(i).has_loop())   continue;
-
-        if (thickness < 0.0)
-        {
-            if (spline(i).thickness <= 0)
-                continue;
-            glLineWidth(spline(i).thickness);
-        }
-        else
-            glLineWidth(thickness);
-        draw_spline(i, true, false);
-    }
-    curveSubdLevels = old_curveSubdLevels;
+            imageHeight = m_curImage.rows;
 
     cv::Mat img;
-    img.create(imageHeight, imageWidth, CV_8UC3);
-    GLenum inputColourFormat;
-    #ifdef GL_BGR
-        inputColourFormat = GL_BGR;
-    #else
-        #ifdef GL_BGR_EXT
-            inputColourFormat = GL_BGR_EXT;
-        #else
-            #define GL_BGR 0x80E0
-            inputColourFormat = GL_BGR;
-        #endif
-    #endif
-    glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+
+    //Setup for offscreen drawing if fbos are supported
+    GLuint framebuffer, renderbuffer, depthbuffer;
+    if (setupFrameBuffer(framebuffer, renderbuffer, depthbuffer, imageWidth, imageHeight))
+    {
+        //Drawing
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glEnable(GL_LINE_SMOOTH);
+
+        int old_curveSubdLevels  = curveSubdLevels;
+        curveSubdLevels = 5;
+        for (int i=0; i<num_splines(); ++i)
+        {
+            if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
+            if (only_closed_curves && !spline(i).has_loop())   continue;
+
+            if (thickness < 0.0)
+            {
+                if (spline(i).thickness <= 0)
+                    continue;
+                glLineWidth(spline(i).thickness);
+            }
+            else
+                glLineWidth(thickness);
+            draw_spline(i, true, false);
+        }
+        curveSubdLevels = old_curveSubdLevels;
+
+        GLenum inputColourFormat = BGRColourFormat();
+        img.create(imageHeight, imageWidth, CV_8UC3);
+
+        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+        cv::flip(img, img, 0);
+    } else
+    {
+        img = cv::Mat(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
+    }
 
     //Clean up offscreen drawing
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glDeleteRenderbuffersEXT(1, &renderbuffer);
-
-    cv::flip(img, img, 0);
+    cleanupFrameBuffer(framebuffer, renderbuffer, depthbuffer);
 
     return img;
 }
@@ -1440,17 +1386,22 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves, float thickness)
     cv::cvtColor(img, img, CV_BGR2RGB);
     cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
     cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+
+    //qDebug("\n13 %.4f MB %s", img.cols*img.rows*img.elemSize()/(1024.0*1024.0), memory_info().toStdString().c_str());
+
     return img;
 }
 
 
-void GLScene::update_region_coloring(cv::Mat curv_img)
+void GLScene::update_region_coloring(cv::Mat img)
 {
     //curvesImageBGR(false, -1);;
     m_curImage = orgBlankImage.clone();
 
-    if (curv_img.cols == 0)
+    cv::Mat curv_img;
+    if (img.cols == 0)
         curv_img = curvesImage(false, 1.5);
+    else    curv_img  = img.clone();
 
     //cv::imwrite("curv_img.png", curv_img);
     cv::convertScaleAbs(curv_img, curv_img, -1, 255 );
@@ -2113,7 +2064,9 @@ void GLScene::change_point_parameters(bool isSharp)
     }
 
     if (has_changed)
+    {
         recomputeAllSurfaces();
+    }
 }
 
 void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int  _thickness)
@@ -2172,4 +2125,51 @@ void GLScene::setClipHeight(bool b)
 void GLScene::emitSetStatusMessage(QString message)
 {
     emit setStatusMessage(message);
+}
+
+QString GLScene::memory_info()
+{
+    QString system_info("Memory Info: ");
+    system_info.append(
+                QString("\n  Number of cores: %1")
+                .arg(QThread::idealThreadCount()));
+
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+
+    QProcess p;
+    p.start("awk", QStringList() << "/MemTotal/ { print $2 }" << "/proc/meminfo");
+    p.waitForFinished();
+    QString memory = p.readAllStandardOutput();
+    system_info.append(QString("\n  Total Physical Memory: %1 MB").arg(memory.toLong() / 1024.0));
+    p.close();
+
+#elif defined(__WIN32)
+
+    MEMORYSTATUSEX memory_status;
+    ZeroMemory(&memory_status, sizeof(MEMORYSTATUSEX));
+    memory_status.dwLength = sizeof(MEMORYSTATUSEX);
+    if (GlobalMemoryStatusEx(&memory_status)) {
+        system_info.append(
+                    QString("\n  Total Physical Memory: %1 MB")
+                    .arg(memory_status.ullTotalPhys / (1024 * 1024.0)));
+        system_info.append(
+                    QString("\n  Total Virtual Memory: %1 MB")
+                    .arg(memory_status.ullTotalPageFile / (1024 * 1024.0)));
+    } else{
+        system_info.append("Unknown Total Physical Memory");
+        system_info.append("Unknown Total Virtual Memory");
+    }
+#endif
+
+    size_t phys=0, virt=0;
+    getCurrentRSS(phys, virt);
+
+    system_info.append(
+                QString("\n  Physical Memory Used by Me: %1 MB")
+                .arg(phys / (1024 * 1024.0)));
+    system_info.append(
+                QString("\n  Virtual Memory Used by Me: %1 MB")
+                .arg(virt / (1024 * 1024.0)));
+
+    return system_info;
 }

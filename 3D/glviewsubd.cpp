@@ -163,6 +163,9 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
 GLviewsubd::~GLviewsubd()
 {
+    //Release textures memory
+    glDeleteTextures(7, textID);
+
     unsigned int i, j;
 
     for (i = 0 ; i < meshSubd.size() ; i++)
@@ -563,6 +566,8 @@ void GLviewsubd::paintGL(void)
         glViewport(0, 0, origView[2], origView[3]);
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
         glDeleteRenderbuffersEXT(1, &renderbuffer);
+        glDeleteRenderbuffersEXT(1, &depthbuffer);
+        glDeleteFramebuffersEXT(1, &framebuffer);
         glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
         offScreen = false;
 

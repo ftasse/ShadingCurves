@@ -265,6 +265,7 @@ void BSplineGroup::removeControlPoint(int cpt_id)
             ++i;
     }
     cpt.splineRefs.clear();
+    cpt.m_splineGroup = NULL;
 }
 
 void BSplineGroup::removeSpline(int spline_id)
@@ -301,6 +302,7 @@ void BSplineGroup::removeSpline(int spline_id)
 
     bspline.cptRefs.clear();
     bspline.recompute();
+    bspline.m_splineGroup = NULL;
 }
 
 void BSplineGroup::removeSurface(int surface_id)
@@ -323,6 +325,7 @@ void BSplineGroup::removeSurface(int surface_id)
     surf.vertices.clear();
     surf.controlMesh.clear();
     surf.sharpCorners.clear();
+    surf.m_splineGroup = NULL;
 }
 
 void BSplineGroup::computeJunctions()

@@ -40,6 +40,8 @@ public:
     void saveCurves(std::string fname);
     void saveOff(std::string fname);
 
+    QString memory_info();
+
     //Sketching functions
     void createBSpline();
     void cleanMemory();
@@ -90,7 +92,7 @@ public:
     cv::Mat curvesImage(bool only_closed_curves = false, float thickness = 1.0);
     cv::Mat curvesImageBGR(bool only_closed_curves=false, float thickness = -1);
 
-    void update_region_coloring(cv::Mat curv_img= cv::Mat());
+    void update_region_coloring(cv::Mat img= cv::Mat());
 
     cv::Mat& currentImage()
     {
