@@ -17,10 +17,10 @@ public:
                                         QVector<QPointF> normals, cv::Mat dt,
                                         bool inward, bool loop,
                                         bool start_has_zero_height=true, bool end_has_zero_height=true);
-    QPointF traceDT(cv::Mat dt, QPointF point, QPoint current, QLineF normalL, float width, bool normal);
+    QPointF traceDT(cv::Mat dt, QPoint current, float width);
 
     // HENRIK: find the closest highest value in neighbourhood
-    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL, QList<QPoint> visited, float Td, float Ta);
+    QPoint localMax(cv::Mat I, cv::Rect N, float *oldD);
     float setThresholds(QLineF normal);
 
     int addVertex(Point3d vertex);
