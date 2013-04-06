@@ -127,7 +127,12 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
         if (bspline.end_has_zero_height[k] || bspline.is_slope)
             original_points.last().attributes[k].height = 0.0;
     }
+
     QVector<ControlPoint> subdivided_points = subDivide(original_points, 2, bspline.has_uniform_subdivision);
+    if (bspline.has_uniform_subdivision && original_points.size() >= 4) {
+        subdivided_points.pop_back();
+        subdivided_points.pop_front();
+    }
 
     if (clipHeight && luminance.cols > 0)
     {
@@ -150,7 +155,6 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
             }
         }
     }
-
     QVector<QVector<int> > points = setSurfaceCP(subdivided_points, normals, dt,inward,bspline.has_loop(), bspline.start_has_zero_height[!inward], bspline.end_has_zero_height[!inward]);
 
     if(bspline.is_slope) {
