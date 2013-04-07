@@ -353,7 +353,7 @@ void BSplineGroup::computeJunctions()
                     BSpline& spline_j = spline(cpt.splineRefs[j]);
                     BSpline& spline_k = spline(cpt.splineRefs[k]);
 
-                    if (spline_j.num_cpts()<=1 || spline_k.num_cpts()<=1)
+                    if (spline_j.num_cpts()<=1 || spline_k.num_cpts()<=1 || spline_j.is_slope || spline_k.is_slope)
                         continue;
 
                     QVector< NormalInfo > normals_j;

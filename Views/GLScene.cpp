@@ -1187,21 +1187,69 @@ void GLScene::subdivide_current_spline(){
     {
         BSpline& spline = m_splineGroup.spline(m_curSplineIdx);
         bool has_uniform_subd = spline.has_uniform_subdivision;
+        bool has_loop = spline.has_loop();
 
         QVector<ControlPoint> new_points;
+        QVector<int> new_cpt_refs;
+        QVector<int> old_cpt_refs = spline.cptRefs;
 
         new_points = subDivide(spline.getControlPoints(),1, has_uniform_subd);
+        if (has_uniform_subd)
+        {
+            new_points.pop_back(); new_points.pop_front();
+        }
 
-        while (spline.cptRefs.size() > 0)
-            m_splineGroup.removeControlPoint(spline.cptRefs[0]);
-
-
-        for (int i=0; i<new_points.size(); ++i)
+        for (int i=0; i<(!has_loop?new_points.size():new_points.size()-1); ++i)
         {
             int new_cpt_id = m_splineGroup.addControlPoint(new_points[i], 0.0);
+            new_cpt_refs.push_back(new_cpt_id);
             for (int k=0; k<2; ++k)
                 controlPoint(new_cpt_id).attributes[k] = new_points[i].attributes[k];
-            if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_id))
+        }
+        if (has_loop)
+            new_cpt_refs.push_back(new_cpt_refs.first());
+
+        ControlPoint& cpt = controlPoint(old_cpt_refs.first());
+        for (int k=0; k<cpt.num_splines(); ++k)
+        {
+            if (cpt.splineRefs[k] != spline.ref)
+            {
+                BSpline& connected = m_splineGroup.spline(cpt.splineRefs[k]);
+                for (int j=0; j<connected.num_cpts(); ++j)
+                    if (connected.cptRefs[j]==cpt.ref)
+                        connected.cptRefs[j] = new_cpt_refs.first();
+                controlPoint(new_cpt_refs.first()).splineRefs.push_back(connected.ref);
+                cpt.splineRefs.erase(cpt.splineRefs.begin()+k); --k;
+            }
+        }
+
+        if (!has_loop)
+        {
+            ControlPoint& cpt2 = controlPoint(old_cpt_refs.last());
+            for (int k=0; k<cpt2.num_splines(); ++k)
+            {
+                if (cpt2.splineRefs[k] != spline.ref)
+                {
+                    BSpline& connected = m_splineGroup.spline(cpt2.splineRefs[k]);
+                    for (int j=0; j<connected.num_cpts(); ++j)
+                        if (connected.cptRefs[j]==cpt2.ref)
+                            connected.cptRefs[j] = new_cpt_refs.last();
+                    controlPoint(new_cpt_refs.last()).splineRefs.push_back(connected.ref);
+                    cpt2.splineRefs.erase(cpt2.splineRefs.begin()+k); --k;
+                }
+            }
+        }
+
+        for (int k=0; k<old_cpt_refs.size(); ++k)
+        {
+            ControlPoint& point = controlPoint(old_cpt_refs[k]);
+            m_splineGroup.removeControlPoint(point.ref);
+        }
+
+        //Connect to curves
+        for (int i=0; i<new_cpt_refs.size(); ++i)
+        {
+            if (!m_splineGroup.addControlPointToSpline(m_curSplineIdx, new_cpt_refs[i]))
                 break;
         }
 
