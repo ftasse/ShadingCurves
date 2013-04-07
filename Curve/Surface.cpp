@@ -140,6 +140,7 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
                 resubdivide = true;
             }
         }
+
     }
 
     if (resubdivide)
@@ -179,36 +180,41 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
         normals = bspline.getNormals(inward);
         normals.pop_back();
         normals.pop_front();
+
+        for (int i=0; i<subdivided_points.size(); ++i)
+            subdivided_points[i].attributes[inward].height = subdivided_points[i].attributes[!inward].height;
         QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false, true, true);
 
-        if (points.last().size() > points2.last().size())
+        for (int i=0; i<std::min(points.last().size(), points2.last().size()); ++i)
         {
-            for (int i=0; i<points2.last().size(); ++i)
+            if (points.last()[i] != points2.last()[i])
             {
-                Point3d p1 = vertices[points.last()[i]];
-                Point3d p2 = vertices[points2.last()[i]];
-                if (fabs(p1.x()-p2.x()) > 1e-3 || fabs(p1.y()-p2.y()) > 1e-3 || fabs(p1.z()-p2.z()) > 1e-3)
-                {
+                if (points.last()[i] == points2.last()[i-1])
                     for (int k=0; k<points2.size(); ++k)
                     {
-                        points2[k].insert(i, points2[k][i]);
+                        points2[k].insert(i, points2[k][i-1]);
                     }
-                    ++i;
-                }
-            }
-        } else if (points.last().size() < points2.last().size())
-        {
-            for (int i=0; i<points.last().size(); ++i)
-            {
-                Point3d p1 = vertices[points.last()[i]];
-                Point3d p2 = vertices[points2.last()[i]];
-                if (fabs(p1.x()-p2.x()) > 1e-3 || fabs(p1.y()-p2.y()) > 1e-3 || fabs(p1.z()-p2.z()) > 1e-3)
-                {
+                else if (points2.last()[i] == points.last()[i-1])
                     for (int k=0; k<points.size(); ++k)
                     {
-                        points[k].insert(i, points[k][i]);
+                        points[k].insert(i, points[k][i-1]);
                     }
-                    ++i;
+                ++i;
+            }
+        }
+
+        /*Before merging, ensure that points2 and points do not have the same
+          shape points*/
+        for(int i=1;i<points2.size()-1;i++)
+        {
+            for (int k=0; k<points2[i].size(); ++k)
+            {
+                if (points2[i][k] == points[i][k])
+                {
+                    Point3d overlapping_vertex = vertices[points2[i][k]];
+                    int new_vertex_id = addVertex(overlapping_vertex, 1000.0);
+                    vertices[new_vertex_id].setZ(overlapping_vertex.z());
+                    points2[i][k] = new_vertex_id;
                 }
             }
         }
@@ -268,13 +274,13 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
     if (start_has_zero_height)
     {
-        controlPoints.first().attribute(direction).extent = 0.0;
-        controlPoints.first().attribute(direction).height = 0.0;
+        controlPoints.first().attributes[!inward].extent = 0.0;
+        controlPoints.first().attributes[!inward].height = 0.0;
     }
     if (end_has_zero_height)
     {
-        controlPoints.last().attribute(direction).extent = 0.0;
-        controlPoints.last().attribute(direction).height = 0.0;
+        controlPoints.last().attributes[!inward].extent = 0.0;
+        controlPoints.last().attributes[!inward].height = 0.0;
     }
 
     float cT = 90; // threshold for curvature (in degrees)
