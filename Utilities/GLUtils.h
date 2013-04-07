@@ -124,11 +124,11 @@ void getCurrentRSS(size_t &phys, size_t &virt)
     long rss = 0L;
     FILE* fp = NULL;
     if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
-        return (size_t)0L;		/* Can't open? */
+        return;// (size_t)0L;		/* Can't open? */
     if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
     {
         fclose( fp );
-        return (size_t)0L;		/* Can't read? */
+        return;// (size_t)0L;		/* Can't read? */
     }
     fclose( fp );
     phys = (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
