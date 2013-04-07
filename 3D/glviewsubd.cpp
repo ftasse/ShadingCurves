@@ -2870,39 +2870,39 @@ void GLviewsubd::changeLapSmValue(int newValue)
     lapSmValue = newValue;
 }
 
-void GLviewsubd::dragEnterEvent(QDragEnterEvent *event)
-{
-    if (event->mimeData()->hasFormat("text/plain"))
-    {
-        event->acceptProposedAction();
-    }
-}
+//void GLviewsubd::dragEnterEvent(QDragEnterEvent *event)
+//{
+//    if (event->mimeData()->hasFormat("text/plain"))
+//    {
+//        event->acceptProposedAction();
+//    }
+//}
 
-void GLviewsubd::dropEvent(QDropEvent *event)
-{
-    QString         str;
-    QByteArray 		bytes;
-    const char 			*file_name;
+//void GLviewsubd::dropEvent(QDropEvent *event)
+//{
+//    QString         str;
+//    QByteArray 		bytes;
+//    const char 			*file_name;
 
-    if (event->mimeData()->hasUrls())
-    {
-//        foreach (QUrl url, event->mimeData()->urls())
-//        {
-//            std::cout << url.toString().toUtf8().constData() << endl;
-//        }
+//    if (event->mimeData()->hasUrls())
+//    {
+////        foreach (QUrl url, event->mimeData()->urls())
+////        {
+////            std::cout << url.toString().toUtf8().constData() << endl;
+////        }
 
-        str = event->mimeData()->urls().at(0).toString();
+//        str = event->mimeData()->urls().at(0).toString();
 
-        str = str.remove(0,7);
+//        str = str.remove(0,7);
 
-        bytes = str.toAscii();
-        file_name = bytes.data();
+//        bytes = str.toAscii();
+//        file_name = bytes.data();
 
-        emit openFile(file_name);
-    }
+//        emit openFile(file_name);
+//    }
 
-    event->acceptProposedAction();
-}
+//    event->acceptProposedAction();
+//}
 
 void GLviewsubd::buffer2img()
 {
