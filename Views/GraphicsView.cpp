@@ -322,6 +322,10 @@ void GraphicsView::loadProject()
     {
         GLScene *my_scene = (GLScene *) scene();
 
+        my_scene->resultImg = cv::Mat();
+        my_scene->shadedImg = cv::Mat();
+        my_scene->surfaceImg = cv::Mat();
+
         my_scene->splineGroup().loadAll(fileName.toStdString());
         cv::resize(my_scene->orgBlankImage, my_scene->orgBlankImage, my_scene->splineGroup().imageSize);
         cv::resize(my_scene->currentImage(), my_scene->currentImage(), my_scene->splineGroup().imageSize);

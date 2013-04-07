@@ -1379,8 +1379,11 @@ void GLScene::applyBlackCurves()
         {
             addBlackCurves = true; break;
         }
-    if (!addBlackCurves)    return;
-
+    if (!addBlackCurves)
+    {
+        resultImg = shadedImg.clone();
+        return;
+    }
     glWidget->makeCurrent();
     GLuint imageWidth = shadedImg.cols,
            imageHeight = shadedImg.rows;
