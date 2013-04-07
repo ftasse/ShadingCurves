@@ -27,6 +27,7 @@ static const unsigned int  IMAGE_NODE_ID = 0;
 static const unsigned int  CPT_NODE_ID = 1;
 static const unsigned int  SPLINE_NODE_ID = 2;
 static const unsigned int  SURFACE_NODE_ID = 3;
+static const unsigned int  COLOR_NODE_ID = 4;
 
 GLScene::GLScene(QObject *parent) :
     QGraphicsScene(parent)
@@ -38,6 +39,8 @@ GLScene::GLScene(QObject *parent) :
     showControlPoints = true;
     showCurrentCurvePoints = false;
     showCurves = true;
+    showColors = true;
+    accumMouseChanges = QPointF(0.0,0.0);
     curveSubdLevels = 5;
     hasMoved = false;
     brush = false;
@@ -55,7 +58,7 @@ GLScene::GLScene(QObject *parent) :
 
     displayModeLabel = new QLabel ();
     displayModeLabel->setAutoFillBackground(false);
-    displayModeLabel->setGeometry(10, 10, 100, 20);
+    displayModeLabel->setGeometry(10, 10, 100, 30);
     displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
     QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -164,7 +167,10 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         } else if (selectedObjects.size() > 0)
         {
             std::set<int> cpt_ids;
+            std::set<int> color_ids;
             QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
+            accumMouseChanges += diff;
+            bool significant = (std::abs((int)accumMouseChanges.x())>0 && std::abs((int)accumMouseChanges.y())>0);
 
             for (int i=0; i<selectedObjects.size(); ++i)
             {
@@ -180,6 +186,9 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                     {
                         cpt_ids.insert(bspline.cptRefs[k]);
                     }
+                } else if (nodeId == COLOR_NODE_ID && significant)
+                {
+                    color_ids.insert(targetId);
                 }
             }
 
@@ -190,7 +199,17 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 cpt.setY(cpt.y()+diff.y());
             }
 
-            if (cpt_ids.size() > 0)
+            for (std::set<int>::iterator it = color_ids.begin(); it != color_ids.end(); ++it)
+            {
+                std::pair<QPoint, QColor>& colorPoint = m_splineGroup.colorMapping[*it];
+                colorPoint.first.setX(colorPoint.first.x()+(int)accumMouseChanges.x());
+                colorPoint.first.setY(colorPoint.first.y()+(int)accumMouseChanges.y());
+            }
+
+            if (significant)
+                accumMouseChanges = QPointF(accumMouseChanges.x() - (int)accumMouseChanges.x(),
+                                            accumMouseChanges.y() - (int)accumMouseChanges.y());
+            if (cpt_ids.size() > 0 || color_ids.size()>0)
                 hasMoved = true;
 
             event->accept();
@@ -256,6 +275,7 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (event->isAccepted()) return;
 
     uint nodeId, targetId;
+    accumMouseChanges = QPointF(0.0,0.0);
 
     if(event->button() == Qt::LeftButton && brush)
     {
@@ -325,6 +345,7 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
         {
             event->accept();
+
             QPointF topLeft = QPointF(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0) + m_translation;
             QPointF scaling(imSize.width()/(float)displayImage()->cols, imSize.height()/(float)displayImage()->rows);
             QPointF imgPos = event->scenePos().toPoint() - topLeft;
@@ -335,10 +356,26 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             cv::Vec3b bgrPixel = displayImage()->at<cv::Vec3b>(seed.y(), seed.x());
             QColor image_color(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
 
+            if (nodeId == COLOR_NODE_ID && curDisplayMode==0)
+            {
+               image_color = m_splineGroup.colorMapping[targetId].second;
+            }
+
             QColor color = QColorDialog::getColor(image_color, (QWidget*)this->activeWindow());
             if(color.isValid())
             {
-                m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+                if (nodeId == COLOR_NODE_ID)
+                {
+                   m_splineGroup.colorMapping[targetId].second = color;
+                } else
+                {
+                   m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+                   if (selectedObjects.size()>0 && selectedObjects.last().first == COLOR_NODE_ID)
+                   {
+                        selectedObjects.last().second = m_splineGroup.colorMapping.size()-1;
+                   }
+                }
+
                 recomputeAllSurfaces();
             }
         }
@@ -374,6 +411,7 @@ void GLScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 
         } //else   m_translation  = QPointF(0.0,0.0);
     }
+    changeDisplayModeText();
     adjustDisplayedImageSize();
     event->accept();
     update();
@@ -450,6 +488,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 
     if (event->key() == Qt::Key_Delete)
     {
+        QVector<int> deleted_color_ids;
         if (selectedObjects.size() > 0)
         {
             for (int i=0; i<selectedObjects.size(); ++i)
@@ -467,13 +506,28 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                     //qDebug("Delete spline %d", targetId);
                     m_splineGroup.removeSpline(targetId);
                     currentSplineChanged();
-                } else if (nodeId == SURFACE_NODE_ID)
+                } /*else if (nodeId == SURFACE_NODE_ID)
                 {
                     qDebug("Delete surface %d", targetId);
                     m_splineGroup.removeSurface(targetId);
+                }*/ else if (nodeId == COLOR_NODE_ID)
+                {
+                    deleted_color_ids.push_back(targetId);
+                    selectedObjects.erase(selectedObjects.begin()+i);
+                    --i;
                 }
             }
 
+            if (deleted_color_ids.size()>0)
+            {
+                std::sort(deleted_color_ids.begin(), deleted_color_ids.end());
+                int counter = 0;
+                for (int k=0; k<deleted_color_ids.size(); ++k)
+                {
+                    m_splineGroup.colorMapping.erase(m_splineGroup.colorMapping.begin()+deleted_color_ids[k]-counter);
+                    ++counter;
+                }
+            }
            recomputeAllSurfaces();
         }
         return;
@@ -584,36 +638,47 @@ void GLScene::display(bool only_show_splines)
         draw_ellipse(ellipses[i].center, ellipses[i].size, ellipses[i].brush);
     }*/
 
-    if (!showCurves)
-        return;
-
-    if (!only_show_splines)
-    for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+    if (showCurves)
     {
-        if (surface(i).controlMesh.size() == 0)
-            continue;
-        draw_surface(i);
+        if (!only_show_splines)
+            for (int i=0; i<m_splineGroup.num_surfaces(); ++i)
+            {
+                if (surface(i).controlMesh.size() == 0)
+                    continue;
+                draw_surface(i);
+            }
     }
 
     glLineWidth(pointSize/5.0);
     glPointSize(pointSize);
     glEnable(GL_POINT_SMOOTH);
-    for (int i=0; i<num_splines(); ++i)
-    {
-        bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
-        if (!only_show_splines && (!showCurrentCurvePoints || i == curSplineRef() || is_selected))
-        {
-          BSpline& bspline = spline(i);
-          for (int j=bspline.num_cpts()-1; j>=0; --j)
-          {
-              draw_control_point(bspline.cptRefs[j]);
-          }
-        }
+    glHint( GL_LINE_SMOOTH_HINT, GL_FASTEST );
+    glHint( GL_POINT_SMOOTH_HINT, GL_FASTEST );
+    glHint( GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST );
 
-        if (spline(i).num_cpts() == 0)
-            continue;
-        else
-            draw_spline(i, only_show_splines);
+    if (showColors)
+        for (uint i=0; i<m_splineGroup.colorMapping.size(); ++i)
+            draw_color_point(i);
+
+    if (showCurves)
+    {
+        for (int i=0; i<num_splines(); ++i)
+        {
+            bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
+            if (!only_show_splines && (!showCurrentCurvePoints || i == curSplineRef() || is_selected))
+            {
+                BSpline& bspline = spline(i);
+                for (int j=bspline.num_cpts()-1; j>=0; --j)
+                {
+                    draw_control_point(bspline.cptRefs[j]);
+                }
+            }
+
+            if (spline(i).num_cpts() == 0)
+                continue;
+            else
+                draw_spline(i, only_show_splines);
+        }
     }
 
     glPopMatrix();
@@ -629,6 +694,8 @@ void GLScene::draw_image(cv::Mat& image)
         GLuint texId;
         glGenTextures(1, &texId);
         glBindTexture(GL_TEXTURE_2D, texId);
+
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
         // Set texture interpolation methods for minification and magnification
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -670,6 +737,50 @@ void GLScene::draw_image(cv::Mat& image)
         glPopName();
 
         glPopMatrix();
+}
+
+void GLScene::draw_color_point(int color_id)
+{
+    if (!showColors || color_id >= m_splineGroup.colorMapping.size())
+        return;
+
+    std::pair<QPoint, QColor> colorPoint = m_splineGroup.colorMapping[color_id];
+    QPoint pos = imageToSceneCoords(QPointF(colorPoint.first.x(), colorPoint.first.y())).toPoint();
+    cv::Vec3b disp_color = displayImage()->at<cv::Vec3b>(colorPoint.first.y(), colorPoint.first.x()); //BGR
+    float hw = pointSize/2.0;
+
+    glPushName(COLOR_NODE_ID);
+    glPushName(color_id);
+
+    glColor3d(0,0,1);
+    if (disp_color[0] ==255 && disp_color[1]==0 && disp_color[2] == 0) glColor3d(0,0,0.5);
+    if (selectedObjects.contains(std::pair<uint, uint>(COLOR_NODE_ID, color_id)))
+    {
+        glColor3d(1.0, 0.0, 0.0);
+        if (disp_color[0] == 0 && disp_color[1] ==0 && disp_color[2] ==255) glColor3d(0.5,0,0.0);
+    }
+    glEnable(GL_POLYGON_OFFSET_FILL); // Avoid Stitching!
+    glPolygonOffset(1.0, 1.0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_QUADS);
+        glVertex3f(pos.x()-hw, pos.y()-hw, 0.5f);
+        glVertex3f(pos.x()+hw, pos.y()-hw, 0.5f);
+        glVertex3f(pos.x()+hw, pos.y()+hw, 0.5f);
+        glVertex3f(pos.x()-hw, pos.y()+hw, 0.5f);
+    glEnd();
+    glDisable(GL_POLYGON_OFFSET_FILL);
+
+    glColor3ub(colorPoint.second.red(), colorPoint.second.green(), colorPoint.second.blue());
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_QUADS);
+        glVertex3f(pos.x()-hw, pos.y()-hw, 0.5f);
+        glVertex3f(pos.x()+hw, pos.y()-hw, 0.5f);
+        glVertex3f(pos.x()+hw, pos.y()+hw, 0.5f);
+        glVertex3f(pos.x()-hw, pos.y()+hw, 0.5f);
+    glEnd();
+
+    glPopName();
+    glPopName();
 }
 
 void GLScene::draw_control_point(int point_id)
@@ -1262,6 +1373,14 @@ void GLScene::applyBlackCurves()
     if (shadedImg.cols == 0)
         return;
 
+    bool addBlackCurves = false;
+    for (int i=0; i<num_splines(); ++i)
+        if (spline(i).num_cpts() > 1 && spline(i).thickness>0)
+        {
+            addBlackCurves = true; break;
+        }
+    if (!addBlackCurves)    return;
+
     glWidget->makeCurrent();
     GLuint imageWidth = shadedImg.cols,
            imageHeight = shadedImg.rows;
@@ -1270,6 +1389,8 @@ void GLScene::applyBlackCurves()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     glEnable(GL_LINE_SMOOTH);
+    glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+    glHint( GL_TEXTURE_COMPRESSION_HINT, GL_NICEST );
 
     //Setup for offscreen drawing if fbos are supported
     GLuint framebuffer, renderbuffer, depthbuffer;
@@ -1287,7 +1408,7 @@ void GLScene::applyBlackCurves()
         glGenTextures(1, &texId);
         glBindTexture(GL_TEXTURE_2D, texId);
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1464,7 +1585,7 @@ void GLScene::update_region_coloring(cv::Mat img)
     //cv::imshow("Mask", mask);
     //cv::imwrite("mask.png", mask);
 
-    cv::Mat result = m_curImage.clone(); //(m_curImage.cols, m_curImage.rows, m_curImage.type(), cv::Scalar(255,255,255));
+    cv::Mat result = m_curImage.clone();
 
     //Use cv::floodfill (this should be faster)
     for (int l=m_splineGroup.colorMapping.size()-1; l>=0; --l)
@@ -1473,7 +1594,7 @@ void GLScene::update_region_coloring(cv::Mat img)
         QColor qcolor = m_splineGroup.colorMapping[l].second;
         cv::Scalar color(qcolor.blue(), qcolor.green(), qcolor.red());
 
-        cv::Vec3b def_color = orgBlankImage.at<cv::Vec3b>(seed.y(), seed.x());
+        /*cv::Vec3b def_color = orgBlankImage.at<cv::Vec3b>(seed.y(), seed.x());
         cv::Vec3b cur_color = result.at<cv::Vec3b>(seed.y(), seed.x());
 
         if (!(def_color[0] == cur_color[0] && def_color[1] == cur_color[1] && def_color[2] == cur_color[2]))
@@ -1483,7 +1604,7 @@ void GLScene::update_region_coloring(cv::Mat img)
             m_splineGroup.colorMapping.erase(m_splineGroup.colorMapping.begin()+l);
 
             continue;
-        }
+        }*/
 
         cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
 
@@ -1496,9 +1617,9 @@ void GLScene::update_region_coloring(cv::Mat img)
                     {
                         bool neighbouring = false;
 
-                        for (int m=-2; m<=2; ++m)
+                        for (int m=-1; m<=1; ++m)
                         {
-                            for (int n=-2; n<=2; ++n)
+                            for (int n=-1; n<=1; ++n)
                             {
 
                                 if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
@@ -1523,96 +1644,38 @@ void GLScene::update_region_coloring(cv::Mat img)
             }
         for (int i=0; i<neighbours.size(); ++i)
         {
-            for (int k=0; k<3; ++k) result.at<cv::Vec3b>(neighbours[i].x(), neighbours[i].y())[k] = color[k];
+            for (int k=0; k<3; ++k)
+                result.at<cv::Vec3b>(neighbours[i].x(), neighbours[i].y())[k] = color[k];
         }
     }
 
-    //Alternatively, use cv::drawContours
-    /*std::vector<std::vector<cv::Point> > contours;
-    std::vector<cv::Vec4i> hierarchy;
-    cv::findContours(curv_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
-
-    srand(time(NULL));
-    for(uint k = 0; k< contours.size(); k++ )
+    for (int i=0; i<result.rows; ++i)
     {
-        cv::Point centroid;
-        for (int l=0; l<contours[k].size(); ++l)
+        for (int j=0; j<result.cols; ++j)
         {
-            centroid += contours[k][l];
-        }
-        centroid.x /= contours[k].size();
-        centroid.y /= contours[k].size();
-        cv::Vec3b bgrPixel = result.at<cv::Vec3b>(centroid.x, centroid.y);
-
-        cv::Scalar color( bgrPixel );
-
-        cv::drawContours( result, contours, k, color, 1, 8);
-    }*/
-
-    /*QVector<int> bsplineRefs;
-    for (int i=0; i<num_splines(); ++i) if (spline(i).num_cpts() > 1) bsplineRefs.push_back(spline(i).ref);
-
-    for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
-    {
-        QPoint seed = m_splineGroup.colorMapping[i].first;
-        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.cols || seed.y() >= m_curImage.rows)
-            continue;
-
-        QColor qcolor = m_splineGroup.colorMapping[i].second;
-        cv::Scalar color = cv::Scalar(qcolor.blue(), qcolor.green(), qcolor.red());
-        for (int k=0; k<bsplineRefs.size(); ++k)
-        {
-            QVector<ControlPoint> points =
-            cv::pointPolygonTest(contours[k], cv::Point2f(seed.x(), seed.y()), false) > 1e-5
-        }
-    }*/
-
-    /**/
-
-    //Randomly set colors
-    /*
-    srand(time(NULL));
-    if (m_splineGroup.colorMapping.size() == 0 && contours.size() > 0)
-    {
-        int idx = 0;
-        for( ; idx >= 0; idx = hierarchy[idx][0] )
-        {
-            cv::Scalar color( rand()&255, rand()&255, rand()&255 );
-            cv::drawContours( result, contours, idx, color, CV_FILLED, 8, hierarchy, 0);
-            qDebug("Idx: %d", idx);
-        }
-    }*/
-
-    /*std::vector<bool> marked(contours.size()+1, false);
-
-    for (int i=m_splineGroup.colorMapping.size()-1; i>=0; --i)
-    {
-        QPoint seed = m_splineGroup.colorMapping[i].first;
-        if (seed.x() < 0 || seed.y() < 0 || seed.x() >= m_curImage.cols || seed.y() >= m_curImage.rows)
-            continue;
-
-        QColor qcolor = m_splineGroup.colorMapping[i].second;
-        cv::Scalar color = cv::Scalar(qcolor.blue(), qcolor.green(), qcolor.red());
-
-        uint k = 0;
-        for( ; k< contours.size(); k++ )
-        {
-            if (cv::pointPolygonTest(contours[k], cv::Point2f(seed.x(), seed.y()), false) > 1e-5)
+            if (curv_img.at<uchar>(i,j) > 128)
             {
-                if (!marked[k])
+                bool stop = false;
+                for (int m=-1; m<=1; ++m)
                 {
-                    cv::drawContours( result, contours, k, color, CV_FILLED, 8, hierarchy, 0, cv::Point() );
-                    marked[k] = true;
+                    for (int n=-1; n<=1; ++n)
+                    {
+                        if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows &&
+                                j+n < result.cols && curv_img.at<uchar>(i+m,j+n) <128)
+                        {
+                            cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
+                            for (int k=0; k<3; ++k)
+                                result.at<cv::Vec3b>(i,j)[k] = current[k];
+                            curv_img.at<uchar>(i,j) = 0;
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if (stop)   break;
                 }
-                break;
             }
         }
-        if (k == contours.size() && !marked[k])   //Point lies in the background
-        {
-            cv::floodFill(result, cv::Point2i(seed.x(),seed.y()),color);
-            marked[k] = true;
-        }
-    }*/
+    }
 
     m_curImage = result.clone();
     update();

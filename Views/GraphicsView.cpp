@@ -177,6 +177,13 @@ void GraphicsView::showCurves(bool status)
     my_scene->update();
 }
 
+void GraphicsView::showColors(bool status)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->showColors = status;
+    my_scene->update();
+}
+
 void GraphicsView::create_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
@@ -576,7 +583,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
 
-            QElapsedTimer timer, timer2;
+            QElapsedTimer timer, timer2, timer3;
             qDebug(); // << endl;// << "GVT: Timer started";
             timer.start();
             timer2.start();
@@ -611,20 +618,25 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
 
     subdivTime = glvs->subdivTime;
 
-            emit setStatusMessage(my_scene->modeText + " [" + my_scene->stats + "]" +
-                                  "  [Shading: " + QString::number(timer.elapsed()) +
-                                  " ms (incl subdivision time " + QString::number(subdivTime)  + " ms)]");
-            qDebug() << "GVT: Subdivision and shading: " << timer2.elapsed() << "ms";
-            qDebug() << "GVTALL: Complete shading: " << timer.elapsed() << "ms";
-            emit setTimeOutput(QString::number(timer.elapsed()));
-            emit setTimeOutputSub(QString::number(subdivTime));
-
     my_scene->surfaceImg = glvs->img.clone();
     my_scene->shadedImg = glvs->imgFillShaded.clone();
 
     delete glvs;
+    int subdivisionShadingTime = timer2.elapsed();
 
+    timer3.start();
     my_scene->applyBlackCurves();
+    int blackCurvesTime = timer3.elapsed();
+
+    int totalShadingTime = timer.elapsed();
+    emit setStatusMessage(my_scene->modeText + " [" + my_scene->stats + "]" +
+                          "  [Shading: " + QString::number(totalShadingTime) +
+                          " ms (incl subdivision time " + QString::number(subdivTime)  + " ms)]");
+    qDebug() << "GVT: Subdivision and shading: " << subdivisionShadingTime << "ms";
+    qDebug() << "GVT: Adding Black Curves: " << blackCurvesTime << "ms";
+    qDebug() << "GVTALL: Complete shading: " << totalShadingTime << "ms";
+    emit setTimeOutput(QString::number(totalShadingTime));
+    emit setTimeOutputSub(QString::number(subdivTime));
 
     // switch to result in my_scene
     my_scene->curDisplayMode = 3;

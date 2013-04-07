@@ -14,7 +14,7 @@
 
 #define NUM_DISPLAY_MODES 4
 
-static QString displayModesList[NUM_DISPLAY_MODES] = {"Blank Image", "Target Image", "Surface Image", "Result Image"};
+static QString displayModesList[NUM_DISPLAY_MODES] = {"Background Image", "Target Image", "Surface Image", "Result Image"};
 
 class QGLWidget;
 
@@ -57,6 +57,7 @@ public:
     void display(bool only_show_splines = false);
     void draw_image(cv::Mat &image);
     void draw_control_point(int point_id);
+    void draw_color_point(int color_id);
     void draw_spline(int spline_id, bool only_show_splines = false, bool transform = true);
     void draw_surface(int surface_id);
     void draw_ellipse(QPointF center, float size, QBrush brush);
@@ -155,13 +156,13 @@ public:
             changeDisplayModeText();
         }
 
-
         return &m_curImage;
     }
 
     void changeDisplayModeText()
     {
-        displayModeLabel->setText(displayModesList[curDisplayMode]);
+        displayModeLabel->setText(displayModesList[curDisplayMode] + "\nZoom: " +
+                                  QString::number((int)(m_scale*100.0)) + "%");
     }
 
     BSplineGroup& splineGroup()
@@ -256,6 +257,8 @@ public:
     bool showControlPoints;
     bool showCurrentCurvePoints;
     bool showCurves;
+    bool showColors;
+    QPointF accumMouseChanges;
     int curveSubdLevels;
     bool brush;
     int brushType;
@@ -267,7 +270,7 @@ public:
     bool discreteB;
 
     QSizeF imSize;
-    QList<std::pair<uint, uint> > selectedObjects;
+    QVector<std::pair<uint, uint> > selectedObjects;
     QLabel *displayModeLabel;
     QGLWidget *glWidget;
     QString stats;
