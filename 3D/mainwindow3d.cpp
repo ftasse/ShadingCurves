@@ -1087,8 +1087,8 @@ void MainWindow3D::connectAll()
             glwidget1, 			  SLOT(setShowOld(bool)));
     connect(ctrlWidget1->checkFeature, 	SIGNAL(toggled(bool)),
             glwidget1, 			  SLOT(setShowFeatureLines(bool)));
-    connect(ctrlWidget1->checkLine, 	SIGNAL(toggled(bool)),
-            glwidget1, 			  SLOT(setShowLine(bool)));
+//    connect(ctrlWidget1->checkLine, 	SIGNAL(toggled(bool)),
+//            glwidget1, 			  SLOT(setShowLine(bool)));
 //	connect(ctrlWidget1->radioCtrlShaded, 	SIGNAL(toggled(bool)),
 //			glwidget1, 			  SLOT(setShowShadedCtrl(bool)));
 //	connect(ctrlWidget1->radioCtrlEdges, 	SIGNAL(toggled(bool)),
@@ -1106,8 +1106,8 @@ void MainWindow3D::connectAll()
             glwidget2, 			  SLOT(setShowOld(bool)));
     connect(ctrlWidget2->checkFeature, 	SIGNAL(toggled(bool)),
             glwidget2, 			  SLOT(setShowFeatureLines(bool)));
-    connect(ctrlWidget2->checkLine, 	SIGNAL(toggled(bool)),
-            glwidget2, 			  SLOT(setShowLine(bool)));
+//    connect(ctrlWidget2->checkLine, 	SIGNAL(toggled(bool)),
+//            glwidget2, 			  SLOT(setShowLine(bool)));
 //	connect(ctrlWidget2->radioCtrlShaded, 	SIGNAL(toggled(bool)),
 //			glwidget2, 			  SLOT(setShowShadedCtrl(bool)));
 //	connect(ctrlWidget2->radioCtrlEdges, 	SIGNAL(toggled(bool)),
@@ -1268,10 +1268,10 @@ void MainWindow3D::connectAll()
     connect(ctrlWidget2->sliderLap,	SIGNAL(valueChanged(int)),
             glwidget2, 	  SLOT(changeLapSmValue(int)));
 
-    connect(glwidget1, 	SIGNAL(openFile(const char *)),
-            this, 		  SLOT(load1(const char*)));
-    connect(glwidget2, 	SIGNAL(openFile(const char *)),
-            this, 		  SLOT(load2(const char*)));
+//    connect(glwidget1, 	SIGNAL(openFile(const char *)),
+//            this, 		  SLOT(load1(const char*)));
+//    connect(glwidget2, 	SIGNAL(openFile(const char *)),
+//            this, 		  SLOT(load2(const char*)));
 
     connect(ctrlWidget1->buffer2imgButton, 	SIGNAL(clicked()),
             glwidget1, 		  SLOT(buffer2img()));
