@@ -353,6 +353,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
         int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
         translated_cpts_ids.push_back(vertexId);
+        if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
 
         // add shape point
         normal = new_cpt-lp.at(k);
@@ -360,6 +361,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         {
             vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
             shape_controlpoints[l].push_back(vertexId);
+            //if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
         }
     }
 

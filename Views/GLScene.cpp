@@ -1828,8 +1828,10 @@ std::vector<std::string> GLScene::OFFSurfaces()
             {
                 if (spline(i).has_inward_surface != spline(i).has_outward_surface)
                 {
-                    if (!spline(i).has_inward_surface)  surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION, currentImage()));
-                    else surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION, currentImage()));
+                    if (!spline(i).has_inward_surface)
+                        surface_strings.push_back(spline(i).ghostSurfaceString(INWARD_DIRECTION, currentImage()));
+                    else
+                        surface_strings.push_back(spline(i).ghostSurfaceString(OUTWARD_DIRECTION, currentImage()));
                 }
             }
         }

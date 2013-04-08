@@ -184,16 +184,18 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
         QPointF translated =  (QPointF)subd_points[i]-0.5*normals[i];
         surf.vertices.push_back(Point3d(translated.x(), translated.y(), 0.0));
         surf.controlMesh.last().push_back(surf.vertices.size()-1);
-        if (subd_points[i].isSharp)
-        {
-            surf.sharpCorners.insert(surf.vertices.size()-1);
-        }
 
         for (int k=surf.controlMesh.size()-2; k>=0; --k)
         {
             surf.controlMesh[k].push_back(surf.vertices.size());
             translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*normals[i];
             surf.vertices.push_back(Point3d(translated.x(), translated.y(), 0.0));
+        }
+
+        if (subd_points[i].isSharp)
+        {
+            surf.sharpCorners.insert(surf.controlMesh.first().last());
+            surf.sharpCorners.insert(surf.controlMesh.last().last());
         }
     }
 
