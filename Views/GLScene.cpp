@@ -1369,6 +1369,7 @@ void GLScene::delete_all()
     shadingProfileView->centralWidget->setEnabled(false);
 
     resetImage();
+    updateGeometry();
 }
 
 void GLScene::subdivide_current_spline(){
