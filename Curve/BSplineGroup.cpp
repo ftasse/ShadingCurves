@@ -551,15 +551,15 @@ void BSplineGroup::garbage_collection(bool keepOldIds)
 
     for (uint i=0; i< remove_surface_ids.size(); ++i)
     {
-        m_surfaces.removeAt(remove_surface_ids[i]);
+        m_surfaces.remove(remove_surface_ids[i]);
     }
     for (uint i=0; i< remove_spline_ids.size(); ++i)
     {
-        m_splines.removeAt(remove_spline_ids[i]);
+        m_splines.remove(remove_spline_ids[i]);
     }
     for (uint i=0; i< remove_cpt_ids.size(); ++i)
     {
-        m_cpts.removeAt(remove_cpt_ids[i]);
+        m_cpts.remove(remove_cpt_ids[i]);
     }
 
     for (int i = 0; i< num_controlPoints(); ++i)

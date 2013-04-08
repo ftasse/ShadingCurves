@@ -693,7 +693,6 @@ void GLScene::buildDisplayImage()
     glWidget->makeCurrent();
     if (texId>0)
     {
-        qDebug("Update Image");
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, displayImage()->cols, displayImage()->rows, 0,
                      BGRColourFormat(), GL_UNSIGNED_BYTE, (GLvoid*)displayImage()->data);
