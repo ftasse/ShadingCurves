@@ -58,9 +58,8 @@ GLScene::GLScene(QObject *parent) :
     addItem(ellipseGroup);
 
     displayModeLabel = new QLabel ();
-    displayModeLabel->setAutoFillBackground(false);
     displayModeLabel->setGeometry(10, 10, 100, 30);
-    displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
+    displayModeLabel->setStyleSheet("background-color: rgba(255, 255, 255, 0); color: rgb(0, 0, 0);");
     QGraphicsProxyWidget* proxyWidget = addWidget(displayModeLabel);
     proxyWidget->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
@@ -410,7 +409,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
         curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
         changeDisplayModeText();
         adjustDisplayedImageSize();
-        updateDisplay();
+        updateImage();
         return;
 
     } if (event->key() == Qt::Key_U)
@@ -418,7 +417,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
         curDisplayMode = (curDisplayMode-1); if (curDisplayMode < 0)    curDisplayMode = NUM_DISPLAY_MODES-1;
         changeDisplayModeText();
         adjustDisplayedImageSize();
-        updateDisplay();
+        updateImage();
         return;
 
     } else if (event->key() == Qt::Key_W)
@@ -560,6 +559,12 @@ void GLScene::updateGeometry()
     update();
 }
 
+void GLScene::updateImage()
+{
+    buildDisplayImage();
+    update();
+}
+
 void GLScene::updatePoints()
 {
     buildPoints();
@@ -591,10 +596,10 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     draw();
 
     QTransform transform;
-    QPointF scaling(imSize.width()/(float)m_curImage.cols,
-                    imSize.height()/(float)m_curImage.rows);
-    QPointF full_translation = QPointF(width()/2.0 - imSize.width()/2.0,
-                                       height()/2.0 - imSize.height()/2.0) + m_translation;
+    QPointF scaling(m_scale*imSize.width()/(float)m_curImage.cols,
+                    m_scale*imSize.height()/(float)m_curImage.rows);
+    QPointF full_translation = QPointF(width()/2.0 - m_scale*imSize.width()/2.0,
+                                       height()/2.0 - m_scale*imSize.height()/2.0) + m_translation;
     transform.translate(full_translation.x(), full_translation.y());
     transform.scale(scaling.x(), scaling.y());
     ellipseGroup->setTransform(transform);
@@ -726,7 +731,6 @@ void GLScene::initialize()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         buildDisplayImage();
         buildGeometry();
@@ -749,6 +753,7 @@ void GLScene::draw()
     glScalef(m_scale, m_scale, 1.0f);
 
     glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texId);
     glCallList(image_display_list);
     glDisable(GL_TEXTURE_2D);
 
@@ -779,6 +784,8 @@ void GLScene::draw()
     }*/
 
     glPopMatrix();
+
+    glDisable(GL_DEPTH_TEST);
 }
 
 void GLScene::draw_image(cv::Mat& image)
@@ -2141,7 +2148,7 @@ void GLScene::resetImage()
     shadingProfileView->max_extent = std::max(m_curImage.cols, m_curImage.rows);
 
     if (texId>0)
-        updateDisplay();
+        updateImage();
 }
 
 bool GLScene::openImage(std::string fname)
@@ -2157,7 +2164,7 @@ bool GLScene::openImage(std::string fname)
         changeDisplayModeText();
         adjustDisplayedImageSize();
 
-        updateDisplay();
+        updateImage();
         return true;
     }
     else
@@ -2187,7 +2194,6 @@ bool GLScene::openCurves(std::string fname)
         curDisplayMode = 0;
         changeDisplayModeText();
         adjustDisplayedImageSize();
-        updateDisplay();
         return true;
 
     } else

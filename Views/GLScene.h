@@ -55,6 +55,7 @@ public:
 
     //Drawing functions
     void updateDisplay();
+    void updateImage();
     void updateGeometry();
     void updatePoints();
     void buildPoints(bool only_show_splines = false);
@@ -172,8 +173,8 @@ public:
 
     void changeDisplayModeText()
     {
-        displayModeLabel->setText(displayModesList[curDisplayMode] + "\nZoom: " +
-                                  QString::number((int)(m_scale*100.0)) + "%");
+        displayModeLabel->setText(displayModesList[curDisplayMode]);// + "\nZoom: " +
+                                  //QString::number((int)(m_scale*100.0)) + "%");
     }
 
     BSplineGroup& splineGroup()
