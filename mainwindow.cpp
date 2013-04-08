@@ -117,6 +117,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->clrVsTxtr, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClrVsTxtr(bool)));
 
 
+    QAction *actionActivateBackup = new QAction(QString("Backup Current Project"), ui->menuFile);
+    actionActivateBackup->setCheckable(true);
+    actionActivateBackup->setChecked(true);
+    ui->menuFile->addAction(actionActivateBackup);
+    connect(actionActivateBackup, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(toggleBackupStatus(bool)));
+
 //    QPalette    plt;
 
 //    plt.setColor(QPalette::Window, Qt::red);

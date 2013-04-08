@@ -1284,7 +1284,7 @@ void GLScene::recomputeAllSurfaces()
     t.restart();
 
     cv::Mat dt, curvesIm;
-    curvesIm = curvesImage();
+    curvesIm = curvesImage(false, 1.5);
     offscreen_rendering_timing = t.elapsed();
     t.restart();
 

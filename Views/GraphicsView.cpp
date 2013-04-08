@@ -8,6 +8,8 @@
 #include "../Views/GraphicsView.h"
 #include "../Views/GLScene.h"
 
+#define BACKUP_TIME_INTERVAL 5*60*1000      //(in milliseconds)
+
 GraphicsView::GraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
@@ -24,6 +26,16 @@ GraphicsView::GraphicsView(QWidget *parent) :
     flatImage = true;
     clrVsTxtr = true;
     pathToData = "../imageshading/Data";
+
+    backupTimer = new QTimer(this);
+    connect(backupTimer, SIGNAL(timeout()), this, SLOT(backupProject()));
+    backupTimer->start(BACKUP_TIME_INTERVAL);
+
+#ifdef QT_DEBUG
+    backupName = "projectBackup.xml";
+#else
+    backupName = "projectBackup_" + QDateTime::currentDateTime().toString("dd.MM.yyyy_hh.mm.ss") + ".xml";
+#endif
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *event)
@@ -292,6 +304,7 @@ void GraphicsView::loadCurves()
     if (!fileName.isEmpty())
     {
         GLScene *my_scene = (GLScene *) scene();
+        my_scene->selectedObjects.clear();
         my_scene->openCurves(fileName.toStdString());
     }
 
@@ -328,6 +341,7 @@ void GraphicsView::loadProject()
     if (!fileName.isEmpty())
     {
         GLScene *my_scene = (GLScene *) scene();
+        my_scene->selectedObjects.clear();
 
         my_scene->resultImg = cv::Mat();
         my_scene->shadedImg = cv::Mat();
@@ -360,6 +374,33 @@ void GraphicsView::saveProject()
         GLScene *my_scene = (GLScene *) scene();
         my_scene->splineGroup().imageSize = cv::Size(my_scene->currentImage().cols, my_scene->currentImage().rows);
         my_scene->splineGroup().saveAll(fileName.toStdString());
+    }
+}
+
+void GraphicsView::backupProject()
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->splineGroup().imageSize = cv::Size(my_scene->currentImage().cols, my_scene->currentImage().rows);
+    my_scene->splineGroup().saveAll(backupName.toStdString().c_str());
+}
+
+void GraphicsView::toggleBackupStatus(bool b)
+{
+    if (b)
+    {
+        bool ok;
+        int i = QInputDialog::getInt(this, tr("Backup Timer"),
+                                          tr("Backup Interval (mins):"), backupTimer->interval()*60*1000, 1, 60, 1, &ok);
+        if (ok)
+        {
+            backupTimer->start(i*60*1000);
+            qDebug("Enable Project Backup (every %d mins)", i);
+        }
+    }
+    else
+    {
+        backupTimer->stop();
+        qDebug("Disable Project Backup");
     }
 }
 

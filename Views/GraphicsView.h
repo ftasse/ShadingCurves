@@ -38,10 +38,12 @@ public slots:
     void saveCurves();
     void loadProject();
     void saveProject();
+    void backupProject();
 
     // HENRIK: add write to off-file support
     void saveOff();
 
+    void toggleBackupStatus(bool b);
     void changeControlPointSize(int pointSize);
     void changeBrushLightness(int type);
     void changeBrushSize(int size);
@@ -93,6 +95,8 @@ private:
 
     ShadingType     shade;
     QString         pathToData;
+    QTimer *backupTimer;
+    QString backupName;
 };
 
 #endif // GRAPHICSVIEW_H
