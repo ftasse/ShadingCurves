@@ -1049,6 +1049,22 @@ void GLScene::draw_ellipse(QPointF center, float size, QBrush brush)
     glEnd();
 }
 
+void GLScene::clearCurrentSelections(bool clearImages)
+{
+    if (clearImages)
+    {
+        resultImg = cv::Mat();
+        shadedImg = cv::Mat();
+        surfaceImg = cv::Mat();
+    }
+    selectedObjects.clear();
+    shadingProfileView->cpts_ids.clear();
+    curSplineRef() = -1;
+    currentSplineChanged();
+    selectedPointChanged();
+    shadingProfileView->updatePath();
+}
+
 void GLScene::adjustDisplayedImageSize()
 {
     imSize = QSizeF(displayImage()->cols, displayImage()->rows);

@@ -75,6 +75,7 @@ public:
     void draw_ellipse(QPointF center, float size, QBrush brush);
 
     void changeResolution(int resWidth, int resHeight, bool update = true);
+    void clearCurrentSelections(bool clearImages=true);
     void adjustDisplayedImageSize();
 
     unsigned int getImageHeight() {return m_curImage.cols;}

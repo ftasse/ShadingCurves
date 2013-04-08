@@ -304,7 +304,7 @@ void GraphicsView::loadCurves()
     if (!fileName.isEmpty())
     {
         GLScene *my_scene = (GLScene *) scene();
-        my_scene->selectedObjects.clear();
+        my_scene->clearCurrentSelections(false);
         my_scene->openCurves(fileName.toStdString());
     }
 
@@ -341,11 +341,8 @@ void GraphicsView::loadProject()
     if (!fileName.isEmpty())
     {
         GLScene *my_scene = (GLScene *) scene();
-        my_scene->selectedObjects.clear();
 
-        my_scene->resultImg = cv::Mat();
-        my_scene->shadedImg = cv::Mat();
-        my_scene->surfaceImg = cv::Mat();
+        my_scene->clearCurrentSelections();
 
         my_scene->splineGroup().loadAll(fileName.toStdString());
         cv::resize(my_scene->orgBlankImage, my_scene->orgBlankImage, my_scene->splineGroup().imageSize);

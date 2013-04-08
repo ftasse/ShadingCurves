@@ -111,9 +111,9 @@ public:
     std::map<int, int> new_spline_indices;
     std::map<int, int> new_surface_indices;
 private:
-    QList<Surface> m_surfaces;
-    QList<BSpline> m_splines;
-    QList<ControlPoint> m_cpts;
+    QVector<Surface> m_surfaces;
+    QVector<BSpline> m_splines;
+    QVector<ControlPoint> m_cpts;
 
     float EPSILON;
     float angleT;
