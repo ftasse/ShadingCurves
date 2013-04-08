@@ -21,16 +21,7 @@
     <property name="spacing">
      <number>2</number>
     </property>
-    <property name="leftMargin">
-     <number>2</number>
-    </property>
-    <property name="topMargin">
-     <number>2</number>
-    </property>
-    <property name="rightMargin">
-     <number>2</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>2</number>
     </property>
     <item>
@@ -42,16 +33,7 @@
        <property name="spacing">
         <number>2</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -261,15 +243,15 @@
            <property name="geometry">
             <rect>
              <x>9</x>
-             <y>315</y>
+             <y>320</y>
              <width>253</width>
-             <height>120</height>
+             <height>101</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>120</height>
+             <height>0</height>
             </size>
            </property>
            <widget class="QCheckBox" name="inward_suface_box">
@@ -342,32 +324,6 @@ background-color: rgba(127, 127, 127, 0);</string>
             </property>
             <property name="text">
              <string>uniform subdivision</string>
-            </property>
-           </widget>
-           <widget class="QSpinBox" name="thickness_box">
-            <property name="geometry">
-             <rect>
-              <x>139</x>
-              <y>114</y>
-              <width>41</width>
-              <height>21</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_7">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>114</y>
-              <width>71</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Thickness</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
             </property>
            </widget>
           </widget>
@@ -443,6 +399,32 @@ background-color: rgba(127, 127, 127, 0);</string>
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_7">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>430</y>
+             <width>71</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Thickness</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="thickness_box">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>430</y>
+             <width>41</width>
+             <height>21</height>
+            </rect>
            </property>
           </widget>
          </widget>
@@ -1053,7 +1035,7 @@ background-color: rgba(127, 127, 127, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>741</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
