@@ -119,14 +119,14 @@ void GraphicsView::changeControlPointSize(int pointSize)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->pointSize = pointSize;
-    my_scene->update();
+    my_scene->updateDisplay();
 }
 
 void GraphicsView::changeCurveSubdLevels(int value)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->curveSubdLevels = value;
-    my_scene->update();
+    my_scene->updateDisplay();
 }
 
 void GraphicsView::changeResolution()
@@ -160,28 +160,35 @@ void GraphicsView::showControlMesh(bool status)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->showControlMesh = status;
-    my_scene->update();
+    my_scene->updateGeometry();
+}
+
+void GraphicsView::showNormals(bool status)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->showNormals = status;
+    my_scene->updateGeometry();
 }
 
 void GraphicsView::showControlPoints(bool status)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->showControlPoints = status;
-    my_scene->update();
+    my_scene->updatePoints();
 }
 
 void GraphicsView::showCurves(bool status)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->showCurves = status;
-    my_scene->update();
+    my_scene->updateGeometry();
 }
 
 void GraphicsView::showColors(bool status)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->showColors = status;
-    my_scene->update();
+    my_scene->updatePoints();
 }
 
 void GraphicsView::create_bspline()
@@ -645,7 +652,7 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     // switch to result in my_scene
     my_scene->curDisplayMode = 3;
     my_scene->changeDisplayModeText();
-    my_scene->update();
+    my_scene->updateDisplay();
 }
 
 void GraphicsView::setBrush()

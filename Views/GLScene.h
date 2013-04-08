@@ -54,7 +54,18 @@ public:
                unsigned int& _targetIdx, QPointF* _hitPointPtr = NULL);
 
     //Drawing functions
-    void display(bool only_show_splines = false);
+    void updateDisplay();
+    void updateGeometry();
+    void updatePoints();
+    void buildPoints(bool only_show_splines = false);
+    void buildCurves(bool only_show_splines = false);
+    void buildSurfaces(bool only_show_splines = false);
+    void buildColorPoints();
+    void buildGeometry(bool only_show_splines = false);
+    void buildDisplayImage();
+
+    void initialize();
+    void draw();
     void draw_image(cv::Mat &image);
     void draw_control_point(int point_id);
     void draw_color_point(int color_id);
@@ -239,6 +250,10 @@ private:
     SketchMode m_sketchmode;
     double  m_modelview [16];
     double  m_projection [16];
+    unsigned int image_display_list;
+    unsigned int points_display_list, colors_display_list;
+    unsigned int curves_display_list, surfaces_display_list;
+    unsigned int texId;
 
     float m_scale;
     QPointF m_translation;
@@ -254,6 +269,7 @@ public:
 
     float pointSize;
     bool showControlMesh;
+    bool showNormals;
     bool showControlPoints;
     bool showCurrentCurvePoints;
     bool showCurves;

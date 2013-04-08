@@ -129,6 +129,7 @@ void BSpline::recompute()
 {
     QVector<ControlPoint> points = getControlPoints();
     subdivided_points.clear();
+    display_points.clear();
 
     inward_normals.clear();
     outward_normals.clear();
@@ -147,7 +148,9 @@ void BSpline::recompute()
     //printf("*****************************************\n");
 
     if (points.size() > 1)
+    {
         subdivided_points = subDivide(points, 2, has_uniform_subdivision);
+    }
 
     if (has_uniform_subdivision && points.size() >= 4) {
         subdivided_points.pop_back();
@@ -268,6 +271,20 @@ QVector<ControlPoint> BSpline::getPoints()
         recompute();
     }
     return subdivided_points;
+}
+
+QVector<ControlPoint> BSpline::getDisplayPoints(int levels, bool recompute)
+{
+    if (display_points.size() == 0 || recompute)
+    {
+        QVector<ControlPoint> points = getControlPoints();
+        display_points = subDivide(points, levels, has_uniform_subdivision);
+        if (has_uniform_subdivision && points.size() >= 4) {
+            display_points.pop_back();
+            display_points.pop_front();
+        }
+    }
+    return display_points;
 }
 
 void BSpline::computeJunctionNormals(QVector<ControlPoint>& cpts, int i, QPointF& in_normal, QPointF& out_normal)

@@ -39,6 +39,7 @@ GLScene::GLScene(QObject *parent) :
     showControlPoints = true;
     showCurrentCurvePoints = false;
     showCurves = true;
+    showNormals = true;
     showColors = true;
     accumMouseChanges = QPointF(0.0,0.0);
     curveSubdLevels = 5;
@@ -76,6 +77,10 @@ GLScene::GLScene(QObject *parent) :
     interactiveShading = false;
     ghostSurfacesEnabled = true;
     clipHeight = true;
+
+    image_display_list = points_display_list = 0;
+    colors_display_list =  texId = 0;
+    curves_display_list = surfaces_display_list = 0;
 }
 
 GLScene:: ~GLScene()
@@ -105,22 +110,22 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
             if(discreteB) {
                 brushType = val / 32;
-//                if(val<32)
-//                    brushType = 0;
-//                else if(val>=32&&val<64)
-//                    brushType = 1;
-//                else if(val>=64&&val<96)
-//                    brushType = 2;
-//                else if(val>=96&&val<128)
-//                    brushType = 3;
-//                else if(val>=128&&val<159)
-//                    brushType = 4;
-//                else if(val>=159&&val<191)
-//                    brushType = 5;
-//                else if(val>=191&&val<223)
-//                    brushType = 6;
-//                else
-//                    brushType = 7;
+                //                if(val<32)
+                //                    brushType = 0;
+                //                else if(val>=32&&val<64)
+                //                    brushType = 1;
+                //                else if(val>=64&&val<96)
+                //                    brushType = 2;
+                //                else if(val>=96&&val<128)
+                //                    brushType = 3;
+                //                else if(val>=128&&val<159)
+                //                    brushType = 4;
+                //                else if(val>=159&&val<191)
+                //                    brushType = 5;
+                //                else if(val>=191&&val<223)
+                //                    brushType = 6;
+                //                else
+                //                    brushType = 7;
             }
         }
 
@@ -152,7 +157,7 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QPointF center =  pos - m_translation;
         float size = brushSize*m_scale;
         ellipseGroup->addToGroup(addEllipse(center.x()-size/2,center.y()-size/2,size,size,Qt::NoPen,
-                   QBrush(c,style)));
+                                            QBrush(c,style)));
 
         event->accept();
         update();
@@ -170,7 +175,9 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             std::set<int> color_ids;
             QPointF diff = sceneToImageCoords(event->scenePos()) - sceneToImageCoords(event->lastScenePos());
             accumMouseChanges += diff;
-            bool significant = (std::abs((int)accumMouseChanges.x())>0 && std::abs((int)accumMouseChanges.y())>0);
+
+            QPointF intdiff = accumMouseChanges.toPoint();
+            bool significant = (std::abs(intdiff.x())>0 || std::abs(intdiff.y())>0);
 
             for (int i=0; i<selectedObjects.size(); ++i)
             {
@@ -202,18 +209,18 @@ void GLScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             for (std::set<int>::iterator it = color_ids.begin(); it != color_ids.end(); ++it)
             {
                 std::pair<QPoint, QColor>& colorPoint = m_splineGroup.colorMapping[*it];
-                colorPoint.first.setX(colorPoint.first.x()+(int)accumMouseChanges.x());
-                colorPoint.first.setY(colorPoint.first.y()+(int)accumMouseChanges.y());
+                colorPoint.first.setX(colorPoint.first.x()+intdiff.x());
+                colorPoint.first.setY(colorPoint.first.y()+intdiff.y());
             }
 
             if (significant)
-                accumMouseChanges = QPointF(accumMouseChanges.x() - (int)accumMouseChanges.x(),
-                                            accumMouseChanges.y() - (int)accumMouseChanges.y());
+                accumMouseChanges = QPointF(accumMouseChanges.x() - intdiff.x(),
+                                            accumMouseChanges.y() - intdiff.y());
             if (cpt_ids.size() > 0 || color_ids.size()>0)
                 hasMoved = true;
 
             event->accept();
-            update();
+            updatePoints();
             return;
         }
     }
@@ -300,14 +307,12 @@ void GLScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
         event->accept();
-
+        updateGeometry();
     }  else if (event->button() == Qt::RightButton)
     {
         inPanMode = true;
         event->accept();
     }
-
-    update();
 }
 
 void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -337,28 +342,23 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             }
             controlPoint(cptRef).attributes[0].extent = spline(m_curSplineIdx).generic_extent;
             controlPoint(cptRef).attributes[1].extent = spline(m_curSplineIdx).generic_extent;
-            update();
+            updateGeometry();
         }
     } else
     {
         uint nodeId, targetId;
-        if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, NULL))
+        QPointF hitPoint;
+        if (event->button() == Qt::LeftButton && pick(event->scenePos().toPoint(), nodeId, targetId, &hitPoint))
         {
             event->accept();
-
-            QPointF topLeft = QPointF(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0) + m_translation;
-            QPointF scaling(imSize.width()/(float)displayImage()->cols, imSize.height()/(float)displayImage()->rows);
-            QPointF imgPos = event->scenePos().toPoint() - topLeft;
-            imgPos.setX(imgPos.x()/scaling.x());
-            imgPos.setY(imgPos.y()/scaling.y());
-            QPoint seed = imgPos.toPoint();
+            QPoint seed = hitPoint.toPoint();
 
             cv::Vec3b bgrPixel = displayImage()->at<cv::Vec3b>(seed.y(), seed.x());
             QColor image_color(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
 
             if (nodeId == COLOR_NODE_ID && curDisplayMode==0)
             {
-               image_color = m_splineGroup.colorMapping[targetId].second;
+                image_color = m_splineGroup.colorMapping[targetId].second;
             }
 
             QColor color = QColorDialog::getColor(image_color, (QWidget*)this->activeWindow());
@@ -366,14 +366,14 @@ void GLScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             {
                 if (nodeId == COLOR_NODE_ID)
                 {
-                   m_splineGroup.colorMapping[targetId].second = color;
+                    m_splineGroup.colorMapping[targetId].second = color;
                 } else
                 {
-                   m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
-                   if (selectedObjects.size()>0 && selectedObjects.last().first == COLOR_NODE_ID)
-                   {
+                    m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+                    if (selectedObjects.size()>0 && selectedObjects.last().first == COLOR_NODE_ID)
+                    {
                         selectedObjects.last().second = m_splineGroup.colorMapping.size()-1;
-                   }
+                    }
                 }
 
                 recomputeAllSurfaces();
@@ -388,31 +388,17 @@ void GLScene::wheelEvent(QGraphicsSceneWheelEvent *event)
     if (event->isAccepted()) return;
 
     QPointF imgCoords = sceneToImageCoords(event->scenePos());
-
     QPointF beforeScaling = imageToSceneCoords(imgCoords);
-    float old_scale = m_scale;
 
     if (event->delta() > 0)
         m_scale *= 1.2f;
     else
         m_scale /= 1.2f;
-    adjustDisplayedImageSize();
 
-    /*if (imSize.width() < width() && imSize.height() < height())
-    {
-        m_scale = old_scale;
-    } else*/
-    {
-        QPointF afterScaling = imageToSceneCoords(imgCoords);
+    QPointF afterScaling = imageToSceneCoords(imgCoords);
+    m_translation -= (afterScaling-beforeScaling);
 
-        //if (imSize.width() > width() && imSize.height() > height())
-        {
-            m_translation -= (afterScaling-beforeScaling);
-
-        } //else   m_translation  = QPointF(0.0,0.0);
-    }
     changeDisplayModeText();
-    adjustDisplayedImageSize();
     event->accept();
     update();
 }
@@ -420,35 +406,34 @@ void GLScene::wheelEvent(QGraphicsSceneWheelEvent *event)
 void GLScene::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_T)
-     {
-         curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
-         changeDisplayModeText();
-         adjustDisplayedImageSize();
-         update();
-         return;
+    {
+        curDisplayMode = (curDisplayMode+1)%NUM_DISPLAY_MODES;
+        changeDisplayModeText();
+        adjustDisplayedImageSize();
+        updateDisplay();
+        return;
 
-     } if (event->key() == Qt::Key_U)
+    } if (event->key() == Qt::Key_U)
     {
         curDisplayMode = (curDisplayMode-1); if (curDisplayMode < 0)    curDisplayMode = NUM_DISPLAY_MODES-1;
         changeDisplayModeText();
         adjustDisplayedImageSize();
-        update();
+        updateDisplay();
         return;
 
     } else if (event->key() == Qt::Key_W)
-     {
+    {
         //Reset blank image
         m_curImage = orgBlankImage.clone();
         m_splineGroup.colorMapping.clear();
-        update();
+        updateDisplay();
         return;
 
     } else if (event->key() == Qt::Key_R)
-   {
-       recomputeAllSurfaces();
-       update();
-       return;
-   } else if (event->key() == Qt::Key_S)
+    {
+        recomputeAllSurfaces();
+        return;
+    } else if (event->key() == Qt::Key_S)
     {
         emit triggerShading();
         return;
@@ -528,37 +513,58 @@ void GLScene::keyPressEvent(QKeyEvent *event)
                     ++counter;
                 }
             }
-           recomputeAllSurfaces();
+            recomputeAllSurfaces();
         }
         return;
     } else
     {
         switch(event->key())
         {
-            case Qt::Key_Enter:
-            case Qt::Key_Return:
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+        {
+            m_sketchmode = IDLE_MODE;
+
+            for (int i=0; i<num_splines(); ++i)
             {
-                m_sketchmode = IDLE_MODE;
-
-                for (int i=0; i<num_splines(); ++i)
-                {
-                    spline(i).recompute();
-                }
-
-                recomputeAllSurfaces();
-                modeText = "Idle Mode";
-                emit setStatusMessage("");
-                break;
+                spline(i).recompute();
             }
-            default:
-                break;
+
+            recomputeAllSurfaces();
+            modeText = "Idle Mode";
+            emit setStatusMessage("");
+            break;
+        }
+        default:
+            break;
         }
         return;
 
     }
 
-        QGraphicsScene::keyPressEvent(event);
+    QGraphicsScene::keyPressEvent(event);
 
+}
+
+void GLScene::updateDisplay()
+{
+    qDebug("Update");
+    buildDisplayImage();
+    buildGeometry();
+    update();
+}
+
+void GLScene::updateGeometry()
+{
+    buildGeometry();
+    update();
+}
+
+void GLScene::updatePoints()
+{
+    buildPoints();
+    buildColorPoints();
+    update();
 }
 
 void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
@@ -569,18 +575,7 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
         return;
     }*/
 
-    //GLEW initialization
-    static bool initialized = false;
-    if (!initialized)
-    {
-        GLenum err = glewInit();
-        if (GLEW_OK != err)
-        {
-            /* Problem: glewInit failed, something is seriously wrong. */
-            qWarning("GLEW Error: %s\n", glewGetErrorString(err));
-        }
-        initialized = true;
-    }
+    initialize();
 
     //Setup OpenGL view
     glClearColor(0.5, 0.5, 0.5, 1.0);
@@ -592,9 +587,8 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
     glRenderMode(GL_RENDER);
-    display();
+    draw();
 
     QTransform transform;
     QPointF scaling(imSize.width()/(float)m_curImage.cols,
@@ -604,39 +598,73 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     transform.translate(full_translation.x(), full_translation.y());
     transform.scale(scaling.x(), scaling.y());
     ellipseGroup->setTransform(transform);
-
-    /*if (shadingProfileView !=NULL)
-    {
-        QRect geom = shadingProfileView->geometry();
-        if (geom.x() != width()-geom.width() || geom.y() != height()-geom.height())
-        {
-            shadingProfileView->setGeometry(width()-geom.width(), height()-geom.height(), geom.width(), geom.height());
-        }
-    }*/
 }
 
-void GLScene::display(bool only_show_splines)
+void GLScene::buildGeometry(bool only_show_splines)
 {
-    glPushMatrix();
-    glTranslatef(m_translation.x(), m_translation.y(), 0.0f);
+    buildPoints(only_show_splines);
+    buildCurves(only_show_splines);
+    buildSurfaces(only_show_splines);
+    buildColorPoints();
+}
 
-    glInitNames();
-    glPointSize(pointSize);
+void GLScene::buildPoints(bool only_show_splines)
+{
+    glNewList (points_display_list, GL_COMPILE);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-
-    if (displayImage()->cols > 0)
+    if (showCurves)
     {
-        glColor3d(1.0, 1.0, 1.0);
-        draw_image(*displayImage());
+        glPointSize(pointSize);
+        for (int i=0; i<num_splines(); ++i)
+        {
+            bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
+            if (!only_show_splines && (!showCurrentCurvePoints || i == curSplineRef() || is_selected))
+            {
+                BSpline& bspline = spline(i);
+                for (int j=bspline.num_cpts()-1; j>=0; --j)
+                {
+                    draw_control_point(bspline.cptRefs[j]);
+                }
+            }
+        }
     }
 
-    /*if (!only_show_splines)
-    for (int i=0; i<ellipses.size(); ++i)
+    glEndList ();
+}
+
+void GLScene::buildColorPoints()
+{
+    glNewList (colors_display_list, GL_COMPILE);
+
+    if (showColors)
+        for (uint i=0; i<m_splineGroup.colorMapping.size(); ++i)
+            draw_color_point(i);
+
+    glEndList ();
+}
+
+void GLScene::buildCurves(bool only_show_splines)
+{
+    glNewList (curves_display_list, GL_COMPILE);
+
+    if (showCurves)
     {
-        draw_ellipse(ellipses[i].center, ellipses[i].size, ellipses[i].brush);
-    }*/
+        glLineWidth(pointSize/5.0);
+        for (int i=0; i<num_splines(); ++i)
+        {
+            if (spline(i).num_cpts() <= 1)
+                continue;
+            else
+                draw_spline(i, only_show_splines);
+        }
+    }
+
+    glEndList ();
+}
+
+void GLScene::buildSurfaces(bool only_show_splines)
+{
+    glNewList (surfaces_display_list, GL_COMPILE);
 
     if (showCurves)
     {
@@ -649,103 +677,143 @@ void GLScene::display(bool only_show_splines)
             }
     }
 
-    glLineWidth(pointSize/5.0);
-    glPointSize(pointSize);
-    glEnable(GL_POINT_SMOOTH);
+    glEndList ();
+}
+
+void GLScene::buildDisplayImage()
+{
+    if (texId>0 && displayImage()->cols > 0)
+    {
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, displayImage()->cols, displayImage()->rows, 0,
+                     BGRColourFormat(), GL_UNSIGNED_BYTE, (GLvoid*)displayImage()->data);
+        //qDebug("%d %d: %s", displayImage()->cols, displayImage()->rows, glewGetErrorString(0));
+
+        glNewList (image_display_list, GL_COMPILE);
+        glColor3d(1.0, 1.0, 1.0);
+        draw_image(*displayImage());
+        glEndList ();
+    }
+}
+
+void GLScene::initialize()
+{
+    //GLEW initialization
+    static bool initialized = false;
+    if (!initialized)
+    {
+        GLenum err = glewInit();
+        if (GLEW_OK != err)
+        {
+            /* Problem: glewInit failed, something is seriously wrong. */
+            qWarning("GLEW Error: %s\n", glewGetErrorString(err));
+        } else
+        {
+        }
+
+        initialized = true;
+
+        image_display_list = glGenLists(5);
+        points_display_list = image_display_list+1;
+        colors_display_list = image_display_list+2;
+        curves_display_list = image_display_list+3;
+        surfaces_display_list = image_display_list+4;
+
+        glGenTextures(1, &texId);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        buildDisplayImage();
+        buildGeometry();
+    }
+}
+
+void GLScene::draw()
+{
     glHint( GL_LINE_SMOOTH_HINT, GL_FASTEST );
     glHint( GL_POINT_SMOOTH_HINT, GL_FASTEST );
-    glHint( GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST );
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 
-    if (showColors)
-        for (uint i=0; i<m_splineGroup.colorMapping.size(); ++i)
-            draw_color_point(i);
+    glPushMatrix();
+    glTranslatef(m_translation.x(), m_translation.y(), -100.0f);
+    glTranslatef(width()/2.0 - m_scale*imSize.width()/2.0, height()/2.0 - m_scale*imSize.height()/2.0, 0.0f);
+    glScalef(m_scale, m_scale, 1.0f);
 
-    if (showCurves)
+    glEnable(GL_TEXTURE_2D);
+    glCallList(image_display_list);
+    glDisable(GL_TEXTURE_2D);
+
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 1.0f);
+    glCallList(surfaces_display_list);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 2.0f);
+    glCallList(curves_display_list);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 3.0f);
+    glCallList(colors_display_list);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 4.0f);
+    glCallList(points_display_list);
+    glPopMatrix();
+
+    /*if (!only_show_splines)
+    for (int i=0; i<ellipses.size(); ++i)
     {
-        for (int i=0; i<num_splines(); ++i)
-        {
-            bool is_selected = selectedObjects.contains(std::pair<uint, uint>(SPLINE_NODE_ID, i));
-            if (!only_show_splines && (!showCurrentCurvePoints || i == curSplineRef() || is_selected))
-            {
-                BSpline& bspline = spline(i);
-                for (int j=bspline.num_cpts()-1; j>=0; --j)
-                {
-                    draw_control_point(bspline.cptRefs[j]);
-                }
-            }
-
-            if (spline(i).num_cpts() == 0)
-                continue;
-            else
-                draw_spline(i, only_show_splines);
-        }
-    }
+        draw_ellipse(ellipses[i].center, ellipses[i].size, ellipses[i].brush);
+    }*/
 
     glPopMatrix();
 }
 
 void GLScene::draw_image(cv::Mat& image)
 {
-        glPushName(IMAGE_NODE_ID);
-        glPushName(0);
+    glPushName(IMAGE_NODE_ID);
+    glPushName(0);
 
-        glEnable( GL_TEXTURE_2D );
+    float tex_width = imSize.width();
+    float tex_height = imSize.height();
 
-        GLuint texId;
-        glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0.0f, tex_height);
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(tex_width, tex_height);
 
-        // Set texture interpolation methods for minification and magnification
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(tex_width, 0.0f);
 
-        // Set texture clamping method
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glEnd();
 
-        GLenum inputColourFormat = BGRColourFormat();
-        if (image.channels() == 1)  inputColourFormat = GL_LUMINANCE;
-
-        glTexImage2D(GL_TEXTURE_2D, 0, 3,image.cols, image.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, image.data);
-
-        float tex_width = imSize.width();
-        float tex_height = imSize.height();
-
-        //glBindTexture(GL_TEXTURE_2D, texture[index]);
-        glPushMatrix();
-        glTranslated(width()/2.0 - tex_width/2.0, height()/2.0 - tex_height/2.0, -100.0f);
-        glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(0.0f, tex_height);
-
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(tex_width, tex_height);
-
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(tex_width, 0.0f);
-
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(0.0f, 0.0f);
-        glEnd();
-        glPopMatrix();
-
-        glDeleteTextures(1, &texId);
-
-        glPopName();
-        glPopName();
-
-        glPopMatrix();
+    glPopName();
+    glPopName();
 }
 
 void GLScene::draw_color_point(int color_id)
 {
-    if (!showColors || color_id >= m_splineGroup.colorMapping.size())
+    if (!showColors || color_id >= (int)m_splineGroup.colorMapping.size())
         return;
 
     std::pair<QPoint, QColor> colorPoint = m_splineGroup.colorMapping[color_id];
-    QPoint pos = imageToSceneCoords(QPointF(colorPoint.first.x(), colorPoint.first.y())).toPoint();
+    QPoint pos = colorPoint.first;
     cv::Vec3b disp_color = displayImage()->at<cv::Vec3b>(colorPoint.first.y(), colorPoint.first.x()); //BGR
     float hw = pointSize/2.0;
 
@@ -763,20 +831,20 @@ void GLScene::draw_color_point(int color_id)
     glPolygonOffset(1.0, 1.0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_QUADS);
-        glVertex3f(pos.x()-hw, pos.y()-hw, 0.5f);
-        glVertex3f(pos.x()+hw, pos.y()-hw, 0.5f);
-        glVertex3f(pos.x()+hw, pos.y()+hw, 0.5f);
-        glVertex3f(pos.x()-hw, pos.y()+hw, 0.5f);
+    glVertex2f(pos.x()-hw, pos.y()-hw);
+    glVertex2f(pos.x()+hw, pos.y()-hw);
+    glVertex2f(pos.x()+hw, pos.y()+hw);
+    glVertex2f(pos.x()-hw, pos.y()+hw);
     glEnd();
     glDisable(GL_POLYGON_OFFSET_FILL);
 
     glColor3ub(colorPoint.second.red(), colorPoint.second.green(), colorPoint.second.blue());
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_QUADS);
-        glVertex3f(pos.x()-hw, pos.y()-hw, 0.5f);
-        glVertex3f(pos.x()+hw, pos.y()-hw, 0.5f);
-        glVertex3f(pos.x()+hw, pos.y()+hw, 0.5f);
-        glVertex3f(pos.x()-hw, pos.y()+hw, 0.5f);
+    glVertex2f(pos.x()-hw, pos.y()-hw);
+    glVertex2f(pos.x()+hw, pos.y()-hw);
+    glVertex2f(pos.x()+hw, pos.y()+hw);
+    glVertex2f(pos.x()-hw, pos.y()+hw);
     glEnd();
 
     glPopName();
@@ -786,9 +854,9 @@ void GLScene::draw_color_point(int color_id)
 void GLScene::draw_control_point(int point_id)
 {
     ControlPoint& cpt = m_splineGroup.controlPoint(point_id);
-
     if (!showControlPoints)
         return;
+
     glPushName(CPT_NODE_ID);
     glPushName(point_id);
 
@@ -798,9 +866,9 @@ void GLScene::draw_control_point(int point_id)
         glColor3d(1.0, 0.0, 0.0);
     }
 
-    QPointF pos = imageToSceneCoords(cpt);
+    QPointF pos = cpt;
     glBegin(GL_POINTS);
-    glVertex3d(pos.x(), pos.y(), 0.5f);
+    glVertex2f(pos.x(), pos.y());
     glEnd();
 
     glPopName();
@@ -819,34 +887,37 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
     if (!only_show_splines) {
         // Display normals
-        glBegin(GL_LINES);
-        if (!only_show_splines && (!showCurrentCurvePoints || m_curSplineIdx == spline_id))
+        if (!only_show_splines && showNormals && (!showCurrentCurvePoints || m_curSplineIdx == spline_id))
         {
+            glBegin(GL_LINES);
             glColor3f(0.0, 1.0, 0.0);
+
             QVector<QPointF> normals = bspline.getNormals(true);
-            for (int i = 0; i < bspline.getPoints().size(); ++i)
+            QVector<ControlPoint> subdPts = bspline.getPoints();
+            for (int i = 0; i < subdPts.size(); ++i)
             {
-                QPointF curvPos = bspline.getPoints()[i];
-                QPointF scenePos = imageToSceneCoords(curvPos);
+                QPointF curvPos = subdPts[i];
+                QPointF scenePos = curvPos;
                 glVertex2f(scenePos.x(), scenePos.y());
 
-                QPointF normal = imageToSceneCoords(curvPos + normals[i]*5.0);
+                QPointF normal = curvPos + normals[i]*5.0;
                 glVertex2f(normal.x(), normal.y());
             }
 
             glColor3f(1.0, 0.0, 0.0);
             normals = bspline.getNormals(false);
-            for (int i = 0; i < bspline.getPoints().size(); ++i)
+            for (int i = 0; i < subdPts.size(); ++i)
             {
-                QPointF curvPos = bspline.getPoints()[i];
-                QPointF scenePos = imageToSceneCoords(curvPos);
+                QPointF curvPos = subdPts[i];
+                QPointF scenePos = curvPos;
                 glVertex2f(scenePos.x(), scenePos.y());
 
-                QPointF normal = imageToSceneCoords(curvPos + normals[i]*5.0);
+                QPointF normal = curvPos + normals[i]*5.0;
                 glVertex2f(normal.x(), normal.y());
             }
+
+            glEnd();
         }
-        glEnd();
 
         /*
         QVector<QPointF> points;
@@ -858,7 +929,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         QVector<QPointF> lp = limitPoints(points);
         glBegin(GL_POINTS);
         for (int i = 0; i < lp.count(); ++i) {
-            QPointF pt = imageToSceneCoords(lp.at(i));
+            QPointF pt = lp.at(i);
             glVertex2f(pt.x(),pt.y());
         }
         glEnd();
@@ -874,18 +945,12 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         glColor3d(0.0, 0.0, 0.0);
     }
 
-    QVector<ControlPoint> points = bspline.getControlPoints();
-    QVector<ControlPoint> subDividePts = subDivide(points, curveSubdLevels, bspline.has_uniform_subdivision);
-    if (bspline.has_uniform_subdivision && points.size() >= 4) {
-        subDividePts.pop_back();
-        subDividePts.pop_front();
-    }
+    QVector<ControlPoint> subDividePts = bspline.getDisplayPoints(curveSubdLevels);
 
     glBegin(GL_LINE_STRIP);
     for (int i = 0; i < subDividePts.size(); ++i)
     {
-        if (transform)   subDividePts[i] = imageToSceneCoords(subDividePts[i]);
-        glVertex3f(subDividePts[i].x(), subDividePts[i].y(), 0.0);
+        glVertex2f(subDividePts[i].x(), subDividePts[i].y());
     }
     glEnd();
 
@@ -913,7 +978,7 @@ void GLScene::draw_surface(int surface_id)
     //Display Control Polygon
     if (showControlMesh)
     {
-//        glColor3f(0.65,0.65,0.65);
+        //        glColor3f(0.65,0.65,0.65);
         if (surf.direction == INWARD_DIRECTION)
         {
             glColor3f(0,0.45,0);
@@ -922,26 +987,26 @@ void GLScene::draw_surface(int surface_id)
         {
             glColor3f(0.45,0,0);
         }
-        glPushMatrix();
-        glTranslatef(0.0,0.0,-500.0f);
         glLineWidth(2.0);
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
         QVector<QVector<int> > faceIndices = surf.faceIndices;
         for (int i=0; i<faceIndices.size(); ++i)
         {
-            glBegin(GL_POLYGON);
+            if (faceIndices.size() == 3)
+                glBegin(GL_TRIANGLES);
+            else
+                glBegin(GL_QUADS);
             for (int m=0; m<faceIndices[i].size(); ++m)
             {
-                QPointF point = imageToSceneCoords(surf.vertices[faceIndices[i][m]]);
-                glVertex3f(point.x(), point.y(), surf.vertices[faceIndices[i][m]].z());
+                QPointF point = surf.vertices[faceIndices[i][m]];
+                glVertex2f(point.x(), point.y()); //, surf.vertices[faceIndices[i][m]].z()
             }
             glEnd();
         }
 
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
         glLineWidth(1.0);
-        glPopMatrix();
     }
 
     glPopName();
@@ -952,7 +1017,7 @@ void GLScene::draw_ellipse(QPointF center, float size, QBrush brush)
 {
     //FLORA: This is not used at the moment
 
-    glPointSize(size*m_scale);
+    glPointSize(size); //glPointSize(size*m_scale);
     glEnable(GL_POINT_SMOOTH);
     QColor color = brush.color();
     glColor4i(color.red(), color.green(), color.red(), color.alpha());
@@ -966,15 +1031,15 @@ void GLScene::draw_ellipse(QPointF center, float size, QBrush brush)
     //glEnable(GL_POINT_SPRITE);
     //glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
 
-    QPointF pos = imageToSceneCoords(center);
+    QPointF pos = center;
     glBegin(GL_POINTS);
-    glVertex3d(pos.x(), pos.y(), 0.5f);
+    glVertex2f(pos.x(), pos.y());
     glEnd();
 }
 
 void GLScene::adjustDisplayedImageSize()
 {
-    imSize = m_scale*QSizeF(displayImage()->cols, displayImage()->rows);
+    imSize = QSizeF(displayImage()->cols, displayImage()->rows);
 }
 
 void GLScene::changeResolution(int resWidth, int resHeight, bool update)
@@ -992,9 +1057,9 @@ void GLScene::changeResolution(int resWidth, int resHeight, bool update)
 
 QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 {
-    QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    QPointF topLeft(width()/2.0 - m_scale*imSize.width()/2.0, height()/2.0 - m_scale*imSize.height()/2.0);
     topLeft += m_translation;
-    QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
+    QPointF scaling(m_scale*imSize.width()/(float)m_curImage.cols, m_scale*imSize.height()/(float)m_curImage.rows);
     QPointF imgPos = scenePos - topLeft;
     imgPos.setX(imgPos.x()/scaling.x());
     imgPos.setY(imgPos.y()/scaling.y());
@@ -1003,9 +1068,9 @@ QPointF GLScene::sceneToImageCoords(QPointF scenePos)
 
 QPointF GLScene::imageToSceneCoords(QPointF imgPos)
 {
-    QPointF topLeft(width()/2.0 - imSize.width()/2.0, height()/2.0 - imSize.height()/2.0);
+    QPointF topLeft(width()/2.0 - m_scale*imSize.width()/2.0, height()/2.0 - m_scale*imSize.height()/2.0);
     topLeft += m_translation;
-    QPointF scaling(imSize.width()/(float)m_curImage.cols, imSize.height()/(float)m_curImage.rows);
+    QPointF scaling(m_scale*imSize.width()/(float)m_curImage.cols, m_scale*imSize.height()/(float)m_curImage.rows);
     QPointF scenePos = imgPos;
     scenePos.setX(scenePos.x()*scaling.x());
     scenePos.setY(scenePos.y()*scaling.y());
@@ -1014,7 +1079,7 @@ QPointF GLScene::imageToSceneCoords(QPointF imgPos)
 }
 
 bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
-           unsigned int& _targetIdx, QPointF* _hitPointPtr )
+                   unsigned int& _targetIdx, QPointF* _hitPointPtr )
 {
     glGetDoublev(GL_MODELVIEW_MATRIX, m_modelview);
     glGetDoublev(GL_PROJECTION_MATRIX, m_projection);
@@ -1033,8 +1098,11 @@ bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
     glLoadMatrixd(m_modelview);
 
     glClear(GL_DEPTH_BUFFER_BIT);
+
     // do the picking
-    display();
+    glInitNames();
+    draw();
+
     int hits = glRenderMode(GL_RENDER);
 
     // restore GL state
@@ -1063,12 +1131,13 @@ bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
                     nameBuffer[j] = *ptr++;
             }
             else ptr += 1+num_names;
+            qDebug("%d",z);
         }
 
         _nodeIdx   = nameBuffer[0];
         _targetIdx = nameBuffer[1];
 
-        //qDebug("Pick: %d %d", _nodeIdx, _targetIdx);
+        qDebug("Pick: %d %d %d", _nodeIdx, _targetIdx, hits);
 
         if (_hitPointPtr)
         {
@@ -1078,7 +1147,7 @@ bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
             GLdouble zz     = 0.5F * (min_zz + max_zz);
             GLdouble objX, objY, objZ;
             gluUnProject(x, y, zz, m_modelview, m_projection, viewport, &objX, &objY, &objZ);
-            *_hitPointPtr = QPointF(objX, objY);
+            *_hitPointPtr = sceneToImageCoords( QPointF(objX, objY));
         }
         return true;
     }  else if (hits < 0)
@@ -1093,7 +1162,6 @@ void GLScene::createBSpline()
     m_curSplineIdx = m_splineGroup.addBSpline();
     m_sketchmode = ADD_CURVE_MODE;
     currentSplineChanged();
-    update();
 }
 
 void GLScene::cleanMemory()
@@ -1254,14 +1322,14 @@ void GLScene::recomputeAllSurfaces()
         t.restart();
         emit triggerShading();
         sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms, shading %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, tm, t.elapsed());
-        // update() called in ApplyShading
+        // updateDisplay() called in ApplyShading
     }
     else
     {
         sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, tm);
-        update();
+        updateDisplay();
     }
-//    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
+    //    sprintf(timings, "Stats: %dx%d res, %d points, %d curves (incl %d slopes), %d surfaces, surfaces computation %d ms", currentImage().cols, currentImage().rows, npoints, ncurves, nslopecurves, nsurfaces, t2.elapsed());
     stats = timings;
     emit setStatusMessage("");
 
@@ -1290,7 +1358,6 @@ void GLScene::delete_all()
     shadingProfileView->centralWidget->setEnabled(false);
 
     resetImage();
-    update();
 }
 
 void GLScene::subdivide_current_spline(){
@@ -1386,7 +1453,7 @@ void GLScene::applyBlackCurves()
     }
     glWidget->makeCurrent();
     GLuint imageWidth = shadedImg.cols,
-           imageHeight = shadedImg.rows;
+            imageHeight = shadedImg.rows;
 
     GLenum inputColourFormat = BGRColourFormat();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1407,29 +1474,32 @@ void GLScene::applyBlackCurves()
         glMatrixMode(GL_MODELVIEW);     glLoadIdentity();
 
         //Render result image
-        GLuint texId;
-        glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
+        GLuint texId2;
+        glGenTextures(1, &texId2);
+        glBindTexture(GL_TEXTURE_2D, texId2);
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, 3,shadedImg.cols, shadedImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, shadedImg.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8 ,shadedImg.cols, shadedImg.rows, 0, inputColourFormat, GL_UNSIGNED_BYTE, shadedImg.data);
 
+        glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, imageHeight);
         glTexCoord2f(1.0f, 1.0f); glVertex2f(imageWidth, imageHeight);
         glTexCoord2f(1.0f, 0.0f); glVertex2f(imageWidth, 0.0f);
         glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
         glEnd();
+        glDisable(GL_TEXTURE_2D);
 
-        glDeleteTextures(1, &texId);
+        glDeleteTextures(1, &texId2);
 
         //Draw black curves
         int old_curveSubdLevels  = curveSubdLevels;
+        bool resubdivide = (curveSubdLevels!=5);
         curveSubdLevels = 5;
         for (int i=0; i<num_splines(); ++i)
         {
@@ -1437,7 +1507,10 @@ void GLScene::applyBlackCurves()
             if (spline(i).thickness <= 0)
                 continue;
             glLineWidth(spline(i).thickness);
+
+            if (resubdivide) spline(i).display_points.clear();
             draw_spline(i, true, false);
+            if (resubdivide) spline(i).display_points.clear();
         }
         curveSubdLevels = old_curveSubdLevels;
 
@@ -1466,14 +1539,16 @@ void GLScene::toggleShowCurrentCurvePoints(bool status)
     if (showCurrentCurvePoints != status)
     {
         showCurrentCurvePoints = status;
-        update();
+        updateGeometry();
     }
 }
 
 int GLScene::registerPointAtScenePos(QPointF scenePos)
 {
     unsigned int nodeId, targetId;
-    if (pick(scenePos.toPoint(), nodeId, targetId))
+    QPointF hitPoint;
+
+    if (pick(scenePos.toPoint(), nodeId, targetId, &hitPoint))
     {
         if (nodeId == CPT_NODE_ID)
         {
@@ -1487,10 +1562,9 @@ int GLScene::registerPointAtScenePos(QPointF scenePos)
         return -1;
     }
 
-    int pointIdx = m_splineGroup.addControlPoint(sceneToImageCoords(scenePos), 0.0);
+    int pointIdx = m_splineGroup.addControlPoint(hitPoint, 0.0);
     selectedObjects.clear();
     selectedObjects.push_back(std::pair<uint, uint>(CPT_NODE_ID, pointIdx));
-    update();
     return pointIdx;
 }
 
@@ -1597,6 +1671,9 @@ void GLScene::update_region_coloring(cv::Mat img)
         QColor qcolor = m_splineGroup.colorMapping[l].second;
         cv::Scalar color(qcolor.blue(), qcolor.green(), qcolor.red());
 
+        if (seed.y() < 0 || seed.y() >= result.rows || seed.x() < 0 || seed.x() >= result.cols)
+            continue;
+
         /*cv::Vec3b def_color = orgBlankImage.at<cv::Vec3b>(seed.y(), seed.x());
         cv::Vec3b cur_color = result.at<cv::Vec3b>(seed.y(), seed.x());
 
@@ -1613,38 +1690,38 @@ void GLScene::update_region_coloring(cv::Mat img)
 
         QVector<QPoint> neighbours;
         for (int i=0; i<result.rows; ++i)
+        {
+            for (int j=0; j<result.cols; ++j)
             {
-                for (int j=0; j<result.cols; ++j)
+                if (curv_img.at<uchar>(i,j) > 128)
                 {
-                    if (curv_img.at<uchar>(i,j) > 128)
+                    bool neighbouring = false;
+
+                    for (int m=-1; m<=1; ++m)
                     {
-                        bool neighbouring = false;
-
-                        for (int m=-1; m<=1; ++m)
+                        for (int n=-1; n<=1; ++n)
                         {
-                            for (int n=-1; n<=1; ++n)
-                            {
 
-                                if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
+                            if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows && j+n < result.cols && mask.at<uchar>(i+m+1,j+n+1) <128)
+                            {
+                                cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
+                                if (current[0] == color[0] && current[1] == color[1] && current[2] == color[2])
                                 {
-                                    cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
-                                    if (current[0] == color[0] && current[1] == color[1] && current[2] == color[2])
-                                    {
-                                        neighbouring = true;
-                                        break;
-                                    }
+                                    neighbouring = true;
+                                    break;
                                 }
                             }
-                            if (neighbouring)   break;
                         }
-                        if (neighbouring)
-                        {
-                           neighbours.push_back(QPoint(i,j));
-                           curv_img.at<uchar>(i,j) = 0;
-                        }
+                        if (neighbouring)   break;
+                    }
+                    if (neighbouring)
+                    {
+                        neighbours.push_back(QPoint(i,j));
+                        curv_img.at<uchar>(i,j) = 0;
                     }
                 }
             }
+        }
         for (int i=0; i<neighbours.size(); ++i)
         {
             for (int k=0; k<3; ++k)
@@ -1681,7 +1758,6 @@ void GLScene::update_region_coloring(cv::Mat img)
     }
 
     m_curImage = result.clone();
-    update();
 }
 
 std::vector<std::string> GLScene::OFFSurfaces()
@@ -1857,7 +1933,7 @@ void GLScene::createMergeGroups(QVector< QVector<int> > &mergedGroups,
 }
 
 QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGroups,
-                            std::vector<std::string> &surface_strings)
+                                               std::vector<std::string> &surface_strings)
 {
     QVector< QVector<int> > skippedSurfaces;
     for (int i=0; i<mergedGroups.size(); ++i)
@@ -1873,7 +1949,7 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
         {
             Surface& surf = surface(*it);
 
-           if (it == surf_ids.begin() )
+            if (it == surf_ids.begin() )
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
@@ -1943,9 +2019,9 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
                 else if (bspline.pointAt(bspline.num_cpts()-1).num_splines()>2)
                     isSharp = true;
                 if (junction_is_first && bspline.start_has_zero_height[direction])
-                        hasZeroHeight = true;
+                    hasZeroHeight = true;
                 else if (!junction_is_first && bspline.end_has_zero_height[direction])
-                        hasZeroHeight = true;
+                    hasZeroHeight = true;
 
                 if (isSharp)
                 {
@@ -2064,7 +2140,8 @@ void GLScene::resetImage()
     shadingProfileView->min_extent = 1;
     shadingProfileView->max_extent = std::max(m_curImage.cols, m_curImage.rows);
 
-    update();
+    if (texId>0)
+        updateDisplay();
 }
 
 bool GLScene::openImage(std::string fname)
@@ -2080,7 +2157,7 @@ bool GLScene::openImage(std::string fname)
         changeDisplayModeText();
         adjustDisplayedImageSize();
 
-        update();
+        updateDisplay();
         return true;
     }
     else
@@ -2110,7 +2187,7 @@ bool GLScene::openCurves(std::string fname)
         curDisplayMode = 0;
         changeDisplayModeText();
         adjustDisplayedImageSize();
-        update();
+        updateDisplay();
         return true;
 
     } else
@@ -2208,7 +2285,7 @@ void GLScene::change_bspline_parameters(float extent, bool _is_slope, bool _has_
         {
             bspline.thickness = _thickness;
             applyBlackCurves();
-            update();
+            updateDisplay();
         }
     }
 

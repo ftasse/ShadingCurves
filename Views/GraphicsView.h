@@ -51,6 +51,7 @@ public slots:
     void showControlMesh(bool status);
     void showControlPoints(bool status);
     void showCurves(bool status);
+    void showNormals(bool status);
     void showColors(bool status);
     void createDistanceTransformDEBUG();
     void showDistanceTransform3D();

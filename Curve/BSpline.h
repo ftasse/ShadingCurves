@@ -26,6 +26,7 @@ public:
 
     //Utilites
     QVector<ControlPoint> getPoints(); // HENRIK: return list of control points
+    QVector<ControlPoint> getDisplayPoints(int levels = 5, bool recompute = false);
     QVector<ControlPoint> getControlPoints();
     void computeControlPointNormals();
     void computeJunctionNormals(QVector<ControlPoint>& cpts, int i, QPointF& in_normal, QPointF& out_normal);
@@ -53,7 +54,8 @@ public:
 
     QVector<QPointF> getNormals(bool is_inward)
     {
-        if (inward_subdivided_normals.size() == 0)  computeControlPointNormals();
+        if (inward_subdivided_normals.size() == 0)
+            computeControlPointNormals();
         if (is_inward)  return inward_subdivided_normals;
         else    return outward_subdivided_normals;
     }
@@ -81,6 +83,7 @@ public:
     int thickness;
 
     QVector<ControlPoint> subdivided_points;
+    QVector<ControlPoint> display_points;
     QVector<QPointF> inward_subdivided_normals, outward_subdivided_normals;
     QVector<QPointF> inward_normals, outward_normals;
 
