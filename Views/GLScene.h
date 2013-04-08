@@ -173,8 +173,8 @@ public:
 
     void changeDisplayModeText()
     {
-        displayModeLabel->setText(displayModesList[curDisplayMode]);// + "\nZoom: " +
-                                  //QString::number((int)(m_scale*100.0)) + "%");
+        displayModeLabel->setText(displayModesList[curDisplayMode] + "\nZoom: " +
+                                  QString::number((int)(m_scale*100.0)) + "%");
     }
 
     BSplineGroup& splineGroup()

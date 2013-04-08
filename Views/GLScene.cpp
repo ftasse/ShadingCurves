@@ -547,7 +547,7 @@ void GLScene::keyPressEvent(QKeyEvent *event)
 
 void GLScene::updateDisplay()
 {
-    qDebug("Update");
+    glWidget->makeCurrent();
     buildDisplayImage();
     buildGeometry();
     update();
@@ -555,18 +555,21 @@ void GLScene::updateDisplay()
 
 void GLScene::updateGeometry()
 {
+    glWidget->makeCurrent();
     buildGeometry();
     update();
 }
 
 void GLScene::updateImage()
 {
+    glWidget->makeCurrent();
     buildDisplayImage();
     update();
 }
 
 void GLScene::updatePoints()
 {
+    glWidget->makeCurrent();
     buildPoints();
     buildColorPoints();
     update();
@@ -687,8 +690,10 @@ void GLScene::buildSurfaces(bool only_show_splines)
 
 void GLScene::buildDisplayImage()
 {
-    if (texId>0 && displayImage()->cols > 0)
+    glWidget->makeCurrent();
+    if (texId>0)
     {
+        qDebug("Update Image");
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, displayImage()->cols, displayImage()->rows, 0,
                      BGRColourFormat(), GL_UNSIGNED_BYTE, (GLvoid*)displayImage()->data);
@@ -1000,10 +1005,10 @@ void GLScene::draw_surface(int surface_id)
         QVector<QVector<int> > faceIndices = surf.faceIndices;
         for (int i=0; i<faceIndices.size(); ++i)
         {
-            if (faceIndices.size() == 3)
-                glBegin(GL_TRIANGLES);
-            else
+            if (faceIndices[i].size() == 4)
                 glBegin(GL_QUADS);
+            else
+                glBegin(GL_TRIANGLES);
             for (int m=0; m<faceIndices[i].size(); ++m)
             {
                 QPointF point = surf.vertices[faceIndices[i][m]];
@@ -1138,13 +1143,12 @@ bool GLScene::pick(const QPoint& _mousePos, unsigned int& _nodeIdx,
                     nameBuffer[j] = *ptr++;
             }
             else ptr += 1+num_names;
-            qDebug("%d",z);
         }
 
         _nodeIdx   = nameBuffer[0];
         _targetIdx = nameBuffer[1];
 
-        qDebug("Pick: %d %d %d", _nodeIdx, _targetIdx, hits);
+        //qDebug("Pick: %d %d %d", _nodeIdx, _targetIdx, hits);
 
         if (_hitPointPtr)
         {
