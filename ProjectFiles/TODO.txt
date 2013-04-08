@@ -12,6 +12,7 @@ Things to discuss with Henrik when he gets back:
 	- start tracing closer to the curve to avoid spilling at sharp T-junctions
 	- consider tracing on a diffusion surface instead of the DT
 	- consider using a proper (resolution-independent) offset/MAT computation
+	- sharp CPs now work, but tracing from them does not
 
 - Luminance adjustment
 	- delta L in Lab and Yxy space results in non-RGB colours (clipping?)
