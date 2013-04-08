@@ -57,17 +57,17 @@ public:
     void loadAll(std::string fname);
 
     //Utilities
-    QList<Surface>& surfaces()
+    QVector<Surface>& surfaces()
     {
         return m_surfaces;
     }
 
-    QList<BSpline>& splines()
+    QVector<BSpline>& splines()
     {
         return m_splines;
     }
 
-    QList<ControlPoint>& controlPoints()
+    QVector<ControlPoint>& controlPoints()
     {
         return m_cpts;
     }
