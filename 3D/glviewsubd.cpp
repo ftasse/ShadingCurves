@@ -1851,7 +1851,10 @@ void GLviewsubd::buildHeightMesh()
         {
             for (j = 0 ; j < meshCurr.size() ; j++)
             {
-                drawMesh(HEIGHT, meshCurr[j], j, 0);
+                if (!meshCurr[j]->isGhost)
+                {
+                    drawMesh(HEIGHT, meshCurr[j], j, 0);
+                }
             }
         }
     glEndList();

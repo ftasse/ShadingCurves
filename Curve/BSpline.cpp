@@ -173,6 +173,10 @@ void BSpline::recompute()
 std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 {
     Surface surf;
+    float   zCoord;
+
+    zCoord = -150; // makes sure that ghost surfaces do not cover normal surfaces in depth buffer
+                   // image is at height -200
 
     QVector<ControlPoint> subd_points = getPoints();
     QVector<QPointF> normals = getNormals(direction == INWARD_DIRECTION);
@@ -223,7 +227,7 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 
 
         QPointF translated =  (QPointF)subd_points[i]-0.5*normals[i];
-        int vertexId = surf.addVertex(translated, 0.0);
+        int vertexId = surf.addVertex(translated, zCoord);
         orgId = vertexId;
 
 
@@ -236,19 +240,19 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
             if (isSharp)
             {
                 translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n1;
-                vertexId = surf.addVertex(translated, 0.0);
+                vertexId = surf.addVertex(translated, zCoord);
                 surf.controlMesh[k].push_back(vertexId);
             }
 
             translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*normals[i];
-            vertexId = surf.addVertex(translated, 0.0);
+            vertexId = surf.addVertex(translated, zCoord);
             surf.controlMesh[k].push_back(vertexId);
             if (k==0)  trId = vertexId;
 
             if (isSharp)
             {
                 translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n2;
-                vertexId = surf.addVertex(translated, 0.0);
+                vertexId = surf.addVertex(translated, zCoord);
                 surf.controlMesh[k].push_back(vertexId);
             }
         }
