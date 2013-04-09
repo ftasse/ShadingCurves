@@ -327,7 +327,9 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             QLineF thisL = QLineF(thisCP,new_cpt);
             float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
             if(angle>cT) {
-                original_cpts_ids.insert(original_cpts_ids.begin()+k+extra_curvature_vertices_count, addVertex(prevCP1)); ++extra_curvature_vertices_count;
+                int vertexId = addVertex(prevCP1);
+                original_cpts_ids.insert(original_cpts_ids.begin()+k+extra_curvature_vertices_count, vertexId); ++extra_curvature_vertices_count;
+                if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
                 QPointF tangent = thisCP-prevCP1;
                 normal = QPointF(-tangent.y(),tangent.x());
                 if(!inward) normal = -normal;
@@ -353,7 +355,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
         int vertexId = addVertex(Point3d(new_cpt.x(), new_cpt.y()));
         translated_cpts_ids.push_back(vertexId);
-        if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
+        //if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
 
         // add shape point
         normal = new_cpt-lp.at(k);
