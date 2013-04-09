@@ -184,20 +184,40 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
         int orgId, trId;
         QPointF n1,n2;
         bool isSharp = false;
-        if (i>0 && i<subd_points.size()-1)
+        if ((i>0 && i<subd_points.size()-1) || has_loop())
         {
-            if (subd_points[i].isSharp || QLineF(subd_points[i], subd_points[i-1]).angleTo(QLineF(subd_points[i], subd_points[i+1])) < 167.895)
+            if (i>0 && i<subd_points.size()-1)
+            {
+                n1 = normals[i-1];
+                n2 = normals[i+1];
+            } else if (i==0)
+            {
+                n1 = normals[subd_points.size()-2];
+                n2 = normals[i+1];
+            } else
+            {
+                n1 = normals[i-1];
+                n2 = normals[1];
+            }
+
+            float angleInDeg = QLineF(n1, QPointF()).angleTo(QLineF(QPointF(), n2));
+            if (angleInDeg > 180.0)
+                angleInDeg = 180 - angleInDeg;
+            if (subd_points[i].isSharp || fabs(angleInDeg) < 180-167.895)
             {
                 isSharp = true;
-                QPointF v1 = subd_points[i-1]-subd_points[i];
-                float norm1 = cv::norm(cv::Vec2f(v1.x(), v1.y()));
-                if (norm1 > 1e-8) v1 /= norm1;
-                n1 = QPointF(-v1.y(), v1.x());
+                /*if (i>0 && i<subd_points.size()-1)
+                {
+                    QPointF v1 = subd_points[i-1]-subd_points[i];
+                    float norm1 = cv::norm(cv::Vec2f(v1.x(), v1.y()));
+                    if (norm1 > 1e-8) v1 /= norm1;
+                    n1 = QPointF(-v1.y(), v1.x());
 
-                QPointF v2 = subd_points[i]-subd_points[i+1];
-                float norm2 = cv::norm(cv::Vec2f(v2.x(), v2.y()));
-                if (norm2 > 1e-8) v2 /= norm2;
-                n2 = QPointF(-v2.y(), v2.x());
+                    QPointF v2 = subd_points[i]-subd_points[i+1];
+                    float norm2 = cv::norm(cv::Vec2f(v2.x(), v2.y()));
+                    if (norm2 > 1e-8) v2 /= norm2;
+                    n2 = QPointF(-v2.y(), v2.x());
+                }*/
             }
         }
 
@@ -233,7 +253,7 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
             }
         }
 
-        if (isSharp)
+        if (subd_points[i].isSharp)
         {            
             surf.sharpCorners.insert(orgId);
             surf.sharpCorners.insert(trId);
