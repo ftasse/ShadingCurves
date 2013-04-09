@@ -223,12 +223,23 @@ void MainWindow3D::load1(std::istream &is)
 		ctrlWidget1->meshMenu->clear();
         ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), "All meshes");
 	}
-        if (!isGhost)
-        {
-            qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
-            ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
-            ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
-        }
+//        if (!isGhost)
+//        {
+//            qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
+//            ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
+//            ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
+//        }
+
+    qsn = QString(to_string(ctrlWidget1->meshMenu->count()).c_str());
+    if (!isGhost)
+    {
+        ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " " + qs);
+    }
+    else
+    {
+        ctrlWidget1->meshMenu->insertItem(ctrlWidget1->meshMenu->count(), qsn + " Ghost" + qs);
+    }
+    ctrlWidget1->meshMenu->setCurrentIndex(ctrlWidget1->meshMenu->count() - 1);
 }
 
 void MainWindow3D::loadBatch1(std::istream &is)

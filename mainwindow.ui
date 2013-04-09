@@ -245,7 +245,6 @@
              <x>9</x>
              <y>320</y>
              <width>253</width>
-             <height>101</height>
              <height>141</height>
             </rect>
            </property>
@@ -262,7 +261,7 @@
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>34</y>
+              <y>30</y>
               <width>181</width>
               <height>22</height>
              </rect>
@@ -282,7 +281,7 @@ background-color: rgba(126, 126, 126, 0);</string>
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>54</y>
+              <y>50</y>
               <width>181</width>
               <height>22</height>
              </rect>
@@ -302,7 +301,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>14</y>
+              <y>10</y>
               <width>141</width>
               <height>16</height>
              </rect>
@@ -318,7 +317,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>74</y>
+              <y>70</y>
               <width>181</width>
               <height>22</height>
              </rect>
@@ -375,7 +374,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <rect>
              <x>10</x>
              <y>170</y>
-             <width>101</width>
+             <width>121</width>
              <height>17</height>
             </rect>
            </property>
@@ -389,9 +388,9 @@ background-color: rgba(127, 127, 127, 0);</string>
           <widget class="QCheckBox" name="ShowNormalsBox">
            <property name="geometry">
             <rect>
-             <x>40</x>
+             <x>30</x>
              <y>210</y>
-             <width>121</width>
+             <width>141</width>
              <height>22</height>
             </rect>
            </property>
@@ -421,7 +420,7 @@ background-color: rgba(127, 127, 127, 0);</string>
           <widget class="QSpinBox" name="thickness_box">
            <property name="geometry">
             <rect>
-             <x>90</x>
+             <x>100</x>
              <y>430</y>
              <width>41</width>
              <height>21</height>
@@ -1036,7 +1035,7 @@ background-color: rgba(127, 127, 127, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>741</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

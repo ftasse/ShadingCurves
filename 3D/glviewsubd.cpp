@@ -2021,8 +2021,8 @@ void GLviewsubd::buildLab()
 
 void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, unsigned int ctrlType)
 {
-    if (mesh->isGhost && !offScreen)// && type != WIREFRAME)
-        return;
+//    if (mesh->isGhost && !offScreen)// && type != WIREFRAME)
+//        return;
 
     unsigned int 	i, j;
     PointPrec 		val1, val2, value, minz, maxz;
