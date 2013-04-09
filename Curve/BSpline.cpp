@@ -181,21 +181,62 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 
     for (int i=0; i<subd_points.size(); ++i)
     {
+        int orgId, trId;
+        QPointF n1,n2;
+        bool isSharp = false;
+        if (i>0 && i<subd_points.size()-1)
+        {
+            if (subd_points[i].isSharp || QLineF(subd_points[i], subd_points[i-1]).angleTo(QLineF(subd_points[i], subd_points[i+1])) < 167.895)
+            {
+                isSharp = true;
+                QPointF v1 = subd_points[i-1]-subd_points[i];
+                float norm1 = cv::norm(cv::Vec2f(v1.x(), v1.y()));
+                if (norm1 > 1e-8) v1 /= norm1;
+                n1 = QPointF(-v1.y(), v1.x());
+
+                QPointF v2 = subd_points[i]-subd_points[i+1];
+                float norm2 = cv::norm(cv::Vec2f(v2.x(), v2.y()));
+                if (norm2 > 1e-8) v2 /= norm2;
+                n2 = QPointF(-v2.y(), v2.x());
+            }
+        }
+
+
         QPointF translated =  (QPointF)subd_points[i]-0.5*normals[i];
-        surf.vertices.push_back(Point3d(translated.x(), translated.y(), 0.0));
-        surf.controlMesh.last().push_back(surf.vertices.size()-1);
+        int vertexId = surf.addVertex(translated, 0.0);
+        orgId = vertexId;
+
+
+        if (isSharp)  surf.controlMesh.last().push_back(vertexId);
+        surf.controlMesh.last().push_back(vertexId);
+        if (isSharp)  surf.controlMesh.last().push_back(vertexId);
 
         for (int k=surf.controlMesh.size()-2; k>=0; --k)
         {
-            surf.controlMesh[k].push_back(surf.vertices.size());
+            if (isSharp)
+            {
+                translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n1;
+                vertexId = surf.addVertex(translated, 0.0);
+                surf.controlMesh[k].push_back(vertexId);
+            }
+
             translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*normals[i];
-            surf.vertices.push_back(Point3d(translated.x(), translated.y(), 0.0));
+            vertexId = surf.addVertex(translated, 0.0);
+            surf.controlMesh[k].push_back(vertexId);
+            if (k==0)  trId = vertexId;
+
+            if (isSharp)
+            {
+                translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n2;
+                vertexId = surf.addVertex(translated, 0.0);
+                surf.controlMesh[k].push_back(vertexId);
+            }
         }
 
-        if (subd_points[i].isSharp)
-        {
-            surf.sharpCorners.insert(surf.controlMesh.first().last());
-            surf.sharpCorners.insert(surf.controlMesh.last().last());
+        if (isSharp)
+        {            
+            surf.sharpCorners.insert(orgId);
+            surf.sharpCorners.insert(trId);
         }
     }
 
