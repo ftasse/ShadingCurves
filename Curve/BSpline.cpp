@@ -159,8 +159,11 @@ void BSpline::recompute()
 
     if (num_cpts() > 1)
     {
-        subdivided_points.first().isSharp = pointAt(0).isSharp;
-        subdivided_points.last().isSharp = pointAt(num_cpts()-1).isSharp;
+       if ((!has_uniform_subdivision || pointAt(0).isSharp) && has_loop())
+        {
+            subdivided_points.first().isSharp = true;
+            subdivided_points.last().isSharp = true;
+        }
     }
 
     /*for (int i = 0; i<subdivided_points.size(); ++i)
