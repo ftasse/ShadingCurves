@@ -2144,11 +2144,11 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
 
         if (skipped.size()>0)   skippedSurfaces.push_back(skipped);
 
-        std::stringstream ss;
+        /*std::stringstream ss;
         ss << "MergedSurface_"<<i<<".off";
         std::ofstream ofs(ss.str().c_str());
         ofs << surface_strings.back();
-        ofs.close();
+        ofs.close();*/
     }
     return skippedSurfaces;
 }
