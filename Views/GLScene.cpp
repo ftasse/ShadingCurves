@@ -694,6 +694,7 @@ void GLScene::buildDisplayImage()
     if (texId>0)
     {
         glBindTexture(GL_TEXTURE_2D, texId);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, (displayImage()->step & 3) ? 1 : 4);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, displayImage()->cols, displayImage()->rows, 0,
                      BGRColourFormat(), GL_UNSIGNED_BYTE, (GLvoid*)displayImage()->data);
         //qDebug("%d %d: %s", displayImage()->cols, displayImage()->rows, glewGetErrorString(0));
@@ -1642,7 +1643,13 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
         GLenum inputColourFormat = BGRColourFormat();
         img.create(imageHeight, imageWidth, CV_8UC3);
 
-        glReadPixels(0, 0, imageWidth, imageHeight, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
+        //use fast 4-byte alignment (default anyway) if possible
+        glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);
+
+        //set length of one complete row in destination data (doesn't need to equal img.cols)
+        glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
+
+        glReadPixels(0, 0, img.cols, img.rows, inputColourFormat, GL_UNSIGNED_BYTE, img.data);
         cv::flip(img, img, 0);
     } else
     {
