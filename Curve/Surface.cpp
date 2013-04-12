@@ -99,7 +99,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     }
 
     //Write sharp corners
-    for (QSet<int>::iterator it = sharpCorners.begin(); it != sharpCorners.end(); ++it)
+    for (std::set<int>::iterator it = sharpCorners.begin(); it != sharpCorners.end(); ++it)
     {
         ofs << *it << std::endl;
     }
@@ -293,13 +293,14 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     for (int k=0; k<controlPoints.size(); ++k)
     {
         float height = controlPoints[k].attribute(direction).height;
-        original_cpts_ids.push_back( addVertex(controlPoints[k], height) );
+        int vertexId = addVertex(controlPoints[k], height);
+        original_cpts_ids.push_back( vertexId );
         if (k==0 && start_has_zero_height)
-            sharpCorners.insert(original_cpts_ids.last());
+            sharpCorners.insert(vertexId);
         else if (k==controlPoints.size()-1 && end_has_zero_height)
-            sharpCorners.insert(original_cpts_ids.last());
+            sharpCorners.insert(vertexId);
         else if (controlPoints[k].isSharp)
-            sharpCorners.insert(original_cpts_ids.last());
+            sharpCorners.insert(vertexId);
     }
 
     // get limit points for the control points

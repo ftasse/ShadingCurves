@@ -1989,7 +1989,7 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
             {
                 mergedSurface.vertices = surf.vertices;
                 mergedSurface.controlMesh = surf.controlMesh;
-                mergedSurface.sharpCorners = surf.sharpCorners;
+                mergedSurface.sharpCorners.insert(surf.sharpCorners.begin(), surf.sharpCorners.end());
                 cptRefFront = spline(surf.splineRef).cptRefs.front();
                 cptRefBack = spline(surf.splineRef).cptRefs.back();
             } else
@@ -2040,7 +2040,7 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
                     new_vert_ids.push_back(mergedSurface.addVertex(surf.vertices[j]));
                 }
 
-                for (QSet<int>::iterator it = surf.sharpCorners.begin(); it != surf.sharpCorners.end(); ++it)
+                for (std::set<int>::iterator it = surf.sharpCorners.begin(); it != surf.sharpCorners.end(); ++it)
                 {
                     mergedSurface.sharpCorners.insert(new_vert_ids[*it]);
                 }
@@ -2144,11 +2144,11 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
 
         if (skipped.size()>0)   skippedSurfaces.push_back(skipped);
 
-        /*std::stringstream ss;
+        std::stringstream ss;
         ss << "MergedSurface_"<<i<<".off";
         std::ofstream ofs(ss.str().c_str());
         ofs << surface_strings.back();
-        ofs.close();*/
+        ofs.close();
     }
     return skippedSurfaces;
 }

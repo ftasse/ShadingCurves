@@ -826,12 +826,15 @@ void BSplineGroup::loadAll(std::string fname)
     }
 
     n = fs["ColorMappings"];
-   {
+    if (n.type() != cv::FileNode::EMPTY)
+    {
         cv::FileNodeIterator it = n.begin(), it_end = n.end();
         for (; it != it_end; ++it)
         {
             QPoint point; QColor color;
             cv::FileNode pointNode = (*it)["point"], colorNode = (*it)["color"];
+            if (pointNode.type() == cv::FileNode::NONE)
+                continue;
             point.setX(pointNode["x"]); point.setY(pointNode["y"]);
             color.setRed(colorNode["red"]); color.setGreen(colorNode["green"]); color.setBlue(colorNode["blue"]);
             colorMapping.push_back(std::pair<QPoint, QColor>(point, color));
