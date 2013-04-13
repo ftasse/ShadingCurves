@@ -317,7 +317,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
         QPointF tmp = lp.at(k)+normal*4;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
-        QPointF new_cpt = (extent==0?lp.at(k):traceDT(dt,current,extent));
+        QPointF new_cpt = (extent==0?lp.at(k):traceDT(dt,current,extent,normalL));
 
         // curvature check: add point if angle is above cT and check intersection with previous CP
         if(k>0) {
@@ -340,7 +340,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
                 normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
                 tmp = lp.at(k)+normal*5;
                 current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-                tmp = (extent==0?lp.at(k):traceDT(dt,current,extent));
+                tmp = (extent==0?lp.at(k):traceDT(dt,current,extent,normalL));
 
                 translated_cpts_ids.push_back(addVertex(tmp));
 
@@ -414,7 +414,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     return points;
 }
 
-QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width)
+QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width,QLineF normalL)
 {
     float currentD = 0;
     QPointF new_cpt;
@@ -422,8 +422,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width)
     while(true) {
         float oldD = currentD;
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
-                            ,&currentD);
-
+                            ,&currentD,normalL);
         // check lines
         if(fabs(oldD-currentD)<EPSILON || currentD >= width) {
             new_cpt.rx() = m.rx();
@@ -437,42 +436,46 @@ QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width)
     return new_cpt;
 }
 
-QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD)
+QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL)
 {
     int sx = N.x;
     int sy = N.y;
     cv::Size S = I.size();
     float m = *oldD;
-    QPoint winner = QPoint(sx+1,sy+1);
+    QList<QPoint> cand; // candidates
     for(int x=sx;x<=N.width;x++)
         for(int y=sy;y<=N.height;y++) {
             if(x<0 || x>=S.width || y<0 || y>=S.height)
                 continue;
             float d = I.at<float>(y,x);
-            if(d>m) {
+            if(fabs(d-m)<EPSILON)
+                cand.append(QPoint(x,y));
+            else if(d>m) {
                 m=d;
-                winner = QPoint(x,y);
+                cand.clear();
+                cand.append(QPoint(x,y));
             }
         }
 
+    if(cand.count()==0)
+        return QPoint(sx+1,sy+1);
+    if(cand.count()==1) {
+        *oldD = m;
+        return cand.first();
+    }
+
+    // find smallest angle
+    float sa = 360; // smallest angle
+    QPoint winner;
+    for (int i = 0;i<cand.count();i++) {
+        QLineF currentL(normalL.p1(),cand.at(i));
+        float angle = std::min(currentL.angleTo(normalL),normalL.angleTo(currentL));
+        if(angle<sa) {
+            sa = angle;
+            winner = cand.at(i);
+        }
+    }
+
     *oldD = m;
     return winner;
-}
-
-// TODO: rename
-float Surface::setThresholds(QLineF normal)
-{
-    QLineF X(.0f,.0f,1.0f,.0f);
-    float angle = std::min(normal.angleTo(X),X.angleTo(normal));
-    float d;
-    if(angle<45.0f)
-        d = 1-angle/45;
-    else if(angle>=45.0f&&angle<90.0f)
-        d = (angle-45.0f)/45.0f;
-    else if(angle>=90.0f&&angle<135.0f)
-        d = 1-(angle-90.0f)/45.0f;
-    else
-        d = (angle-135.0f)/45.0f;
-
-    return d;
 }
