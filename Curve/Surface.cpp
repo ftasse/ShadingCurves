@@ -311,6 +311,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     for (int k=0; k<controlPoints.size(); ++k)
     {
         QPointF normal = normals[k];
+        qDebug() << "Normal, surface:" << normals[k].x() << normals[k].y();
         float extent = controlPoints[k].attribute(direction).extent;
         float height = controlPoints[k].attribute(direction).height;
         QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
@@ -318,7 +319,6 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         QPointF tmp = lp.at(k)+normal*2;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
         QPointF new_cpt = (extent==0?lp.at(k):traceDT(dt,current,extent,normalL));
-//        QPointF new_cpt = (extent==0?lp.at(k):traceDTHighCurv(dt,current,extent,normal));
 
         // curvature check: add point if angle is above cT and check intersection with previous CP
         if(k>0) {
@@ -480,23 +480,18 @@ QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL)
     return winner;
 }
 
-QPointF Surface::traceDTHighCurv(cv::Mat dt,QPoint current,float width,QPointF normal)
+QPoint Surface::traceDTHighCurv(cv::Mat dt,QPoint start,float width,QPointF normal)
 {
     float currentD = 0;
-    QPointF new_cpt;
+    QPointF current = start;
 
     while(true) {
         float oldD = currentD;
-        currentD = dt.at<float>(current.y(),current.x());
-        if(currentD < oldD || currentD >= width) {
-            new_cpt = current;
-            break;
-        } else {
-            QPointF tmp = current;
-            tmp = tmp+normal;
-            current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-        }
+        QPoint tmp = QPoint(qRound(current.x()),qRound(current.y()));
+        currentD = dt.at<float>(tmp.y(),tmp.x());
+        if(currentD < oldD || currentD >= width)
+            return QPoint(qRound(current.x()),qRound(current.y()));
+        else
+            current = current+normal;
     }
-
-    return new_cpt;
 }
