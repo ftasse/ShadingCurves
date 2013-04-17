@@ -315,9 +315,10 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         float height = controlPoints[k].attribute(direction).height;
         QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
         QLineF normalL(lp.at(k),lp.at(k) + normal*extent);
-        QPointF tmp = lp.at(k)+normal*4;
+        QPointF tmp = lp.at(k)+normal*2;
         QPoint current(qRound(tmp.x()),qRound(tmp.y()));
         QPointF new_cpt = (extent==0?lp.at(k):traceDT(dt,current,extent,normalL));
+//        QPointF new_cpt = (extent==0?lp.at(k):traceDTHighCurv(dt,current,extent,normal));
 
         // curvature check: add point if angle is above cT and check intersection with previous CP
         if(k>0) {
@@ -337,10 +338,9 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
                 float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
                 if (norm > EPSILON)
                     normal /= norm;
-                normalL = QLineF(lp.at(k),lp.at(k) + normal*extent);
-                tmp = lp.at(k)+normal*5;
+                tmp = lp.at(k)+normal*3;
                 current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
-                tmp = (extent==0?lp.at(k):traceDT(dt,current,extent,normalL));
+                tmp = (extent==0?lp.at(k):traceDTHighCurv(dt,current,extent,normal));
 
                 translated_cpts_ids.push_back(addVertex(tmp));
 
@@ -478,4 +478,25 @@ QPoint Surface::localMax(cv::Mat I, cv::Rect N, float *oldD, QLineF normalL)
 
     *oldD = m;
     return winner;
+}
+
+QPointF Surface::traceDTHighCurv(cv::Mat dt,QPoint current,float width,QPointF normal)
+{
+    float currentD = 0;
+    QPointF new_cpt;
+
+    while(true) {
+        float oldD = currentD;
+        currentD = dt.at<float>(current.y(),current.x());
+        if(currentD < oldD || currentD >= width) {
+            new_cpt = current;
+            break;
+        } else {
+            QPointF tmp = current;
+            tmp = tmp+normal;
+            current = QPoint(qRound(tmp.x()),qRound(tmp.y()));
+        }
+    }
+
+    return new_cpt;
 }

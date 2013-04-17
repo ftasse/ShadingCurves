@@ -18,6 +18,7 @@ public:
                                         bool inward, bool loop,
                                         bool start_has_zero_height=true, bool end_has_zero_height=true);
     QPointF traceDT(cv::Mat dt, QPoint current, float width, QLineF normalL);
+    QPointF traceDTHighCurv(cv::Mat dt, QPoint current, float width, QPointF normal);
 
     // HENRIK: find the closest highest value in neighbourhood
     QPoint localMax(cv::Mat I, cv::Rect N, float *oldD,QLineF normalL);
