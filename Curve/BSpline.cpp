@@ -58,6 +58,7 @@ void BSpline::write(cv::FileStorage& fs) const
 
 void BSpline::read(const cv::FileNode& node)
 {
+    subv_levels = DEFAULT_SUBDV_LEVELS;
     node["ref"] >> ref;
     node["has_inward_surface"] >> has_inward_surface;
     node["has_outward_surface"] >> has_outward_surface;
