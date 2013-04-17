@@ -145,7 +145,7 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
 
     if (resubdivide)
     {
-        subdivided_points = subDivide(original_points, 2, bspline.has_uniform_subdivision);
+        subdivided_points = subDivide(original_points, bspline.subv_levels, bspline.has_uniform_subdivision);
         if (bspline.has_uniform_subdivision && original_points.size() >= 4) {
             subdivided_points.pop_back();
             subdivided_points.pop_front();

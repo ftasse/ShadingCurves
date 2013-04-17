@@ -7,6 +7,7 @@
 
 #include "ControlPoint.h"
 
+#define DEFAULT_SUBDV_LEVELS 1
 
 class BSplineGroup;
 class Surface;
@@ -81,6 +82,7 @@ public:
     bool has_inward_surface;
     bool has_outward_surface;
     int thickness;
+    int subv_levels;
 
     QVector<ControlPoint> subdivided_points;
     QVector<ControlPoint> display_points;

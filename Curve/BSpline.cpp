@@ -40,6 +40,7 @@ BSpline::BSpline():
     ref(-1), has_inward_surface(false), has_outward_surface(false), has_uniform_subdivision(false), is_slope(false), generic_extent(30.0f)
 {
     thickness = 0;
+    subv_levels = DEFAULT_SUBDV_LEVELS;
 }
 
 void BSpline::write(cv::FileStorage& fs) const
@@ -149,7 +150,7 @@ void BSpline::recompute()
 
     if (points.size() > 1)
     {
-        subdivided_points = subDivide(points, 2, has_uniform_subdivision);
+        subdivided_points = subDivide(points, subv_levels, has_uniform_subdivision);
     }
 
     if (has_uniform_subdivision && points.size() >= 4) {

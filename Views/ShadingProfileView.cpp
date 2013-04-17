@@ -120,8 +120,8 @@ void ShadingProfileView::updateLabels()
 {
     updateSliderLabelText(inwardExtentWidget, inwardExtentLabel, "Direction 1 Extent", false);
     updateSliderLabelText(outwardExtentWidget, outwardExtentLabel, "Direction 2 Extent", true);
-    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Direction 1 Height", false);
-    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Direction 2 Height", true);
+    updateSliderLabelText(inwardHeightWidget, inwardHeightLabel, "Direction 1 Strength", false);
+    updateSliderLabelText(outwardHeightWidget, outwardHeightLabel, "Direction 2 Strength", true);
 }
 
 void ShadingProfileView::updatePath()
