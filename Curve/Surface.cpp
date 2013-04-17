@@ -332,9 +332,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
                 int vertexId = addVertex(prevCP1);
                 original_cpts_ids.insert(original_cpts_ids.begin()+k+extra_curvature_vertices_count, vertexId); ++extra_curvature_vertices_count;
                 if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
-                QPointF tangent = thisCP-prevCP1;
-                normal = QPointF(-tangent.y(),tangent.x());
-                if(!inward) normal = -normal;
+                normal = new_cpt + 0.5*(prevCP2-new_cpt) - thisCP;
                 float norm = sqrt(normal.x()*normal.x() + normal.y()*normal.y());
                 if (norm > EPSILON)
                     normal /= norm;
