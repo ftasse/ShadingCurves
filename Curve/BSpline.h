@@ -91,6 +91,7 @@ public:
 
     bool start_has_zero_height[2];    //for inward and outward directions. Use for surface creation
     bool end_has_zero_height[2];
+    std::vector< std::pair<int, float> > junctionPoints[2]; //Position and height
 };
 
 #endif // BSPLINE_H

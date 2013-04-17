@@ -138,6 +138,9 @@ void BSpline::recompute()
     inward_subdivided_normals.clear();
     outward_subdivided_normals.clear();
 
+    junctionPoints[0].clear();
+    junctionPoints[1].clear();
+
     if (points.size() <=1)  return;
     //TODO Remove this right away
 /*    for (int i=0; i<points.size(); ++i)
