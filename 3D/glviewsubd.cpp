@@ -2560,14 +2560,18 @@ void GLviewsubd::saveFileLim(const char *fileName, bool isPly)
 
 void GLviewsubd::setPoint(int index)
 {
-    cout << "setPoint called with " << index - 1 << endl;
-										  // shifted by 1 because of 'Select...'
+    verInd = index - 1; // shifted by 1 because of 'Select...'
+
+    if (meshCtrl.size() > 0 && verInd > -1)
+    {
+        cout << "setPoint called with " << verInd << "; xyz: " << meshCtrl[0]->my_vertices[verInd].my_point.getX() << " " <<
+                meshCtrl[0]->my_vertices[verInd].my_point.getY() << " " << meshCtrl[0]->my_vertices[verInd].my_point.getZ() << endl;
+    }
 
 	lastChangeX = 0;
 	lastChangeY = 0;
 	lastChangeZ = 0;
 
-	verInd = index - 1; // shifted by 1 because of 'Select...'
 
 	buildPoi();
 	updateGL();
