@@ -320,7 +320,6 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
     for (int k=0; k<controlPoints.size(); ++k)
     {
         QPointF normal = normals[k];
-        qDebug() << "Normal, surface:" << normals[k].x() << normals[k].y();
         float extent = controlPoints[k].attribute(direction).extent;
         float height = controlPoints[k].attribute(direction).height;
         QVector<QPointF> shapeAtrs = controlPoints[k].attribute(direction).shapePointAtr;
@@ -431,7 +430,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width,QLineF normalL)
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
                             ,&currentD,normalL);
         // check lines
-        if(fabs(oldD-currentD)<EPSILON || currentD >= width) {
+        if((fabs(oldD-currentD)<EPSILON&&currentD>1.1f) || currentD >= width) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
             break;
