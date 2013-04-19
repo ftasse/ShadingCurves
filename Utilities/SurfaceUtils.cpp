@@ -8,7 +8,11 @@ QVector<QPointF> limitPoints(QVector<ControlPoint> spline)
     newVec.append(spline.first());
     for (int i=1;i<spline.count()-1;i++)
     {
-        QPointF newP = 0.1667*spline.at(i-1)+0.667*spline.at(i)+0.1667*spline.at(i+1);
+        QPointF newP;
+        if(spline[i].isSharp)
+            newP = spline[i];
+        else
+            newP = 0.1667*spline.at(i-1)+0.667*spline.at(i)+0.1667*spline.at(i+1);
         newVec.append(newP);
     }
     newVec.append(spline.last());
