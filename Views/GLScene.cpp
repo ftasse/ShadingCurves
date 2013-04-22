@@ -42,7 +42,8 @@ GLScene::GLScene(QObject *parent) :
     showNormals = true;
     showColors = true;
     accumMouseChanges = QPointF(0.0,0.0);
-    curveSubdLevels = 5;
+    curveSubdLevels = DEFAULT_SUBDV_LEVELS;
+    drawingSubdLevels = 5;
     globalThickness = 0;
     hasMoved = false;
     brush = false;
@@ -958,7 +959,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         glColor3d(0.0, 0.0, 0.0);
     }
 
-    QVector<ControlPoint> subDividePts = bspline.getDisplayPoints(curveSubdLevels);
+    QVector<ControlPoint> subDividePts = bspline.getDisplayPoints(drawingSubdLevels);
 
     glBegin(GL_LINE_STRIP);
     for (int i = 0; i < subDividePts.size(); ++i)
@@ -1189,6 +1190,7 @@ void GLScene::createBSpline()
 {
     m_curSplineIdx = m_splineGroup.addBSpline();
     m_sketchmode = ADD_CURVE_MODE;
+    spline(m_curSplineIdx).subv_levels = curveSubdLevels;
     currentSplineChanged();
 }
 
@@ -1527,9 +1529,9 @@ void GLScene::applyBlackCurves()
         glDeleteTextures(1, &texId2);
 
         //Draw black curves
-        int old_curveSubdLevels  = curveSubdLevels;
-        bool resubdivide = (curveSubdLevels!=5);
-        curveSubdLevels = 5;
+        int old_subdLevels  = drawingSubdLevels;
+        bool resubdivide = (drawingSubdLevels!=5);
+        drawingSubdLevels = 5;
         for (int i=0; i<num_splines(); ++i)
         {
             if (m_splineGroup.spline(i).num_cpts() <=1)   continue;
@@ -1544,7 +1546,7 @@ void GLScene::applyBlackCurves()
                 if (resubdivide) spline(i).display_points.clear();
             }
         }
-        curveSubdLevels = old_curveSubdLevels;
+        drawingSubdLevels = old_subdLevels;
 
         cv::Mat img;
         img.create(imageHeight, imageWidth, CV_8UC3);
@@ -1625,8 +1627,9 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
         glEnable(GL_BLEND);
         glEnable(GL_LINE_SMOOTH);
 
-        int old_curveSubdLevels  = curveSubdLevels;
-        curveSubdLevels = 5;
+        int old_subdLevels  = drawingSubdLevels;
+        bool resubdivide = (drawingSubdLevels!=5);
+        drawingSubdLevels = 5;
         for (int i=0; i<num_splines(); ++i)
         {
             if (m_splineGroup.spline(i).num_cpts() == 0)   continue;
@@ -1640,9 +1643,11 @@ cv::Mat GLScene::curvesImageBGR(bool only_closed_curves, float thickness)
             }
             else
                 glLineWidth(thickness);
+            if (resubdivide) spline(i).display_points.clear();
             draw_spline(i, true, false);
+            if (resubdivide) spline(i).display_points.clear();
         }
-        curveSubdLevels = old_curveSubdLevels;
+        drawingSubdLevels = old_subdLevels;
 
         GLenum inputColourFormat = BGRColourFormat();
         img.create(imageHeight, imageWidth, CV_8UC3);
@@ -2223,6 +2228,8 @@ bool GLScene::openCurves(std::string fname)
         delete_all();
     if (m_splineGroup.load(fname))
     {
+        for (int i=0; i<num_splines(); ++i)
+            spline(i).subv_levels = curveSubdLevels;
         recomputeAllSurfaces();
         curDisplayMode = 0;
         changeDisplayModeText();

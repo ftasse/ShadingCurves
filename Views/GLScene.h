@@ -278,6 +278,7 @@ public:
     bool showColors;
     QPointF accumMouseChanges;
     int curveSubdLevels;
+    int drawingSubdLevels;
     int globalThickness;
     bool brush;
     int brushType;

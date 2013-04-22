@@ -138,8 +138,20 @@ void GraphicsView::changeCurveSubdLevels(int value)
 {
     GLScene *my_scene = (GLScene *) scene();
     my_scene->curveSubdLevels = value;
-    my_scene->updateDisplay();
+    for (int i=0; i<my_scene->num_splines(); ++i)
+        my_scene->spline(i).subv_levels = my_scene->curveSubdLevels;
+    my_scene->recomputeAllSurfaces();
 }
+
+void GraphicsView::changeDisplaySubdLevels(int value)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->drawingSubdLevels = value;
+    for (int i=0; i<my_scene->num_splines(); ++i)
+        my_scene->spline(i).display_points.clear();
+    my_scene->updateGeometry();
+}
+
 
 void GraphicsView::changeGlobalThickness(int value)
 {
@@ -353,6 +365,9 @@ void GraphicsView::loadProject()
         my_scene->clearCurrentSelections();
 
         my_scene->splineGroup().loadAll(fileName.toStdString());
+        for (int i=0; i<my_scene->num_splines(); ++i)
+            my_scene->spline(i).subv_levels = my_scene->curveSubdLevels;
+
         cv::resize(my_scene->orgBlankImage, my_scene->orgBlankImage, my_scene->splineGroup().imageSize);
         cv::resize(my_scene->currentImage(), my_scene->currentImage(), my_scene->splineGroup().imageSize);
         my_scene->curDisplayMode = 0;

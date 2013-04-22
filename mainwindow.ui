@@ -217,10 +217,10 @@
             <bool>true</bool>
            </property>
           </widget>
-          <widget class="QSpinBox" name="curveSubdivisionsBox">
+          <widget class="QSpinBox" name="drawingSubdivisionsBox">
            <property name="geometry">
             <rect>
-             <x>138</x>
+             <x>140</x>
              <y>510</y>
              <width>51</width>
              <height>31</height>
@@ -331,7 +331,7 @@ background-color: rgba(127, 127, 127, 0);</string>
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>560</y>
+             <y>590</y>
              <width>184</width>
              <height>27</height>
             </rect>
@@ -454,6 +454,41 @@ background-color: rgba(127, 127, 127, 0);</string>
            </property>
            <property name="wordWrap">
             <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_13">
+           <property name="geometry">
+            <rect>
+             <x>22</x>
+             <y>554</y>
+             <width>131</width>
+             <height>31</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Curve subd              levels</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="curveSubdivisionsBox">
+           <property name="geometry">
+            <rect>
+             <x>140</x>
+             <y>550</y>
+             <width>51</width>
+             <height>31</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>8</number>
+           </property>
+           <property name="value">
+            <number>5</number>
            </property>
           </widget>
          </widget>

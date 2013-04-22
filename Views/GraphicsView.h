@@ -50,6 +50,7 @@ public slots:
     void changeFreehand(bool freehand);
     void changeResolution();
     void changeCurveSubdLevels(int value);
+    void changeDisplaySubdLevels(int value);
     void changeGlobalThickness(int value);
     void showControlMesh(bool status);
     void showControlPoints(bool status);
