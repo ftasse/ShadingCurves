@@ -97,7 +97,7 @@ bool BSplineGroup::addControlPointToSpline(int spline_id, int cpt_id)
         }
     }
 
-    if (controlPoint(cpt_id).num_splines() > 0 && controlPoint(cpt_id).splineRefs.front()!=spline_id)
+    if (!controlPoint(cpt_id).isSharp && controlPoint(cpt_id).num_splines() > 0 && controlPoint(cpt_id).splineRefs.front()!=spline_id)
         splitCurveAt(controlPoint(cpt_id).splineRefs.front(), cpt_id);
     m_splines[spline_id].cptRefs.push_back(cpt_id);
     m_cpts[cpt_id].splineRefs.push_back(spline_id);

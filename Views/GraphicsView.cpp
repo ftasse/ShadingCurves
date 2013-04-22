@@ -236,11 +236,11 @@ void GraphicsView::create_bspline()
 void GraphicsView::edit_bspline()
 {
     GLScene *my_scene = (GLScene *) scene();
-    my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
-    my_scene->brush = false;
-
-    my_scene->modeText = "Edit Curve Mode";
-    emit setStatusMessage("");
+    //my_scene->sketchmode() = GLScene::ADD_CURVE_MODE;
+    //my_scene->brush = false;
+    //my_scene->modeText = "Edit Curve Mode";
+    //emit setStatusMessage("");
+    my_scene->insertPointNextToSelected();
 }
 
 void GraphicsView::move_bsplines()

@@ -1194,6 +1194,70 @@ void GLScene::createBSpline()
     currentSplineChanged();
 }
 
+void GLScene::insertPointNextToSelected()
+{
+    bool refresh = false;
+    for (int i=0; i<selectedObjects.size(); ++i)
+    {
+        if (selectedObjects[i].first == CPT_NODE_ID)
+        {
+            int cpt_id = selectedObjects[i].second;
+            ControlPoint& cpt = controlPoint(cpt_id);
+            if (cpt.num_splines() > 0)
+            {
+                BSpline& curve = cpt.splineAt(0);
+                int index = -1;
+                for (int k=0; k<curve.cptRefs.size(); ++k)
+                {
+                    if (curve.cptRefs[k] == cpt_id)
+                    {
+                        index = k;
+                        break;
+                    }
+                }
+
+                if (index >=0)
+                {
+                    refresh = true;
+                    ControlPoint newPoint;
+                    if (curve.num_cpts() == 1)
+                    {
+                        newPoint = curve.pointAt(index) + ControlPoint(QPointF(5, 5));
+                    } else
+                    {
+                        if (index > 0 && index < curve.num_cpts()-1)
+                        {
+                            ControlPoint movedPoint;
+                            movedPoint = (index>0)?(1.0/3.0)*curve.pointAt(index-1)+(2.0/3.0)*curve.pointAt(index):
+                                                   (1.0/3.0)*curve.pointAt(index)+(2.0/3.0)*curve.pointAt(index+1);
+
+                            cpt.setX(movedPoint.x());
+                            cpt.setY(movedPoint.y());
+                            cpt.setZ(movedPoint.z());
+                            for (int k=0; k<2; ++k)
+                                cpt.attributes[k]  = movedPoint.attributes[k];
+                        }
+
+                        newPoint = (index<curve.num_cpts()-1)?(1.0/3.0)*curve.pointAt(index+1)+(2.0/3.0)*curve.pointAt(index):
+                                         (1.0/3.0)*curve.pointAt(index)+(2.0/3.0)*curve.pointAt(index-1);
+                    }
+
+                    int new_cpt_id = splineGroup().addControlPoint(newPoint, newPoint.z());
+                    for (int k=0; k<2; ++k)
+                        controlPoint(new_cpt_id).attributes[k]  = newPoint.attributes[k];
+                    if (index == curve.num_cpts()-1)
+                        curve.cptRefs.insert(index, new_cpt_id);
+                    else
+                        curve.cptRefs.insert(curve.cptRefs.begin() + index+1, new_cpt_id);
+                    controlPoint(new_cpt_id).splineRefs.push_back(curve.ref);
+                }
+            }
+        }
+    }
+    if (refresh)
+        recomputeAllSurfaces();
+}
+
 void GLScene::cleanMemory()
 {
     //qDebug("\nCleanMemory\n%s", memory_info().toStdString().c_str());

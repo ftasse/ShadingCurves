@@ -44,6 +44,7 @@ public:
 
     //Sketching functions
     void createBSpline();
+    void insertPointNextToSelected();
     void cleanMemory();
     void setSurfaceWidth(float _surface_width);
     void recomputeAllSurfaces();
