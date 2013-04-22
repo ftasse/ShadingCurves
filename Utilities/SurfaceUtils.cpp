@@ -23,7 +23,20 @@ QVector<QPointF> limitPoints(QVector<ControlPoint> spline)
 QPointF getNormal(QVector<ControlPoint> points, int index)
 {
     QPointF tangent;
-    if (index > 0 && index < points.size()-1) tangent = points[index+1] - points[index-1];
+    if (index > 0 && index < points.size()-1)
+    {
+        float norm;
+
+        QPointF v1 =  points[index+1] - points[index];
+        norm = sqrt(v1.x()*v1.x() + v1.y()*v1.y());
+        if (norm > 1e-5)    v1 /= norm;
+
+        QPointF v2 =  points[index-1] - points[index];
+        norm = sqrt(v2.x()*v2.x() + v2.y()*v2.y());
+        if (norm > 1e-5)    v2 /= norm;
+
+        tangent = v1 - v2;
+    }
     else if (points.front() == points.back()) { // junction point
         QPointF vec1 = points[1] - points[0];
         QPointF vec2 = points[points.size()-2] - points[0];
