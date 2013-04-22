@@ -227,10 +227,10 @@
             </rect>
            </property>
            <property name="minimum">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="maximum">
-            <number>8</number>
+            <number>10</number>
            </property>
            <property name="value">
             <number>5</number>
@@ -482,10 +482,10 @@ background-color: rgba(127, 127, 127, 0);</string>
             </rect>
            </property>
            <property name="minimum">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="maximum">
-            <number>8</number>
+            <number>10</number>
            </property>
            <property name="value">
             <number>5</number>
