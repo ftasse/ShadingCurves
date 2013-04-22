@@ -141,6 +141,14 @@ void GraphicsView::changeCurveSubdLevels(int value)
     my_scene->updateDisplay();
 }
 
+void GraphicsView::changeGlobalThickness(int value)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->globalThickness = value;
+    my_scene->applyBlackCurves();
+    my_scene->updateDisplay();
+}
+
 void GraphicsView::changeResolution()
 {
     GLScene *my_scene = (GLScene *) scene();

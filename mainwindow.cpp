@@ -57,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->ShowNormalsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showNormals(bool)));
     connect(ui->showColorsBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(showColors(bool)));
     connect(ui->curveSubdivisionsBox, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeCurveSubdLevels(int)));
+    connect(ui->global_thickness_box, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeGlobalThickness(int)));
 
     connect(ui->sharp_box, SIGNAL(clicked(bool)), this, SLOT(change_point_sharpness()));
     connect(scene, SIGNAL(point_parameters_changed(bool, bool)), this, SLOT(update_point_sharpness_ui(bool,bool)));

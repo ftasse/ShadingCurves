@@ -43,6 +43,7 @@ GLScene::GLScene(QObject *parent) :
     showColors = true;
     accumMouseChanges = QPointF(0.0,0.0);
     curveSubdLevels = 5;
+    globalThickness = 0;
     hasMoved = false;
     brush = false;
     brushType = 0;
@@ -1470,7 +1471,7 @@ void GLScene::applyBlackCurves()
 
     bool addBlackCurves = false;
     for (int i=0; i<num_splines(); ++i)
-        if (spline(i).num_cpts() > 1 && spline(i).thickness>0)
+        if (spline(i).num_cpts() > 1 && (spline(i).thickness>0 || globalThickness>0))
         {
             addBlackCurves = true; break;
         }
@@ -1532,13 +1533,16 @@ void GLScene::applyBlackCurves()
         for (int i=0; i<num_splines(); ++i)
         {
             if (m_splineGroup.spline(i).num_cpts() <=1)   continue;
-            if (spline(i).thickness <= 0)
-                continue;
-            glLineWidth(spline(i).thickness);
+            int thickness = spline(i).thickness;
+            if (thickness <= 0 && !spline(i).is_slope)  thickness = globalThickness ;
+            if (thickness)
+            {
+                glLineWidth(thickness);
 
-            if (resubdivide) spline(i).display_points.clear();
-            draw_spline(i, true, false);
-            if (resubdivide) spline(i).display_points.clear();
+                if (resubdivide) spline(i).display_points.clear();
+                draw_spline(i, true, false);
+                if (resubdivide) spline(i).display_points.clear();
+            }
         }
         curveSubdLevels = old_curveSubdLevels;
 
