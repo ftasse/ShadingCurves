@@ -801,14 +801,14 @@ void GLviewsubd::paintGL(void)
 //                            tmp = L + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
 
                             // L in [0,1], tmp should lie in [0,log10(2)]
-                            tmp = log10(L + 1) + log10(2)*2*(val - half);
+                            tmp = log10(L + 1.0) + std::log10(2.0)*2*(val - half);
 
                             // clip
                             if (clipping)
                             {
-                                if (tmp > log10(2))
+                                if (tmp > log10(2.0))
                                 {
-                                    tmp = log10(2);
+                                    tmp = log10(2.0);
                                 }
                                 else if (tmp < 0)
                                 {

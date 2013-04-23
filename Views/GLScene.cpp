@@ -21,6 +21,10 @@
 
 #include <QGLWidget>
 
+#ifndef max
+    #define max(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
 static const unsigned int  SELECTION_BUFFER_SIZE = 10000;
 static const unsigned int  NAME_STACK_SIZE       = 2;
 static const unsigned int  IMAGE_NODE_ID = 0;
@@ -2247,7 +2251,7 @@ void GLScene::resetImage()
     shadingProfileView->min_height = -100;
     shadingProfileView->max_height = 100;
     shadingProfileView->min_extent = 1;
-    shadingProfileView->max_extent = std::max(m_curImage.cols, m_curImage.rows);
+    shadingProfileView->max_extent = max(m_curImage.cols, m_curImage.rows);
 
     if (texId>0)
         updateImage();

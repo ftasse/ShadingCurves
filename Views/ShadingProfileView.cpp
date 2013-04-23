@@ -40,6 +40,7 @@ QFrame* createHorizontalLine()
     line->setGeometry(QRect(320, 150, 118, 3));
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
+    return line;
 }
 
 ShadingProfileView::ShadingProfileView()
