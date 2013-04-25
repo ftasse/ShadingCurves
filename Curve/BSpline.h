@@ -7,7 +7,7 @@
 
 #include "ControlPoint.h"
 
-#define DEFAULT_SUBDV_LEVELS 1
+#define DEFAULT_SUBDV_LEVELS 0
 
 class BSplineGroup;
 class Surface;
