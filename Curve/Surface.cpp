@@ -337,7 +337,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
             QLineF thisL = QLineF(thisCP,new_cpt);
             float angle = std::min(previousL.angleTo(thisL),thisL.angleTo(previousL));
             if(angle>cT) {
-                int vertexId = addVertex(prevCP1);
+                int vertexId = original_cpts_ids.at(k+extra_curvature_vertices_count);
                 original_cpts_ids.insert(original_cpts_ids.begin()+k+extra_curvature_vertices_count, vertexId); ++extra_curvature_vertices_count;
                 if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
                 normal = new_cpt + 0.5*(prevCP2-new_cpt) - thisCP;
@@ -350,11 +350,11 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
                 translated_cpts_ids.push_back(addVertex(tmp));
 
-                normal = tmp-lp.at(k);
+                normal = tmp-(QPointF)controlPoints[k];
 
                 for (int l=0; l<shapeAtrs.size(); ++l)
                 {
-                    int newId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
+                    int newId = addVertex((QPointF)controlPoints[k]+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
                     shape_controlpoints[l].push_back(newId);
                 }
             }
@@ -365,10 +365,10 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
         //if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
 
         // add shape point
-        normal = new_cpt-lp.at(k);
+        normal = new_cpt-(QPointF)controlPoints[k];
         for (int l=0; l<shapeAtrs.size(); ++l)
         {
-            vertexId = addVertex(lp.at(k)+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
+            vertexId = addVertex((QPointF)controlPoints[k]+normal*shapeAtrs[l].x(),height*shapeAtrs[l].y());
             shape_controlpoints[l].push_back(vertexId);
             //if (controlPoints[k].isSharp) sharpCorners.insert(vertexId);
         }
