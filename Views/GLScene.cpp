@@ -1026,7 +1026,7 @@ void GLScene::draw_surface(int surface_id)
                 for (int m=0; m<faceIndices[i].size(); ++m)
                 {
                     QPointF point = surf.vertices[faceIndices[i][m]];
-                    glVertex2f(point.x(), point.y()); //, surf.vertices[faceIndices[i][m]].z()
+                    glVertex2f(point.x(), point.y());
                 }
                 glEnd();
             }
