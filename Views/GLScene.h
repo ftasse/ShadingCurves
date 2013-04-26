@@ -277,6 +277,7 @@ public:
     bool showCurrentCurvePoints;
     bool showCurves;
     bool showColors;
+    bool displaySimpleSurfaces;
     QPointF accumMouseChanges;
     int curveSubdLevels;
     int drawingSubdLevels;

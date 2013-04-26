@@ -40,6 +40,7 @@ GLScene::GLScene(QObject *parent) :
     m_sketchmode = IDLE_MODE;
     pointSize = 10.0;
     showControlMesh = true;
+    displaySimpleSurfaces = false;
     showControlPoints = true;
     showCurrentCurvePoints = false;
     showCurves = true;
@@ -445,6 +446,11 @@ void GLScene::keyPressEvent(QKeyEvent *event)
     } else if (event->key() == Qt::Key_M)
     {
         qDebug("\n%s\n", memory_info().toStdString().c_str());
+        return;
+    } else if (event->key() == Qt::Key_C)
+    {
+        displaySimpleSurfaces = !displaySimpleSurfaces;
+        updateGeometry();
         return;
     }
 
@@ -1008,17 +1014,29 @@ void GLScene::draw_surface(int surface_id)
         glLineWidth(2.0);
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
-        QVector<QVector<int> > faceIndices = surf.faceIndices;
-        for (int i=0; i<faceIndices.size(); ++i)
+        if (!displaySimpleSurfaces)
         {
-            if (faceIndices[i].size() == 4)
-                glBegin(GL_QUADS);
-            else
-                glBegin(GL_TRIANGLES);
-            for (int m=0; m<faceIndices[i].size(); ++m)
+            QVector<QVector<int> > faceIndices = surf.faceIndices;
+            for (int i=0; i<faceIndices.size(); ++i)
             {
-                QPointF point = surf.vertices[faceIndices[i][m]];
-                glVertex2f(point.x(), point.y()); //, surf.vertices[faceIndices[i][m]].z()
+                if (faceIndices[i].size() == 4)
+                    glBegin(GL_QUADS);
+                else
+                    glBegin(GL_TRIANGLES);
+                for (int m=0; m<faceIndices[i].size(); ++m)
+                {
+                    QPointF point = surf.vertices[faceIndices[i][m]];
+                    glVertex2f(point.x(), point.y()); //, surf.vertices[faceIndices[i][m]].z()
+                }
+                glEnd();
+            }
+        } else
+        {
+            glBegin(GL_LINE_STRIP);
+            for (int i=0; i<surf.controlMesh.first().size(); ++i)
+            {
+                QPointF point = surf.vertices[surf.controlMesh.first()[i]];
+                glVertex2f(point.x(), point.y());
             }
             glEnd();
         }
