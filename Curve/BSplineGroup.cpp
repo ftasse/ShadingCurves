@@ -417,14 +417,15 @@ void BSplineGroup::computeJunctions()
                                 continue;
                             }
 
-                            junction.height - 0.0;
+                            junction.attribute = 0.5*(leftPt.attributes[junction.spline1Direction] + rightPt.attributes[junction.spline2Direction]);
                             if (leftPt.attributes[junction.spline1Direction].height*rightPt.attributes[junction.spline2Direction].height<0.0)
+                            {
+                                junction.attribute.height = 0.0;
                                 junction.has_negative_directions = true;
-                            else
-                                junction.height = (leftPt.attributes[junction.spline1Direction].height + rightPt.attributes[junction.spline2Direction].height)/2.0;
+                            }
 
-                            spline_j.junctionPoints[junction.spline1Direction].push_back(std::pair<int, float>(normals_j[m].pos, junction.height));
-                            spline_k.junctionPoints[junction.spline2Direction].push_back(std::pair<int, float>(normals_k[n].pos, junction.height));
+                            spline_j.junctionPoints[junction.spline1Direction].push_back(std::pair<int, Attribute>(normals_j[m].pos, junction.attribute));
+                            spline_k.junctionPoints[junction.spline2Direction].push_back(std::pair<int, Attribute>(normals_k[n].pos, junction.attribute));
 
                             junctionInfos.push_back(junction);
 

@@ -124,7 +124,7 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
     QVector<ControlPoint> original_points = bspline.getControlPoints();;
     for (int k=0; k<2; ++k)
     {        
-        std::vector< std::pair<int, float> > junctionPoints = bspline.junctionPoints[k];
+        std::vector< std::pair<int, Attribute> > junctionPoints = bspline.junctionPoints[k];
 
         if (bspline.start_has_zero_height[k] || bspline.is_slope)
         {
@@ -147,7 +147,11 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
         {
             resubdivide = true;
             for (int i=0; i<junctionPoints.size(); ++i)
-                original_points[junctionPoints[i].first].attributes[k].height = junctionPoints[i].second;
+            {
+                NormalDirection tmp = original_points[junctionPoints[i].first].attributes[k].direction;
+                original_points[junctionPoints[i].first].attributes[k] = junctionPoints[i].second;
+                original_points[junctionPoints[i].first].attributes[k].direction = tmp;
+            }
         }
 
     }

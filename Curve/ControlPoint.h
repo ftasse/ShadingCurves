@@ -123,4 +123,33 @@ inline ControlPoint operator*(qreal a, ControlPoint p2)
     return cpt;
 }
 
+inline Attribute operator+(Attribute a1, Attribute a2)
+{
+    Attribute new_attribute;
+    new_attribute.direction = a1.direction;
+    new_attribute.height = a1.height + a2.height;
+    new_attribute.extent = a1.extent + a2.extent;
+
+    assert(a1.shapePointAtr.size() == a2.shapePointAtr.size());
+    for (int l=0; l<a1.shapePointAtr.size(); ++l)
+    {
+        new_attribute.shapePointAtr.push_back(a1.shapePointAtr[l] + a2.shapePointAtr[l]);
+    }
+    return new_attribute;
+}
+
+inline Attribute operator*(qreal s, Attribute a2)
+{
+    Attribute new_attribute;
+    new_attribute.direction = a2.direction;
+    new_attribute.height = s*a2.height;
+    new_attribute.extent = s*a2.extent;
+
+    for (int l=0; l<a2.shapePointAtr.size(); ++l)
+    {
+        new_attribute.shapePointAtr.push_back(s*a2.shapePointAtr[l]);
+    }
+    return new_attribute;
+}
+
 #endif // CONTROLPOINT_H
