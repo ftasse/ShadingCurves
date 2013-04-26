@@ -17,25 +17,25 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 //	meshSubd.clear();
 //    meshOld.clear();
 
-	mesh_enabled = true;
+    mesh_enabled = true;
     flat_mesh_enabled = false;
     smooth_mesh_enabled = false;
-	edged_mesh_enabled = false;
-	culled_mesh_enabled = false;
-	curvM_mesh_enabled = false;
-	curvG_mesh_enabled = false;
-	curvTG_mesh_enabled = false;
+    edged_mesh_enabled = false;
+    culled_mesh_enabled = false;
+    curvM_mesh_enabled = false;
+    curvG_mesh_enabled = false;
+    curvTG_mesh_enabled = false;
     height_mesh_enabled = true;
     feature_lines_enabled = false;
-	IP_mesh_enabled = false;
+    IP_mesh_enabled = false;
     triang_enabled = false;
-	triang2_enabled = false;
+    triang2_enabled = false;
     ctrl_enabled = false;
     old_enabled = false;
     frame_enabled = false;
-	probeOnCtrl = true;
+    probeOnCtrl = true;
     transf = true;
-	clear = true;
+    clear = true;
 
     Lab_enabled = false;
 
@@ -44,19 +44,19 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
     subType = CC;
 
-	verInd = -1;
-	verIndSub = -1;
+    verInd = -1;
+    verIndSub = -1;
 
-	lastChangeX = 0;
-	lastChangeY = 0;
-	lastChangeZ = 0;
+    lastChangeX = 0;
+    lastChangeY = 0;
+    lastChangeZ = 0;
 
-	smoothCoef = 0;
+    smoothCoef = 0;
 
-	indexMesh = -1;
+    indexMesh = -1;
 
-	curvRatio1 = 0.0;
-	curvRatio2 = 0.0;
+    curvRatio1 = 0.0;
+    curvRatio2 = 0.0;
 
     stripeDensityLevel = 3;
     lapSmValue = 10;
@@ -85,6 +85,8 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     clrVsTxtr = true;
 
     subdivTime = 0;
+
+    surfBlendColours.clear();
 
 //    //COLOUR CONVERSION TESTS
 //    double L, a, b, R, G, B, Y, x, y;
@@ -209,7 +211,7 @@ void GLviewsubd::subdivide(void)
 
 void GLviewsubd::setSubdivLevel(int newLevel)
 {
-	unsigned int i, j, oldLevel;
+    unsigned int i, j, oldLevel;
     unsigned int newL = newLevel;
     bool        showMessageCF, showMessageCCint;
 
@@ -220,25 +222,25 @@ void GLviewsubd::setSubdivLevel(int newLevel)
     showMessageCCint = false;
 
     if (meshCurr.size() > 0 && meshCurr[0]->my_level != newL)
-	{
+    {
         oldLevel = meshCurr[0]->my_level;
 //cout << "setSubdivLevel with old level " << oldLevel << " new level " << newLevel << endl;
 
         if ((meshCurr[0]->my_level > newL) || (meshSubd[0].size() > newL))
-		{
-			// just call the right mesh from the vector of meshes
-			for (j = 0 ; j < meshCurr.size() ; j++)
-			{
-				meshCurr[j] = meshSubd[j][newLevel];
-			}
-		}
-		else // if (meshCurr->my_level < newLevel)
-		{
-			for (i = 0 ; i < newL - oldLevel; i++)
-			{
-				for (j = 0 ; j < meshCurr.size() ; j++)
-				{
-					nextMesh = new Mesh();
+        {
+            // just call the right mesh from the vector of meshes
+            for (j = 0 ; j < meshCurr.size() ; j++)
+            {
+                meshCurr[j] = meshSubd[j][newLevel];
+            }
+        }
+        else // if (meshCurr->my_level < newLevel)
+        {
+            for (i = 0 ; i < newL - oldLevel; i++)
+            {
+                for (j = 0 ; j < meshCurr.size() ; j++)
+                {
+                    nextMesh = new Mesh();
                     nextMesh->isGhost = meshCurr[j]->isGhost;
                     meshCurr[j]->CatmullClark(nextMesh);
 
@@ -247,17 +249,17 @@ void GLviewsubd::setSubdivLevel(int newLevel)
                         meshSubd[j].push_back(nextMesh);
                         meshCurr[j] = nextMesh;
                     }
-				}
-			}
-		}
+                }
+            }
+        }
 
 //        emit subdivLevelChanged(newLevel);
 //        cout << "subdivide End " << endl;
-	}
+    }
     subdivTime = timer.elapsed();
     qDebug() << "3D: Subdivision: " << subdivTime << "ms";
 
-	updateAll();
+    updateAll();
 }
 
 void GLviewsubd::setClr(int newColor)
@@ -265,35 +267,35 @@ void GLviewsubd::setClr(int newColor)
 
     cout << "setColor() " << newColor << endl;
 
-	if (clr != newColor)
-	{
-		clr = newColor;
-		buildCurvGMesh();
+    if (clr != newColor)
+    {
+        clr = newColor;
+        buildCurvGMesh();
         buildHeightMesh();
-		updateGL();
-	}
+        updateGL();
+    }
 }
 
 void GLviewsubd::setIndMesh(int newInd)
 {
-	if (indexMesh != newInd - 1)
-	{
-		indexMesh = newInd - 1;
+    if (indexMesh != newInd - 1)
+    {
+        indexMesh = newInd - 1;
 
-		verInd = -2;
-		verIndSub = -2;
+        verInd = -2;
+        verIndSub = -2;
 
-		lastChangeX = 0;
-		lastChangeY = 0;
-		lastChangeZ = 0;
+        lastChangeX = 0;
+        lastChangeY = 0;
+        lastChangeZ = 0;
 
-		emit poiChanged();
-		emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
+        emit poiChanged();
+        emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
 
         buildAll();
 
         focusView();
-	}
+    }
 }
 
 void GLviewsubd::buildAll(void)
@@ -464,6 +466,14 @@ void GLviewsubd::paintGL(void)
         QElapsedTimer timer;
         timer.start();
 
+        //assign alpha values to surfaces as flags
+
+        int count = meshCurr.size();
+        for (int i = 0 ; i < count ; i++)
+        {
+            meshCurr[i]->colFlat[4] = (float)i/100000.0;
+        }
+
         double      tmp, val, valMin, valMax, half;
 
 //        half = 0.501960813999176; // grey level with lum difference zero
@@ -487,7 +497,7 @@ void GLviewsubd::paintGL(void)
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
         glGenRenderbuffersEXT(1, &renderbuffer);
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB16F, super*imageWidth, super*imageHeight); // GL_RGB32F does not work (on Z930) for high resolutions
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA16F, super*imageWidth, super*imageHeight); // GL_RGB32F does not work (on Z930) for high resolutions
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                          GL_RENDERBUFFER_EXT, renderbuffer);
         //depth buffer
@@ -527,21 +537,21 @@ void GLviewsubd::paintGL(void)
         clr = origClr;
 
         //create image
-        img.create(super*imageHeight, super*imageWidth, CV_32FC3);
+        img.create(super*imageHeight, super*imageWidth, CV_32FC4);
         GLenum inputColourFormat;
-        #ifdef GL_BGR
-            inputColourFormat = GL_BGR;
+        #ifdef GL_BGRA
+            inputColourFormat = GL_BGRA;
         #else
-            #ifdef GL_BGR_EXT
-                inputColourFormat = GL_BGR_EXT;
+            #ifdef GL_BGRA_EXT
+                inputColourFormat = GL_BGRA_EXT;
             #else
-                #define GL_BGR 0x80E0
-                inputColourFormat = GL_BGR;
+                #define GL_BGRA 0x80E0
+                inputColourFormat = GL_BGRA;
             #endif
         #endif
         glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
 
-//        tmp = img.at<cv::Vec3f>(0,0)[0]; // for an empty image, use this value as `zero'
+//        tmp = img.at<cv::Vec4f>(0,0)[0]; // for an empty image, use this value as `zero'
 //        cout << "Zero level: " << tmp << endl;
 
         if (flatImage)
@@ -554,7 +564,7 @@ void GLviewsubd::paintGL(void)
             buildFlatMesh();
             glCallList(flat_mesh_list);
             //create image
-            imgFill.create(super*imageHeight, super*imageWidth, CV_32FC3);
+            imgFill.create(super*imageHeight, super*imageWidth, CV_32FC4);
             glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, imgFill.data);
         }
 
@@ -574,13 +584,13 @@ void GLviewsubd::paintGL(void)
         qDebug() << "3D: OpenGL rendering: " << timer.elapsed() << "ms";
         timer.restart();
 
-//        cout << imgFill.at<cv::Vec3f>(0,0)[0] << " " << imgFill.at<cv::Vec3f>(0,0)[1] <<" " << imgFill.at<cv::Vec3f>(0,0)[2] << endl;
+//        cout << imgFill.at<cv::Vec4f>(0,0)[0] << " " << imgFill.at<cv::Vec4f>(0,0)[1] <<" " << imgFill.at<cv::Vec4f>(0,0)[2] << endl;
 
         //process images
 //        cv::cvtColor(imgFill, imgFill, CV_BGR2RGB);
 
-//        cv::imshow("Img: Lum Dif", img);
-//        cv::imshow("Img: Filled", imgFill);
+//        cv::imshow("Img: Lum Dif0", img);
+//        cv::imshow("Img: Filled0", imgFill);
 
 
         cv::flip(img, img, 0); // img is grey with surface height
@@ -594,8 +604,8 @@ void GLviewsubd::paintGL(void)
             inputImg->copyTo(imgFill); // set imgFill to background image
             imgFill.convertTo(imgFill, CV_32FC3);
             imgFill *= 1.0 / 255.0;
+            imgFill.convertTo(imgFill, CV_BGR2BGRA); // add alpha channel to be compatible with `flatImage' option
         }
-
 
 //        if (showImg)
 //        {
@@ -646,6 +656,8 @@ void GLviewsubd::paintGL(void)
         {
             imgFill.copyTo(imgFillShaded);
 
+//            cv::imshow("Img: Filled and shaded0", imgFillShaded);
+
             qDebug() << "3D: IP: Prepare images: " << timer.elapsed() << "ms";
             timer.restart();
 
@@ -659,13 +671,13 @@ void GLviewsubd::paintGL(void)
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        val = img.at<cv::Vec3f>(y,x)[0];
+                        val = img.at<cv::Vec4f>(y,x)[0];
 
                         if (val < valMin || val > valMax)
                         {
-                            RGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
-                                    imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                    imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                            RGB2LAB(imgFillShaded.at<cv::Vec4f>(y,x)[2],
+                                    imgFillShaded.at<cv::Vec4f>(y,x)[1],
+                                    imgFillShaded.at<cv::Vec4f>(y,x)[0],
                                     L, a, b);
 
                             tmp = L + 200*(val - half); //0.50196081399917603
@@ -681,7 +693,7 @@ void GLviewsubd::paintGL(void)
                                     tmp = clipMin;
                                 }
                             }
-        //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+        //                    imgFillShaded.at<cv::Vec4f>(y,x)[0] = tmp;
 
                             //convert manually back to BGR
 
@@ -702,9 +714,9 @@ void GLviewsubd::paintGL(void)
                                 }
                             }
 
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = rr;
                         }
                     }
                 }
@@ -720,7 +732,7 @@ void GLviewsubd::paintGL(void)
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[0] + 200*(img.at<cv::Vec3f>(y,x)[0] - half); //0.50196081399917603, 0.498039215803146
+                        tmp = imgFillShaded.at<cv::Vec4f>(y,x)[0] + 200*(img.at<cv::Vec4f>(y,x)[0] - half); //0.50196081399917603, 0.498039215803146
 
                         if (clipping)
                         {
@@ -733,7 +745,7 @@ void GLviewsubd::paintGL(void)
                                 tmp = clipMin;
                             }
                         }
-                        imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+                        imgFillShaded.at<cv::Vec4f>(y,x)[0] = tmp;
                     }
                 }
                 //convert back to BGR
@@ -753,7 +765,7 @@ void GLviewsubd::paintGL(void)
                 {
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        tmp = imgFillShaded.at<cv::Vec3f>(y,x)[1] + 2*(img.at<cv::Vec3f>(y,x)[0] - half); //0.50196081399917603
+                        tmp = imgFillShaded.at<cv::Vec4f>(y,x)[1] + 2*(img.at<cv::Vec4f>(y,x)[0] - half); //0.50196081399917603
 
                         if (clipping)
                         {
@@ -766,7 +778,7 @@ void GLviewsubd::paintGL(void)
                                 tmp = clipMin;
                             }
                         }
-                        imgFillShaded.at<cv::Vec3f>(y,x)[1] = tmp;
+                        imgFillShaded.at<cv::Vec4f>(y,x)[1] = tmp;
                     }
                 }
 
@@ -789,16 +801,16 @@ void GLviewsubd::paintGL(void)
                     //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        val = img.at<cv::Vec3f>(y,x)[0];
+                        val = img.at<cv::Vec4f>(y,x)[0];
 
                         if (val < valMin || val > valMax)
                         {
-                            RGB2YXY(imgFillShaded.at<cv::Vec3f>(y,x)[2],
-                                    imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                    imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                            RGB2YXY(imgFillShaded.at<cv::Vec4f>(y,x)[2],
+                                    imgFillShaded.at<cv::Vec4f>(y,x)[1],
+                                    imgFillShaded.at<cv::Vec4f>(y,x)[0],
                                     L, a, b);
 
-//                            tmp = L + 2*(img.at<cv::Vec3f>(y,x)[0] - 0.5); //0.50196081399917603
+//                            tmp = L + 2*(img.at<cv::Vec4f>(y,x)[0] - 0.5); //0.50196081399917603
 
                             // L in [0,1], tmp should lie in [0,log10(2)]
                             tmp = log10(L + 1.0) + std::log10(2.0)*2*(val - half);
@@ -824,9 +836,9 @@ void GLviewsubd::paintGL(void)
 
                             //black out already in YXY2RGB fucntion
 
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = rr;
                         }
                     }
                 }
@@ -834,49 +846,73 @@ void GLviewsubd::paintGL(void)
             else if (shade == RGB)
             {
                 // apply luminance adjustment
-                double  R, G, B;
+                double  R, G, B, alpha, RR, GG, BB;
                 int x, y;
 
-                #pragma omp parallel for default(none) private(x, y, val, R, G, B, tmp) shared(valMin, valMax, half)
+                #pragma omp parallel for default(none) private(x, y, val, R, G, B, tmp, alpha, RR, GG, BB) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
                 {
                     //paralellising the inner loop gives slower results
                     //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        val = img.at<cv::Vec3f>(y,x)[0];
+                        val = img.at<cv::Vec4f>(y,x)[0];
 
                         if (val < valMin || val > valMax)
                         {
-                            B = imgFillShaded.at<cv::Vec3f>(y,x)[0];
-                            G = imgFillShaded.at<cv::Vec3f>(y,x)[1];
-                            R = imgFillShaded.at<cv::Vec3f>(y,x)[2];
-                            if (val < valMin)
-                            {
-                                //make darker
-                                tmp = 2 * val;
-                                B *= tmp;
-                                G *= tmp;
-                                R *= tmp;
-                            }
-                            else
-                            {
-                                //make brighter
-                                tmp = 2 * (1 - val);
-                                B = 1 - B;
-                                G = 1 - G;
-                                R = 1 - R;
-                                B *= tmp;
-                                G *= tmp;
-                                R *= tmp;
-                                B = 1 - B;
-                                G = 1 - G;
-                                R = 1 - R;
-                            }
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = B;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = G;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = R;
+                            B = imgFillShaded.at<cv::Vec4f>(y,x)[0];
+                            G = imgFillShaded.at<cv::Vec4f>(y,x)[1];
+                            R = imgFillShaded.at<cv::Vec4f>(y,x)[2];
+
+                            alpha = 100000*imgFillShaded.at<cv::Vec4f>(y,x)[3];
+
+                            RR = surfBlendColours[alpha].getX();
+                            GG = surfBlendColours[alpha].getY();
+                            BB = surfBlendColours[alpha].getZ();
+
+                            tmp = 2 * fabs(val - 0.5);
+
+                            B = (1 - tmp) * B + tmp * BB;
+                            G = (1 - tmp) * G + tmp * GG;
+                            R = (1 - tmp) * R + tmp * RR;
+
+                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = B;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = G;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = R;
                         }
+
+                        //old code with just white and black
+//                        if (val < valMin || val > valMax)
+//                        {
+//                            B = imgFillShaded.at<cv::Vec4f>(y,x)[0];
+//                            G = imgFillShaded.at<cv::Vec4f>(y,x)[1];
+//                            R = imgFillShaded.at<cv::Vec4f>(y,x)[2];
+//                            if (val < valMin)
+//                            {
+//                                //make darker -- connect to black
+//                                tmp = 2 * val;
+//                                B *= tmp;
+//                                G *= tmp;
+//                                R *= tmp;
+//                            }
+//                            else
+//                            {
+//                                //make brighter -- connect to white
+//                                tmp = 2 * (1 - val);
+//                                B = 1 - B;
+//                                G = 1 - G;
+//                                R = 1 - R;
+//                                B *= tmp;
+//                                G *= tmp;
+//                                R *= tmp;
+//                                B = 1 - B;
+//                                G = 1 - G;
+//                                R = 1 - R;
+//                            }
+//                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = B;
+//                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = G;
+//                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = R;
+//                        }
                     }
                 }
             }
@@ -893,13 +929,13 @@ void GLviewsubd::paintGL(void)
                     //#pragma omp parallel for default(none) private(x, val, L, a, b, bb, gg, rr, tmp) shared(y, valMin, valMax)
                     for( x = 0; x < imgFillShaded.cols; x++ )
                     {
-                        val = img.at<cv::Vec3f>(y,x)[0];
+                        val = img.at<cv::Vec4f>(y,x)[0];
 
                         if (val < valMin || val > valMax)
                         {
-                            matlabRGB2LAB(imgFillShaded.at<cv::Vec3f>(y,x)[2],
-                                          imgFillShaded.at<cv::Vec3f>(y,x)[1],
-                                          imgFillShaded.at<cv::Vec3f>(y,x)[0],
+                            matlabRGB2LAB(imgFillShaded.at<cv::Vec4f>(y,x)[2],
+                                          imgFillShaded.at<cv::Vec4f>(y,x)[1],
+                                          imgFillShaded.at<cv::Vec4f>(y,x)[0],
                                           L, a, b);
 
                             tmp = L + 200*(val - half); //0.50196081399917603
@@ -915,16 +951,16 @@ void GLviewsubd::paintGL(void)
                                     tmp = clipMin;
                                 }
                             }
-        //                    imgFillShaded.at<cv::Vec3f>(y,x)[0] = tmp;
+        //                    imgFillShaded.at<cv::Vec4f>(y,x)[0] = tmp;
 
                             //convert manually back to BGR
                             matlabLAB2RGB(tmp, a, b, rr, gg, bb);
 
                             //black out already in matlabLAB2RGB fucntion
 
-                            imgFillShaded.at<cv::Vec3f>(y,x)[0] = bb;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[1] = gg;
-                            imgFillShaded.at<cv::Vec3f>(y,x)[2] = rr;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = bb;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = gg;
+                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = rr;
                         }
                     }
                 }
@@ -935,21 +971,35 @@ void GLviewsubd::paintGL(void)
 
 //            cv::cvtColor(imgFillShaded, imgFillShaded, CV_BGR2RGB);
 
+            cv::Mat img2(img.rows, img.cols, CV_32FC3);
+            cv::Mat imgFill2(img.rows, img.cols, CV_32FC3);
+            cv::Mat imgFillShaded2(img.rows, img.cols, CV_32FC3);
+
+            //remove alpha channels
+//            img.convertTo(img2, CV_BGRA2BGR);
+//            imgFill.convertTo(imgFill2, CV_BGRA2BGR);
+//            imgFillShaded.convertTo(imgFillShaded2, CV_BGRA2BGR);
+
+            int fromTo[] = {0, 0, 1, 1, 2, 2};
+            cv::mixChannels(&img, 1, &img2, 1, fromTo, 3);
+            cv::mixChannels(&imgFill, 1, &imgFill2, 1, fromTo, 3);
+            cv::mixChannels(&imgFillShaded, 1, &imgFillShaded2, 1, fromTo, 3);
+
             //show always
             if (showImg)
             {
-                cv::imshow("Img: Lum Dif", img);
-                cv::imshow("Img: Filled and shaded result", imgFillShaded);
+                cv::imshow("Img: Lum Dif2", img2);
+                cv::imshow("Img: Filled and shaded result2", imgFillShaded2);
             }
 
-            img *= 255;
-            img.convertTo(img, CV_8UC3);
-            imgFill *= 255;
-            imgFill.convertTo(imgFill, CV_8UC3);
+            img2 *= 255;
+            img2.convertTo(img, CV_8UC3);
+            imgFill2 *= 255;
+            imgFill2.convertTo(imgFill, CV_8UC3);
 //            imgShaded *= 255;
 //            imgShaded.convertTo(imgShaded, CV_8UC3);
-            imgFillShaded *= 255;
-            imgFillShaded.convertTo(imgFillShaded, CV_8UC3);
+            imgFillShaded2 *= 255;
+            imgFillShaded2.convertTo(imgFillShaded, CV_8UC3);
 
             if (writeImg)
             {
@@ -1073,137 +1123,137 @@ void GLviewsubd::paintGL(void)
 
 void GLviewsubd::mousePressEvent(QMouseEvent *event)
 {
-	Point_3D 		poi;
-	int 			x, y, mouseX, mouseY;
-	unsigned int 	i;
-	float			dst, minD;
-	int				newInd;
+    Point_3D 		poi;
+    int 			x, y, mouseX, mouseY;
+    unsigned int 	i;
+    float			dst, minD;
+    int				newInd;
 
-	Mesh			*mesh;
+    Mesh			*mesh;
 
-	makeCurrent();
-	minD = 1000000;
+    makeCurrent();
+    minD = 1000000;
 
 
-	if ((event->buttons() & Qt::LeftButton) && meshCurr.size() > 0 && indexMesh > -1)
-	{
-		if (probeOnCtrl)
-		{
-			mesh = meshCtrl[indexMesh];
-		}
-		else
-		{
-			mesh = meshCurr[indexMesh];
-		}
+    if ((event->buttons() & Qt::LeftButton) && meshCurr.size() > 0 && indexMesh > -1)
+    {
+        if (probeOnCtrl)
+        {
+            mesh = meshCtrl[indexMesh];
+        }
+        else
+        {
+            mesh = meshCurr[indexMesh];
+        }
 
-		mouseX = mapFromGlobal(QCursor::pos()).x();
-		mouseY = size().height() - mapFromGlobal(QCursor::pos()).y();
+        mouseX = mapFromGlobal(QCursor::pos()).x();
+        mouseY = size().height() - mapFromGlobal(QCursor::pos()).y();
 
 //		newInd = -1;
 
-		for (i = 0 ; i < mesh->my_vertices.size() ; i++)
-		{
-			poi = worldToScreen(mesh->my_vertices[i].my_point);
-			x = poi.getX();
+        for (i = 0 ; i < mesh->my_vertices.size() ; i++)
+        {
+            poi = worldToScreen(mesh->my_vertices[i].my_point);
+            x = poi.getX();
             y = poi.getY();
             // HENRIK edit: convert to float
             dst = sqrt(float((mouseX - x) * (mouseX - x) + (mouseY - y) * (mouseY - y)));
-			if (dst < minD)
-			{
-				minD = dst;
-				newInd = i;
-			}
-		}
+            if (dst < minD)
+            {
+                minD = dst;
+                newInd = i;
+            }
+        }
 
-		if (probeOnCtrl)
-		{
-			verIndSub = -2;
-			buildPoiSub();
-			if (verInd == newInd)
-			{
-				verInd = -2;
-			}
-			else
-			{
-				verInd = newInd;
-			}
+        if (probeOnCtrl)
+        {
+            verIndSub = -2;
+            buildPoiSub();
+            if (verInd == newInd)
+            {
+                verInd = -2;
+            }
+            else
+            {
+                verInd = newInd;
+            }
 
-			lastChangeX = 0;
-			lastChangeY = 0;
-			lastChangeZ = 0;
+            lastChangeX = 0;
+            lastChangeY = 0;
+            lastChangeZ = 0;
 
-			emit poiChanged();
-			emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
-		}
-		else
-		{
-			verInd = -2;
-			lastChangeX = 0;
-			lastChangeY = 0;
-			lastChangeZ = 0;
-			emit poiChanged();
-			emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
-			if (verIndSub == newInd)
-			{
-				verIndSub = -2;
-			}
-			else
-			{
-				verIndSub = newInd;
-				mesh->my_vertices[verIndSub].coutV();
-			}
-			buildPoiSub();
-			updateGL();
-		}
-	}
-	else if (event->buttons() & Qt::MidButton)
-	{
-		emit middleClicked();
-	}
-	lastPos = event->pos();
+            emit poiChanged();
+            emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
+        }
+        else
+        {
+            verInd = -2;
+            lastChangeX = 0;
+            lastChangeY = 0;
+            lastChangeZ = 0;
+            emit poiChanged();
+            emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
+            if (verIndSub == newInd)
+            {
+                verIndSub = -2;
+            }
+            else
+            {
+                verIndSub = newInd;
+                mesh->my_vertices[verIndSub].coutV();
+            }
+            buildPoiSub();
+            updateGL();
+        }
+    }
+    else if (event->buttons() & Qt::MidButton)
+    {
+        emit middleClicked();
+    }
+    lastPos = event->pos();
 }
 
 void GLviewsubd::drawPoi()
 {
-	if (verInd > -1)
-	{
-		glDisable(GL_TEXTURE_1D);
+    if (verInd > -1)
+    {
+        glDisable(GL_TEXTURE_1D);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_poi);
-		glPointSize(15);
+        glPointSize(15);
         glColor3fv(col_poi);
-		glBegin(GL_POINTS);
+        glBegin(GL_POINTS);
         glVertex3fv(meshCtrl[indexMesh]->my_vertices[verInd].my_point.getCoords());
-		glEnd();
-		glPointSize(1);
-	}
+        glEnd();
+        glPointSize(1);
+    }
 }
 
 void GLviewsubd::drawPoiSub()
 {
-	if (verIndSub > -1)
-	{
-		glDisable(GL_TEXTURE_1D);
+    if (verIndSub > -1)
+    {
+        glDisable(GL_TEXTURE_1D);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_poi);
-		glPointSize(15);
+        glPointSize(15);
         glColor3fv(col_poi);
-		glBegin(GL_POINTS);
+        glBegin(GL_POINTS);
         glVertex3fv(meshCurr[indexMesh]->my_vertices[verIndSub].my_point.getCoords());
-		glEnd();
-		glPointSize(1);
-	}
+        glEnd();
+        glPointSize(1);
+    }
 }
 
 void GLviewsubd::drawPoiBound()
 {
     Point_3D		poi1, poi2;
     unsigned int 	i, j, k;
-	Mesh			*mesh;
+    Mesh			*mesh;
 
     glEnable(GL_POINT_SMOOTH);
     glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
-	for (j = 0 ; j < meshCtrl.size() ; j++)
-	{
+    for (j = 0 ; j < meshCtrl.size() ; j++)
+    {
         for (k = 0 ; k < 2 ; k++)
         {
             if (k == 0)
@@ -1246,7 +1296,7 @@ void GLviewsubd::drawPoiBound()
                 glPointSize(1);
             }
         }
-	}
+    }
     glDisable(GL_POINT_SMOOTH);
 }
 
@@ -1655,9 +1705,9 @@ void GLviewsubd::drawLab()
 
 void GLviewsubd::buildFlatMesh()
 {
-	unsigned int j;
+    unsigned int j;
 
-	makeCurrent();
+    makeCurrent();
     if(flat_mesh_list)	glDeleteLists(flat_mesh_list, 1);
     flat_mesh_list = glGenLists (1);
     glNewList (flat_mesh_list, GL_COMPILE);
@@ -1673,7 +1723,7 @@ void GLviewsubd::buildFlatMesh()
                 drawMesh(FLAT, meshCurr[j], j, 0);
             }
         }
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildSmoothMesh()
@@ -1713,12 +1763,12 @@ void GLviewsubd::buildSmoothMesh()
 
 void GLviewsubd::buildEdgedMesh()
 {
-	unsigned int j;
+    unsigned int j;
 
-	makeCurrent();
-	if(edged_mesh_list)	glDeleteLists(edged_mesh_list, 1);
-	edged_mesh_list = glGenLists (1);
-	glNewList (edged_mesh_list, GL_COMPILE);
+    makeCurrent();
+    if(edged_mesh_list)	glDeleteLists(edged_mesh_list, 1);
+    edged_mesh_list = glGenLists (1);
+    glNewList (edged_mesh_list, GL_COMPILE);
 //        glDisable(GL_LIGHTING);
         glEnable(GL_LIGHTING);
 //		for (j = 0 ; j < meshCurr.size() ; j++)
@@ -1736,18 +1786,18 @@ void GLviewsubd::buildEdgedMesh()
                 drawMesh(WIREFRAME, meshCurr[j], j, 0);
             }
         }
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildCulledMesh()
 {
-	unsigned int j;
+    unsigned int j;
 
-	makeCurrent();
-	if(culled_mesh_list)	glDeleteLists(culled_mesh_list, 1);
-	culled_mesh_list = glGenLists (1);
-	glNewList (culled_mesh_list, GL_COMPILE);
-		glDisable(GL_LIGHTING);
+    makeCurrent();
+    if(culled_mesh_list)	glDeleteLists(culled_mesh_list, 1);
+    culled_mesh_list = glGenLists (1);
+    glNewList (culled_mesh_list, GL_COMPILE);
+        glDisable(GL_LIGHTING);
 //		for (j = 0 ; j < meshCurr.size() ; j++)
 //		{
 //            drawMesh(SOLIDFRAME, meshCurr[j], j, 0);
@@ -1763,7 +1813,7 @@ void GLviewsubd::buildCulledMesh()
                 drawMesh(SOLIDFRAME, meshCurr[j], j, 0);
             }
         }
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildCurvMMesh()
@@ -1784,7 +1834,7 @@ void GLviewsubd::buildCurvMMesh()
 
 void GLviewsubd::buildCurvGMesh()
 {
-	unsigned int j;
+    unsigned int j;
     PointPrec	 minG, maxG;
 
     minG = 100000000000;
@@ -1807,11 +1857,11 @@ void GLviewsubd::buildCurvGMesh()
         meshCurr[j]->my_maxG = maxG;
     }
 
-	makeCurrent();
-	if(curvG_mesh_list)	glDeleteLists(curvG_mesh_list, 1);
-	curvG_mesh_list = glGenLists (1);
-	glNewList (curvG_mesh_list, GL_COMPILE);
-		glEnable(GL_LIGHTING);
+    makeCurrent();
+    if(curvG_mesh_list)	glDeleteLists(curvG_mesh_list, 1);
+    curvG_mesh_list = glGenLists (1);
+    glNewList (curvG_mesh_list, GL_COMPILE);
+        glEnable(GL_LIGHTING);
 //		for (j = 0 ; j < meshCurr.size() ; j++)
 //		{
 //            drawMesh(GAUSSIAN, meshCurr[j], j, 0);
@@ -1827,7 +1877,7 @@ void GLviewsubd::buildCurvGMesh()
                 drawMesh(GAUSSIAN, meshCurr[j], j, 0);
             }
         }
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildHeightMesh()
@@ -1893,13 +1943,13 @@ void GLviewsubd::buildFeatureLines()
 
 void GLviewsubd::buildIPMesh()
 {
-	unsigned int j;
+    unsigned int j;
 
-	makeCurrent();
-	if(IP_mesh_list)	glDeleteLists(IP_mesh_list, 1);
-	IP_mesh_list = glGenLists (1);
-	glNewList (IP_mesh_list, GL_COMPILE);
-		glEnable(GL_LIGHTING);
+    makeCurrent();
+    if(IP_mesh_list)	glDeleteLists(IP_mesh_list, 1);
+    IP_mesh_list = glGenLists (1);
+    glNewList (IP_mesh_list, GL_COMPILE);
+        glEnable(GL_LIGHTING);
 //		for (j = 0 ; j < meshCurr.size() ; j++)
 //		{
 //            drawMesh(ISOPHOTES, meshCurr[j], j, 0);
@@ -1915,19 +1965,19 @@ void GLviewsubd::buildIPMesh()
                 drawMesh(ISOPHOTES, meshCurr[j], j, 0);
             }
         }
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildCtrl()
 {
-	unsigned int j;
+    unsigned int j;
 
-	makeCurrent();
-	if(ctrl_list)	glDeleteLists(ctrl_list, 1);
-	ctrl_list = glGenLists (1);
-	glNewList (ctrl_list, GL_COMPILE);
-	if (ctrl_enabled)
-	{
+    makeCurrent();
+    if(ctrl_list)	glDeleteLists(ctrl_list, 1);
+    ctrl_list = glGenLists (1);
+    glNewList (ctrl_list, GL_COMPILE);
+    if (ctrl_enabled)
+    {
         glDisable(GL_LIGHTING);
         if (indexMesh > -1 )
         {
@@ -1940,8 +1990,8 @@ void GLviewsubd::buildCtrl()
                 drawMesh(WIREFRAME, meshCtrl[j], indexMesh, 1);
             }
         }
-	}
-	glEndList();
+    }
+    glEndList();
 }
 
 void GLviewsubd::buildOld()
@@ -1966,38 +2016,38 @@ void GLviewsubd::buildOld()
 
 void GLviewsubd::buildFrame()
 {
-	makeCurrent();
-	if(frame_list)	glDeleteLists(frame_list, 1);
-	frame_list = glGenLists (1);
-	glNewList (frame_list, GL_COMPILE);
+    makeCurrent();
+    if(frame_list)	glDeleteLists(frame_list, 1);
+    frame_list = glGenLists (1);
+    glNewList (frame_list, GL_COMPILE);
 //	if (frame_enabled)
 //	{
-		glDisable(GL_LIGHTING);
-		drawFrame();
+        glDisable(GL_LIGHTING);
+        drawFrame();
 //	}
-	glEndList();
+    glEndList();
 }
 
 void GLviewsubd::buildPoi()
 {
-	makeCurrent();
-	if(poi_list)	glDeleteLists(poi_list, 1);
-	poi_list = glGenLists (1);
-	glNewList (poi_list, GL_COMPILE);
-		glDisable(GL_LIGHTING);
-		drawPoi();
-	glEndList();
+    makeCurrent();
+    if(poi_list)	glDeleteLists(poi_list, 1);
+    poi_list = glGenLists (1);
+    glNewList (poi_list, GL_COMPILE);
+        glDisable(GL_LIGHTING);
+        drawPoi();
+    glEndList();
 }
 
 void GLviewsubd::buildPoiSub()
 {
-	makeCurrent();
-	if(poiSub_list)	glDeleteLists(poiSub_list, 1);
-	poiSub_list = glGenLists (1);
-	glNewList (poiSub_list, GL_COMPILE);
-		glDisable(GL_LIGHTING);
-		drawPoiSub();
-	glEndList();
+    makeCurrent();
+    if(poiSub_list)	glDeleteLists(poiSub_list, 1);
+    poiSub_list = glGenLists (1);
+    glNewList (poiSub_list, GL_COMPILE);
+        glDisable(GL_LIGHTING);
+        drawPoiSub();
+    glEndList();
 }
 
 void GLviewsubd::buildPoiBound()
@@ -2029,7 +2079,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 
     unsigned int 	i, j;
     PointPrec 		val1, val2, value, minz, maxz;
-	MeshFacet		*facet;
+    MeshFacet		*facet;
     Mesh 			tri;
     float           eps, epsG, epsZ;
     GLfloat         heightClr[3];
@@ -2060,16 +2110,16 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
     }
 
     if (type == WIREFRAME || type == FLAT || type == SOLIDFRAME)
-	{
+    {
         glShadeModel(GL_FLAT);
-	}
-	else
-	{
+    }
+    else
+    {
         glShadeModel(GL_SMOOTH);
-	}
+    }
 
     if (type == WIREFRAME && (int)index == indexMesh)
-	{
+    {
         if (ctrlType == 0)
         {
             glLineWidth(1);
@@ -2097,16 +2147,16 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             glDisable(GL_LIGHT0);
             glDisable(GL_LIGHT1);
         }
-	}
-	else
-	{
-		glLineWidth(1);
+    }
+    else
+    {
+        glLineWidth(1);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_edges);
         glColor3fv(col_edges);
-	}
+    }
 
-	switch(type)
-	{
+    switch(type)
+    {
         case SMOOTH:
 //        case FLAT:
             glDisable(GL_TEXTURE_1D);
@@ -2136,7 +2186,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, params);
                 glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, params);
             }
-			break;
+            break;
 
         case FLAT:
             glDisable(GL_LIGHTING);
@@ -2146,14 +2196,14 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             break;
 
-		case SOLIDFRAME:
+        case SOLIDFRAME:
             glEnable(GL_POLYGON_OFFSET_LINE);
             glPolygonOffset(2 + index, 1);
             glDisable(GL_TEXTURE_1D);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			break;
+            break;
 
-		case WIREFRAME:
+        case WIREFRAME:
             glEnable(GL_POLYGON_OFFSET_LINE);
             if (ctrlType == 1)
             {
@@ -2163,11 +2213,11 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             {
                 glPolygonOffset(2 + index, 1);
             }
-			glDisable(GL_TEXTURE_1D);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			break;
+            glDisable(GL_TEXTURE_1D);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            break;
 
-		case MEAN:
+        case MEAN:
         case GAUSSIAN:
         case HEIGHT:
             if (type == HEIGHT && clr == 3)
@@ -2190,7 +2240,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glDisable(GL_TEXTURE_1D);
                 glDisable(GL_LIGHTING);
             }
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
 //            glEnable(GL_BLEND);
@@ -2203,23 +2253,23 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 
             break;
 
-		case ISOPHOTES:
+        case ISOPHOTES:
             glEnable(GL_POLYGON_OFFSET_FILL);
             glPolygonOffset(2 + index, 1);
             glEnable(GL_TEXTURE_GEN_S);
-			glEnable(GL_TEXTURE_1D);
+            glEnable(GL_TEXTURE_1D);
             glBindTexture(GL_TEXTURE_1D, textID[5]);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			break;
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            break;
 
-		default:
+        default:
 //			cout << "Mesh TYPE out of range" << endl;
             break;
-	}
+    }
 
-	for (i = 0 ; i < mesh->my_numF ; i++)
-	{
-		facet = &(mesh->my_facets[i]);
+    for (i = 0 ; i < mesh->my_numF ; i++)
+    {
+        facet = &(mesh->my_facets[i]);
 
         glBegin(GL_POLYGON);
         for(j = 0 ; j < facet->my_valency ; j++)
@@ -2330,7 +2380,7 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             }
         }
         glEnd();
-	}
+    }
 
     glDisable(GL_BLEND);
 
@@ -2402,7 +2452,7 @@ void GLviewsubd::regenSurfs()
     std::vector < Mesh* >   tmp;
 //    bool                    alive;
 
-	level = meshCurr[0]->my_level;
+    level = meshCurr[0]->my_level;
 //    alive = meshCurr[0]->lifeIsOn; // ideally, I'd need to remember the state of all facets!
 
     for (i = 0 ; i < meshSubd.size() ; i++)
@@ -2414,15 +2464,15 @@ void GLviewsubd::regenSurfs()
         }
     }
 
-	for (j = 0 ; j < meshCurr.size() ; j++)
-	{
+    for (j = 0 ; j < meshCurr.size() ; j++)
+    {
         meshSubd[j].resize(1);
-		meshCurr[j] = meshCtrl[j];
-	}
+        meshCurr[j] = meshCtrl[j];
+    }
 
 //cout << "RegenSurfs with level: " << level << endl;
 
-	setSubdivLevel(level);
+    setSubdivLevel(level);
 
 //    if (alive)
 //    {
@@ -2466,7 +2516,7 @@ void GLviewsubd::resetSurfs()
 void GLviewsubd::loadFile(std::istream &is)
 {
     unsigned int i, j;
-	std::vector< Mesh* > vec;
+    std::vector< Mesh* > vec;
 
     for (i = 0 ; i < meshSubd.size() ; i++)
     {
@@ -2485,28 +2535,30 @@ void GLviewsubd::loadFile(std::istream &is)
         meshOld[i] = NULL;
     }
 
-	if (clear)
-	{
+    if (clear)
+    {
         for (i = 0 ; i < meshCtrl.size() ; i++)
         {
             delete meshCtrl[i];
             meshCtrl[i] = NULL;
         }
-		meshCtrl.clear();
-		meshCurr.clear();
+        meshCtrl.clear();
+        meshCurr.clear();
         meshOld.clear();
 //		setRotZero();
-	}
+        surfBlendColours.clear();
+    }
 
 
     Mesh *tmp = new Mesh();
 //	tmp->my_file = fileName;
-	tmp->my_rand = 0;
-	tmp->transform = transf;
+    tmp->my_rand = 0;
+    tmp->transform = transf;
 
     tmp->load(is, imageHeight);
+    surfBlendColours.push_back(tmp->colBlend);
 
-	meshCtrl.push_back(tmp);
+    meshCtrl.push_back(tmp);
     meshCurr = meshCtrl;
 
     Mesh *tmp2 = new Mesh();
@@ -2514,21 +2566,21 @@ void GLviewsubd::loadFile(std::istream &is)
     tmp2->my_numV = 0;
     meshOld.push_back(tmp2);
 
-	indexMesh = meshCtrl.size() - 1;
+    indexMesh = meshCtrl.size() - 1;
 
     vec.clear();
-	for (j = 0 ; j < meshCtrl.size() ; j++)
-	{
+    for (j = 0 ; j < meshCtrl.size() ; j++)
+    {
         meshSubd.push_back(vec);
         meshSubd[j].push_back(meshCtrl[j]);
-	}
+    }
 
-	verInd = -1;
-	verIndSub = -1;
+    verInd = -1;
+    verIndSub = -1;
 
-	lastChangeX = 0;
-	lastChangeY = 0;
-	lastChangeZ = 0;
+    lastChangeX = 0;
+    lastChangeY = 0;
+    lastChangeZ = 0;
 
     if (transf)
     {
@@ -2550,12 +2602,12 @@ void GLviewsubd::loadFile(std::istream &is)
 
 void GLviewsubd::saveFile(const char *fileName, bool isPly)
 {
-	meshCtrl[indexMesh]->save(fileName, isPly);
+    meshCtrl[indexMesh]->save(fileName, isPly);
 }
 
 void GLviewsubd::saveFileLim(const char *fileName, bool isPly)
 {
-	meshCurr[indexMesh]->save(fileName, isPly);
+    meshCurr[indexMesh]->save(fileName, isPly);
 }
 
 void GLviewsubd::setPoint(int index)
@@ -2568,25 +2620,25 @@ void GLviewsubd::setPoint(int index)
                 meshCtrl[0]->my_vertices[verInd].my_point.getY() << " " << meshCtrl[0]->my_vertices[verInd].my_point.getZ() << endl;
     }
 
-	lastChangeX = 0;
-	lastChangeY = 0;
-	lastChangeZ = 0;
+    lastChangeX = 0;
+    lastChangeY = 0;
+    lastChangeZ = 0;
 
 
-	buildPoi();
-	updateGL();
+    buildPoi();
+    updateGL();
 }
 
 void GLviewsubd::changeSmoothing(int change)
 {
-	unsigned int j;
+    unsigned int j;
 
-	smoothCoef = change;
-	for (j = 0 ; j < meshCtrl.size() ; j++)
-	{
-		meshCurr[j]->compCurvSmooth(smoothCoef);
-		meshCurr[j]->computeNormalsSmooth(smoothCoef);
-	}
+    smoothCoef = change;
+    for (j = 0 ; j < meshCtrl.size() ; j++)
+    {
+        meshCurr[j]->compCurvSmooth(smoothCoef);
+        meshCurr[j]->computeNormalsSmooth(smoothCoef);
+    }
     buildAll();
     updateGL();
 }
@@ -2686,35 +2738,35 @@ void GLviewsubd::movePointZ(int change)
 
 void GLviewsubd::changeStripeDensity(int newDensity)
 {
-	static const int stripeRes = 1024;
-	static const double pi = 3.14159265358979323846;
+    static const int stripeRes = 1024;
+    static const double pi = 3.14159265358979323846;
     GLfloat stripes[stripeRes], realDensity;
 
     glBindTexture(GL_TEXTURE_1D, textID[5]);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     realDensity = pow(1.4, newDensity);
 
-	for (int i = 0; i < stripeRes; ++i)
-	{
+    for (int i = 0; i < stripeRes; ++i)
+    {
         stripes[i] = 0.5 + sin(2 * pi * i * realDensity / stripeRes);
-		stripes[i] = (stripes[i] < 0 ? 0 : stripes[i]);
-		stripes[i] = (stripes[i] > 1 ? 1 : stripes[i]);
-	}
+        stripes[i] = (stripes[i] < 0 ? 0 : stripes[i]);
+        stripes[i] = (stripes[i] > 1 ? 1 : stripes[i]);
+    }
 
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 //	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 //	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 //	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_LUMINANCE, stripeRes,
-				 0, GL_LUMINANCE, GL_FLOAT, stripes);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_LUMINANCE, stripeRes,
+                 0, GL_LUMINANCE, GL_FLOAT, stripes);
 
 cout << "CHSD called" << endl;
 
@@ -2725,29 +2777,29 @@ cout << "CHSD called" << endl;
 
 void GLviewsubd::changeCurvRatio1(int newRatio)
 {
-	if (newRatio != curvRatio1)
-	{
-		curvRatio1 = newRatio;
+    if (newRatio != curvRatio1)
+    {
+        curvRatio1 = newRatio;
 //		buildCurvMMesh();
-		buildCurvGMesh();
-		updateGL();
-	}
+        buildCurvGMesh();
+        updateGL();
+    }
 }
 
 void GLviewsubd::changeCurvRatio2(int newRatio)
 {
-	if (newRatio != curvRatio2)
-	{
-		curvRatio2 = newRatio;
+    if (newRatio != curvRatio2)
+    {
+        curvRatio2 = newRatio;
 //		buildCurvMMesh();
-		buildCurvGMesh();
-		updateGL();
-	}
+        buildCurvGMesh();
+        updateGL();
+    }
 }
 
 void GLviewsubd::updateAll()
 {
-	unsigned int j;
+    unsigned int j;
 
     if (!offScreen)
     {
@@ -2765,14 +2817,14 @@ void GLviewsubd::updateAll()
 
 void GLviewsubd::setProbeOnCtrl(const bool b)
 {
-	probeOnCtrl = b;
+    probeOnCtrl = b;
 
-	verIndSub = -2;
-	buildPoiSub();
+    verIndSub = -2;
+    buildPoiSub();
 
-	verInd = -2;
-	emit poiChanged();
-	emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
+    verInd = -2;
+    emit poiChanged();
+    emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
 }
 
 void GLviewsubd::setCC(const bool b)

@@ -207,6 +207,16 @@ void Mesh::load(istream &is, unsigned int iH)
         colFlat[2] /= 255.0;
         colFlat[3] = 0.0;
 
+        //read colour blend
+//        is >> z >> y >> x;
+//        colBlend.setX(x / 255.0);
+//        colBlend.setY(y / 255.0);
+//        colBlend.setZ(z / 255.0);
+
+        colBlend.setX(1);
+        colBlend.setY(0);
+        colBlend.setZ(0);
+
         //read ghost flag
         std::string str;
         isGhost = false;

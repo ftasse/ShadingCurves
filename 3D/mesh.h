@@ -149,6 +149,7 @@ public:
 	unsigned int my_numE;
 
     float colFlat[4];
+    Point_3D colBlend;
     bool isGhost;
 
 	int my_degree;

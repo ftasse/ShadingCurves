@@ -114,6 +114,8 @@ public:
 
     double powJiri(double b, double e);
 
+    std::vector<Point_3D> surfBlendColours;
+
 public slots:
     void subdivide          (void);
     void lapSm1             (void);
