@@ -86,8 +86,8 @@ unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
 QMAKE_CXXFLAGS += -std=c++0x
 QMAKE_CFLAGS += -std=c++0x
 
-unix:LIBS += -fopenmp
+#unix:LIBS += -fopenmp
 QMAKE_CXXFLAGS_RELEASE += -O3
 QMAKE_CFLAGS_RELEASE += -O3
-QMAKE_CXXFLAGS_RELEASE += -fopenmp
-QMAKE_CFLAGS_RELEASE += -fopenmp
+#QMAKE_CXXFLAGS_RELEASE += -fopenmp
+#QMAKE_CFLAGS_RELEASE += -fopenmp
