@@ -245,22 +245,23 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 
         for (int k=surf.controlMesh.size()-2; k>=0; --k)
         {
+            float ztmp = zCoord + surf.controlMesh[k].size()+1;
             if (isSharp)
             {
                 translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n1;
-                vertexId = surf.addVertex(translated, zCoord);
+                vertexId = surf.addVertex(translated, ztmp);
                 surf.controlMesh[k].push_back(vertexId);
             }
 
             translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*normals[i];
-            vertexId = surf.addVertex(translated, zCoord);
+            vertexId = surf.addVertex(translated, ztmp+1);
             surf.controlMesh[k].push_back(vertexId);
             if (k==0)  trId = vertexId;
 
             if (isSharp)
             {
                 translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n2;
-                vertexId = surf.addVertex(translated, zCoord);
+                vertexId = surf.addVertex(translated, ztmp+2);
                 surf.controlMesh[k].push_back(vertexId);
             }
         }
@@ -269,6 +270,14 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
         {            
             surf.sharpCorners.insert(orgId);
             surf.sharpCorners.insert(trId);
+        }
+    }
+
+    for (int k=surf.controlMesh.size()-2; k>=0; --k)
+    {
+        for (int l=surf.controlMesh[k].size()-1; l>=0; --l)
+        {
+            surf.vertices[surf.controlMesh[k][l]].setZ(zCoord);
         }
     }
 
