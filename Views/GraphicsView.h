@@ -33,6 +33,8 @@ public slots:
     void edit_bspline();
     void loadImage();
     void saveImage();
+    void saveScreenshot();
+    void saveCurrentState();
     void loadBackgroungImage();
     void loadCurves();
     void saveCurves();

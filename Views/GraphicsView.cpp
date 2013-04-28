@@ -294,6 +294,58 @@ void GraphicsView::loadBackgroungImage()
     }
 }
 
+void GraphicsView::saveScreenshot()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Save Screenshot"),
+                                    pathToData,
+                                    tr("Image files (*.png *.jpg *.jpeg *.gif *.bmp)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+        QSize s = my_scene->sceneRect().size().toSize();
+        my_scene->displayModeLabel->setVisible(false);
+        my_scene->glWidget->makeCurrent();
+
+        glPixelStorei(GL_PACK_ROW_LENGTH,    0);;
+        glPixelStorei(GL_PACK_ALIGNMENT,     1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        QGLFramebufferObjectFormat format;
+        format.setSamples(4);
+        QGLFramebufferObject renderFbo(s.width(), s.height(), format);
+        QPainter fboPainter(&renderFbo);
+        fboPainter.setRenderHint(QPainter::Antialiasing);
+        fboPainter.setRenderHint(QPainter::HighQualityAntialiasing);
+        my_scene->render(&fboPainter);
+        renderFbo.toImage().save(fileName);
+
+        my_scene->displayModeLabel->setVisible(true);
+    }
+}
+
+void GraphicsView::saveCurrentState()
+{
+    QFileDialog::Options options;
+    QString selectedFilter;
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Save Current State"),
+                                    pathToData,
+                                    tr("Image files (*.png *.jpg *.jpeg *.gif *.bmp)"),
+                                    &selectedFilter,
+                                    options);
+    if (!fileName.isEmpty())
+    {
+        GLScene *my_scene = (GLScene *) scene();
+        cv::Mat img = my_scene->imageWithGeometry();
+        cv::imwrite(fileName.toStdString().c_str(), img);
+    }
+}
+
 void GraphicsView::saveImage()
 {
     QFileDialog::Options options;
@@ -410,7 +462,7 @@ void GraphicsView::toggleBackupStatus(bool b)
     {
         bool ok;
         int i = QInputDialog::getInt(this, tr("Backup Timer"),
-                                          tr("Backup Interval (mins):"), backupTimer->interval()*60*1000, 1, 60, 1, &ok);
+                                          tr("Backup Interval (mins):"), backupTimer->interval()/(60*1000), 1, 60, 1, &ok);
         if (ok)
         {
             backupTimer->start(i*60*1000);

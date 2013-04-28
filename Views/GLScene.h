@@ -66,6 +66,8 @@ public:
     void buildGeometry(bool only_show_splines = false);
     void buildDisplayImage();
 
+    cv::Mat imageWithGeometry();
+
     void initialize();
     void draw();
     void draw_image(cv::Mat &image);

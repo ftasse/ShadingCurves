@@ -598,7 +598,7 @@ void  GLScene::drawBackground(QPainter *painter, const QRectF &rect)
     initialize();
 
     //Setup OpenGL view
-    glClearColor(0.7, 0.7, 0.7, 1.0);
+    glClearColor(0.7, 0.7, 0.7, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
@@ -1560,6 +1560,62 @@ void GLScene::subdivide_current_spline(){
 
         recomputeAllSurfaces();
     }
+}
+
+cv::Mat GLScene::imageWithGeometry()
+{
+    cv::Mat img;
+    glWidget->makeCurrent();
+    GLuint imageWidth = displayImage()->cols,
+            imageHeight = displayImage()->rows;
+
+    //Setup for offscreen drawing if fbos are supported
+    GLuint framebuffer, renderbuffer, depthbuffer;
+    if (setupFrameBuffer(framebuffer, renderbuffer, depthbuffer, imageWidth, imageHeight))
+    {
+        //Drawing
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);    glLoadIdentity();
+        glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
+        glMatrixMode(GL_MODELVIEW);     glLoadIdentity();
+
+        glPushMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glCallList(image_display_list);
+        glDisable(GL_TEXTURE_2D);
+
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, 1.0f);
+        glCallList(surfaces_display_list);
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, 2.0f);
+        glCallList(curves_display_list);
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, 3.0f);
+        glCallList(colors_display_list);
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef(0.0f, 0.0f, 4.0f);
+        glCallList(points_display_list);
+        glPopMatrix();
+
+        glPopMatrix();
+
+        img.create(imageHeight, imageWidth, CV_8UC3);
+        glReadPixels(0, 0, imageWidth, imageHeight, BGRColourFormat(), GL_UNSIGNED_BYTE, img.data);
+        cv::flip(img, img, 0);
+    }
+
+    //Clean up offscreen drawing
+    cleanupFrameBuffer(framebuffer, renderbuffer, depthbuffer);
+    return img;
 }
 
 void GLScene::applyBlackCurves()

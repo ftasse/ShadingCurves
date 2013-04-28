@@ -62,10 +62,10 @@ int BSplineGroup::addControlPoint(QPointF value, float z)
 
 int BSplineGroup::addBSpline()
 {
-    BSpline spline;
-    spline.m_splineGroup = this;
-    spline.ref = num_splines();
-    m_splines.push_back(spline);
+    BSpline bspline;
+    bspline.m_splineGroup = this;
+    bspline.ref = num_splines();
+    m_splines.push_back(bspline);
     return m_splines.size() - 1;
 }
 

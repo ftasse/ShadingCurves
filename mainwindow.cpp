@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen_Backgroung_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadBackgroungImage()));
     connect(ui->actionOpen_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(loadImage()));
     connect(ui->actionSave_Image, SIGNAL(triggered()), ui->graphicsView, SLOT(saveImage()));
+    connect(ui->actionSave_Screenshot, SIGNAL(triggered()), ui->graphicsView, SLOT(saveScreenshot()));
+    connect(ui->actionSave_CurrentState, SIGNAL(triggered()), ui->graphicsView, SLOT(saveCurrentState()));
     connect(ui->actionOpen_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(loadCurves()));
     connect(ui->actionSave_Curves, SIGNAL(triggered()), ui->graphicsView, SLOT(saveCurves()));
     connect(ui->actionCreate_BSpline, SIGNAL(triggered()), ui->graphicsView, SLOT(create_bspline()));
