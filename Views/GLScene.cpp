@@ -1039,6 +1039,16 @@ void GLScene::draw_surface(int surface_id)
                 glVertex2f(point.x(), point.y());
             }
             glEnd();
+
+            glBegin(GL_LINES);
+            for (int i=0; i<surf.controlMesh.first().size(); ++i)
+            {
+                QPointF point1 = surf.vertices[surf.controlMesh.first()[i]];
+                QPointF point2 = surf.vertices[surf.controlMesh.last()[i]];
+                glVertex2f(point1.x(), point1.y());
+                glVertex2f(point2.x(), point2.y());
+            }
+            glEnd();
         }
 
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
