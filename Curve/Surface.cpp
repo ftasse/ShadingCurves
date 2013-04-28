@@ -198,11 +198,21 @@ void Surface::recompute(cv::Mat dt, cv::Mat luminance, bool clipHeight)
             subdivided_points[i].attributes[inward].height = subdivided_points[i].attributes[!inward].height;
         QVector<QVector<int> > points2 = setSurfaceCP(subdivided_points, bspline.getNormals(!inward), dt,!inward,false, true, true);
 
-        for (int i=0; i<std::min(points.last().size(), points2.last().size()); ++i)
+        for (int i=0; i<std::max(points.last().size(), points2.last().size()); ++i)
         {
-            if (points.last()[i] != points2.last()[i])
+            if (points.last().size() <=i || points2.last().size() <= i || points.last()[i] != points2.last()[i])
             {
-                if (points.last()[i] == points2.last()[i-1])
+                if (points2.last().size() <= i)
+                    for (int k=0; k<points2.size(); ++k)
+                    {
+                        points2[k].push_back( points2[k][i-1]);
+                    }
+                else if (points.last().size() <= i)
+                    for (int k=0; k<points.size(); ++k)
+                    {
+                        points[k].push_back(points[k][i-1]);
+                    }
+                else if (points.last()[i] == points2.last()[i-1])
                     for (int k=0; k<points2.size(); ++k)
                     {
                         points2[k].insert(i, points2[k][i-1]);
