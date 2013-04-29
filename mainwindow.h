@@ -29,6 +29,9 @@ public slots:
     void change_point_sharpness();
     void update_point_sharpness_ui(bool enabled, bool isSharp);
 
+    void change_inward_boundary_colour();
+    void change_outward_boundary_colour();
+
     void change_bspline_parameters();
     void change_slope_curve();
     void change_inward_outward_direction();

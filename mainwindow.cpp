@@ -67,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
+    connect(ui->inward_bcolor_utton, SIGNAL(clicked(bool)), this, SLOT(change_inward_boundary_colour()));
+    connect(ui->outward_bcolor_utton, SIGNAL(clicked(bool)), this, SLOT(change_outward_boundary_colour()));
     connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_slope_curve()));
     connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_uniform_subdivision()));
     //connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
@@ -174,6 +176,32 @@ void MainWindow::change_inward_outward_direction()
         ui->slope_curve_box->setChecked(false);
     }
     change_bspline_parameters();
+}
+
+void MainWindow::change_inward_boundary_colour()
+{
+    /*QColor color = QColorDialog::getColor(ui->inward_bcolor_frame->palette().color(), (QWidget*)this->activeWindow());
+    if(color.isValid())
+    {
+        if (nodeId == COLOR_NODE_ID)
+        {
+            m_splineGroup.colorMapping[targetId].second = color;
+        } else
+        {
+            m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
+            if (selectedObjects.size()>0 && selectedObjects.last().first == COLOR_NODE_ID)
+            {
+                selectedObjects.last().second = m_splineGroup.colorMapping.size()-1;
+            }
+        }
+
+        recomputeAllSurfaces();
+    }*/
+}
+
+void MainWindow::change_outward_boundary_colour()
+{
+
 }
 
 void MainWindow::change_bspline_parameters()
