@@ -82,6 +82,7 @@ public:
     bool has_inward_surface;
     bool has_outward_surface;
     int thickness;
+    cv::Vec3b boundary_colors[2];
     int subv_levels;
 
     QVector<ControlPoint> subdivided_points;

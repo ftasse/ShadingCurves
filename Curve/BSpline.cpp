@@ -40,6 +40,8 @@ BSpline::BSpline():
     ref(-1), has_inward_surface(false), has_outward_surface(false), has_uniform_subdivision(false), is_slope(false), generic_extent(30.0f)
 {
     thickness = 0;
+    boundary_colors[0] = cv::Vec3b(255, 255, 255);
+    boundary_colors[1] = cv::Vec3b(255, 255, 255);
     subv_levels = DEFAULT_SUBDV_LEVELS;
 }
 
@@ -52,6 +54,9 @@ void BSpline::write(cv::FileStorage& fs) const
     for (int i=0; i<cptRefs.size(); ++i)
         fs << cptRefs[i];
     fs << "]";
+
+    //fs << "boundaryColoursInward" << boundary_colors[0];
+    //fs << "boundaryColoursOutward" << boundary_colors[1];
 
     fs << "}";
 }
@@ -71,6 +76,13 @@ void BSpline::read(const cv::FileNode& node)
         cv::FileNodeIterator it = n.begin(), it_end = n.end(); // Go through the node
         for (; it != it_end; ++it)
             cptRefs.push_back((int)*it);
+    }
+
+    n = node["boundaryColoursInward"];
+    if (!n.empty())
+    {
+        //node["boundaryColoursInward"] >> boundary_colors[0];
+        //node["boundaryColoursOutward"] >> boundary_colors[1];
     }
 }
 
