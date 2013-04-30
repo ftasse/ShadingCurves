@@ -2326,8 +2326,11 @@ QVector< QVector<int> > GLScene::mergeSurfaces(QVector< QVector<int> > &mergedGr
 
 
         mergedSurface.computeFaceIndices();
-
         Surface &surface1 = surface(mergedGroups[i].first());
+        mergedSurface.m_splineGroup = surface1.m_splineGroup;
+        mergedSurface.splineRef = surface1.splineRef;
+        mergedSurface.direction = surface1.direction;
+
         QPointF pixelPoint = surface1.vertices[surface1.controlMesh.first()[surface1.controlMesh.first().size()/2]];
         cv::Vec3b color = currentImage().at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
         surface_strings.push_back( mergedSurface.surfaceToOFF(color) );
