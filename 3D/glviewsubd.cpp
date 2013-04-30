@@ -471,7 +471,7 @@ void GLviewsubd::paintGL(void)
         int count = meshCurr.size();
         for (int i = 0 ; i < count ; i++)
         {
-            meshCurr[i]->colFlat[4] = (float)i/100000.0;
+            meshCtrl[i]->colFlat[3] = 0.001 * (float)i;
         }
 
         double      tmp, val, valMin, valMax, half;
@@ -846,8 +846,8 @@ void GLviewsubd::paintGL(void)
             else if (shade == RGB)
             {
                 // apply luminance adjustment
-                double  R, G, B, alpha, RR, GG, BB;
-                int x, y;
+                double  R, G, B, RR, GG, BB;
+                int x, y, alpha;
 
                 #pragma omp parallel for default(none) private(x, y, val, R, G, B, tmp, alpha, RR, GG, BB) shared(valMin, valMax, half)
                 for( y = 0; y < imgFillShaded.rows; y++ )
@@ -864,11 +864,11 @@ void GLviewsubd::paintGL(void)
                             G = imgFillShaded.at<cv::Vec4f>(y,x)[1];
                             R = imgFillShaded.at<cv::Vec4f>(y,x)[2];
 
-                            alpha = 100000*imgFillShaded.at<cv::Vec4f>(y,x)[3];
+                            alpha = (int)(1000*imgFillShaded.at<cv::Vec4f>(y,x)[3] + 0.5); // to get rounding correctly
 
-                            RR = surfBlendColours[alpha].getX();
+                            RR = surfBlendColours[alpha].getZ();
                             GG = surfBlendColours[alpha].getY();
-                            BB = surfBlendColours[alpha].getZ();
+                            BB = surfBlendColours[alpha].getX();
 
                             tmp = 2 * fabs(val - 0.5);
 
