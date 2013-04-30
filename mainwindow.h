@@ -29,14 +29,13 @@ public slots:
     void change_point_sharpness();
     void update_point_sharpness_ui(bool enabled, bool isSharp);
 
-    void change_inward_boundary_colour();
-    void change_outward_boundary_colour();
-
     void change_bspline_parameters();
     void change_slope_curve();
     void change_inward_outward_direction();
     void change_uniform_subdivision();
-    void update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward,  int thickness);
+    void update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision,
+                                      bool _has_inward, bool _has_outward,  int thickness,
+                                      QColor inward_bcolor, QColor outward_bcolor);
 };
 
 #endif // MAINWINDOW_H

@@ -30,13 +30,7 @@ public:
     void computeFaceIndices();
 
     bool writeOFF(std::ostream &ofs);
-    std::string surfaceToOFF( cv::Vec3b color)
-    {
-        std::stringstream ss;
-        writeOFF(ss);
-        ss << (int)color(0) << " " << (int)color(1) << " " << (int)color(2) << "\n";
-        return ss.str();
-    }
+    std::string surfaceToOFF( cv::Vec3b color);
 
 public:
     BSplineGroup *m_splineGroup;

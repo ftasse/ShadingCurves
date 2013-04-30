@@ -1717,6 +1717,35 @@ void GLScene::applyBlackCurves()
 
 void GLScene::updateConnectedSurfaces(int cptRef)
 {
+    if (curSplineRef() >= 0 && selectedObjects.size()>0 && selectedObjects.first().first == SPLINE_NODE_ID)
+    {
+        BSpline& bspline = spline(curSplineRef());
+        QColor bcolor_inward = QColor(bspline.boundary_colors[0][0], bspline.boundary_colors[0][1], bspline.boundary_colors[0][2]);
+        QColor bcolor_outward = QColor(bspline.boundary_colors[1][0], bspline.boundary_colors[1][1], bspline.boundary_colors[1][2]);
+        bool updateColorButton  = false;
+
+        if ((bcolor_inward.red() == 255 && bcolor_inward.green() == 255 && bcolor_inward.blue() == 255) ||
+            (bcolor_inward.red() == 0 && bcolor_inward.green() == 0 && bcolor_inward.blue() == 0))
+        {
+            if (shadingProfileView->inwardHeightWidget->value() < 0)
+                bspline.boundary_colors[0] = cv::Vec3b(0, 0, 0);
+            else
+                bspline.boundary_colors[0] = cv::Vec3b(255, 255, 255);
+            updateColorButton = true;
+        }
+
+        if ((bcolor_outward.red() == 255 && bcolor_outward.green() == 255 && bcolor_outward.blue() == 255) ||
+            (bcolor_outward.red() == 0 && bcolor_outward.green() == 0 && bcolor_outward.blue() == 0))
+        {
+            if (shadingProfileView->outwardHeightWidget->value() < 0)
+                bspline.boundary_colors[1] = cv::Vec3b(0, 0, 0);
+            else
+                bspline.boundary_colors[1] = cv::Vec3b(255, 255, 255);
+            updateColorButton = true;
+        }
+
+        if (updateColorButton)  currentSplineChanged();
+    }
     recomputeAllSurfaces();
 }
 
@@ -2413,11 +2442,15 @@ void GLScene::currentSplineChanged()
     if (curSplineRef() >= 0)
     {
         BSpline& bspline = spline(curSplineRef());
-        emit bspline_parameters_changed(true, bspline.generic_extent, bspline.is_slope, bspline.has_uniform_subdivision, bspline.has_inward_surface, bspline.has_outward_surface, bspline.thickness);
+        QColor bcolor_inward = QColor(bspline.boundary_colors[0][0], bspline.boundary_colors[0][1], bspline.boundary_colors[0][2]);
+        QColor bcolor_outward = QColor(bspline.boundary_colors[1][0], bspline.boundary_colors[1][1], bspline.boundary_colors[1][2]);
+        emit bspline_parameters_changed(true, bspline.generic_extent, bspline.is_slope, bspline.has_uniform_subdivision,
+                                        bspline.has_inward_surface, bspline.has_outward_surface, bspline.thickness,
+                                        bcolor_inward, bcolor_outward);
 
     } else
     {
-        emit bspline_parameters_changed(false, 0.0, false, false, false, false, 0);
+        emit bspline_parameters_changed(false, 0.0, false, false, false, false, 0, Qt::transparent, Qt::transparent);
     }
 }
 
@@ -2458,6 +2491,38 @@ void GLScene::change_point_parameters(bool isSharp)
     if (has_changed)
     {
         recomputeAllSurfaces();
+    }
+}
+
+void GLScene::change_inward_boundary_colour()
+{
+    if (curSplineRef() >= 0)
+    {
+        BSpline& bspline = spline(curSplineRef());
+        QColor bcolor_inward = QColor(bspline.boundary_colors[0][0], bspline.boundary_colors[0][1], bspline.boundary_colors[0][2]);
+        QColor color = QColorDialog::getColor(bcolor_inward, (QWidget*)this->activeWindow());
+        if(color.isValid())
+        {
+            bspline.boundary_colors[0] = cv::Vec3b(color.red(), color.green(), color.blue());
+            currentSplineChanged();
+            recomputeAllSurfaces();
+        }
+    }
+}
+
+void GLScene::change_outward_boundary_colour()
+{
+    if (curSplineRef() >= 0)
+    {
+        BSpline& bspline = spline(curSplineRef());
+        QColor bcolor_outward = QColor(bspline.boundary_colors[1][0], bspline.boundary_colors[1][1], bspline.boundary_colors[1][2]);
+        QColor color = QColorDialog::getColor(bcolor_outward, (QWidget*)this->activeWindow());
+        if(color.isValid())
+        {
+            bspline.boundary_colors[1] = cv::Vec3b(color.red(), color.green(), color.blue());
+            currentSplineChanged();
+            recomputeAllSurfaces();
+        }
     }
 }
 

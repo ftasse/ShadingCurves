@@ -344,7 +344,7 @@ background-color: rgba(127, 127, 127, 0);</string>
              <string>uniform subdivision</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="inward_bcolor_utton">
+           <widget class="QPushButton" name="inward_bcolor_button">
             <property name="geometry">
              <rect>
               <x>120</x>
@@ -357,7 +357,7 @@ background-color: rgba(127, 127, 127, 0);</string>
              <string/>
             </property>
            </widget>
-           <widget class="QPushButton" name="outward_bcolor_utton">
+           <widget class="QPushButton" name="outward_bcolor_button">
             <property name="geometry">
              <rect>
               <x>120</x>

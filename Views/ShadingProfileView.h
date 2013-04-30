@@ -67,14 +67,16 @@ public:
     int min_extent, max_extent;
     int min_height, max_height;
 
+
+    QScrollBar *inwardHeightWidget;
+    QScrollBar *outwardHeightWidget;
+
 private:
 
     QGraphicsView* graphicsView;
     QScrollBar *inwardExtentWidget;
     QScrollBar *outwardExtentWidget;
 
-    QScrollBar *inwardHeightWidget;
-    QScrollBar *outwardHeightWidget;
 
     QLabel *inwardExtentLabel;
     QLabel *outwardExtentLabel;

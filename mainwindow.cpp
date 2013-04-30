@@ -69,13 +69,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->inward_suface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
     connect(ui->outward_surface_box, SIGNAL(clicked(bool)), this, SLOT(change_inward_outward_direction()));
-    connect(ui->inward_bcolor_utton, SIGNAL(clicked(bool)), this, SLOT(change_inward_boundary_colour()));
-    connect(ui->outward_bcolor_utton, SIGNAL(clicked(bool)), this, SLOT(change_outward_boundary_colour()));
     connect(ui->slope_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_slope_curve()));
     connect(ui->uniform_subdivision_curve_box, SIGNAL(clicked(bool)), this, SLOT(change_uniform_subdivision()));
     //connect(ui->surfaceWidthSlider, SIGNAL(sliderReleased()), this, SLOT(change_bspline_parameters()));
     connect(ui->thickness_box, SIGNAL(valueChanged(int)), this, SLOT(change_bspline_parameters()));
-    connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool, int)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool, int)));
+
+    connect(ui->inward_bcolor_button, SIGNAL(clicked(bool)), scene, SLOT(change_inward_boundary_colour()));
+    connect(ui->outward_bcolor_button, SIGNAL(clicked(bool)), scene, SLOT(change_outward_boundary_colour()));
+    connect(scene, SIGNAL(bspline_parameters_changed(bool,float,bool,bool,bool,bool, int, QColor, QColor)), this, SLOT(update_bspline_parameters_ui(bool,float,bool,bool,bool,bool, int, QColor, QColor)));
 
     connect(ui->subdivideCurveButton, SIGNAL(clicked(bool)), scene, SLOT(subdivide_current_spline()));
     connect(ui->onlyShowCurvePointsBox, SIGNAL(toggled(bool)), scene, SLOT(toggleShowCurrentCurvePoints(bool)));
@@ -180,32 +181,6 @@ void MainWindow::change_inward_outward_direction()
     change_bspline_parameters();
 }
 
-void MainWindow::change_inward_boundary_colour()
-{
-    /*QColor color = QColorDialog::getColor(ui->inward_bcolor_frame->palette().color(), (QWidget*)this->activeWindow());
-    if(color.isValid())
-    {
-        if (nodeId == COLOR_NODE_ID)
-        {
-            m_splineGroup.colorMapping[targetId].second = color;
-        } else
-        {
-            m_splineGroup.colorMapping.push_back(std::pair<QPoint, QColor>(seed,color));
-            if (selectedObjects.size()>0 && selectedObjects.last().first == COLOR_NODE_ID)
-            {
-                selectedObjects.last().second = m_splineGroup.colorMapping.size()-1;
-            }
-        }
-
-        recomputeAllSurfaces();
-    }*/
-}
-
-void MainWindow::change_outward_boundary_colour()
-{
-
-}
-
 void MainWindow::change_bspline_parameters()
 {
 
@@ -217,13 +192,15 @@ void MainWindow::change_bspline_parameters()
                                      ui->thickness_box->value());
 }
 
-void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness)
+void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness, QColor inward_bcolor, QColor outward_bcolor)
 {
     //ui->surfaceWidthSlider->setEnabled(enabled);
     ui->slope_curve_box->setEnabled(enabled);
     ui->uniform_subdivision_curve_box->setEnabled(enabled);
     ui->inward_suface_box->setEnabled(enabled);
     ui->outward_surface_box->setEnabled(enabled);
+    ui->inward_bcolor_button->setEnabled(enabled);
+    ui->outward_bcolor_button->setEnabled(enabled);
     ui->thickness_box->setEnabled(enabled);
 
     //ui->surfaceWidthSlider->setValue(extent);
@@ -232,6 +209,10 @@ void MainWindow::update_bspline_parameters_ui(bool enabled, float extent, bool _
     ui->inward_suface_box->setChecked(_has_inward);
     ui->outward_surface_box->setChecked(_has_outward);
     ui->thickness_box->setValue(thickness);
+
+    QString style = "background: rgba(%1, %2, %3, %4);";
+    ui->inward_bcolor_button->setStyleSheet(style.arg(inward_bcolor.red()).arg(inward_bcolor.green()).arg(inward_bcolor.blue()).arg(inward_bcolor.alpha()));
+    ui->outward_bcolor_button->setStyleSheet(style.arg(outward_bcolor.red()).arg(outward_bcolor.green()).arg(outward_bcolor.blue()).arg(inward_bcolor.alpha()));
 }
 
 void MainWindow::change_point_sharpness()

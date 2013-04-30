@@ -71,6 +71,17 @@ void Surface::computeFaceIndices()
 
 }
 
+std::string Surface::surfaceToOFF( cv::Vec3b color)
+{
+    std::stringstream ss;
+    writeOFF(ss);
+    cv::Vec3b boundary_color = m_splineGroup->spline(splineRef).boundary_colors[direction!=INWARD_DIRECTION];
+
+    ss << (int)color(0) << " " << (int)color(1) << " " << (int)color(2) << "\n";
+    ss << ((int)boundary_color(0)) << " " << ((int)boundary_color(1)) << " " << ((int)boundary_color(2)) << "\n";
+    return ss.str();
+}
+
 bool Surface::writeOFF(std::ostream &ofs)
 {
     ofs << "OFF" << std::endl;

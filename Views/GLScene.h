@@ -205,11 +205,16 @@ protected:
 
 signals:
     void setStatusMessage(QString message);
-    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision, bool _has_inward, bool _has_outward, int thickness);
+    void bspline_parameters_changed(bool enabled, float extent, bool _is_slope, bool _has_uniform_subdivision,
+                                    bool _has_inward, bool _has_outward, int thickness,
+                                    QColor inward_bcolor, QColor outward_bcolor);
     void point_parameters_changed(bool enabled, bool isSharp);
     void triggerShading();
 
 public slots:
+    void change_inward_boundary_colour();
+    void change_outward_boundary_colour();
+
     void selectedPointChanged();
     void change_point_parameters(bool isSharp);
 

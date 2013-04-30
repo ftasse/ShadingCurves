@@ -55,8 +55,8 @@ void BSpline::write(cv::FileStorage& fs) const
         fs << cptRefs[i];
     fs << "]";
 
-    //fs << "boundaryColoursInward" << boundary_colors[0];
-    //fs << "boundaryColoursOutward" << boundary_colors[1];
+    fs << "boundaryColoursInward" << "[:" << boundary_colors[0][0] << boundary_colors[0][1] << boundary_colors[0][2] << "]";
+    fs << "boundaryColoursOutward" << "[:" << boundary_colors[1][0] << boundary_colors[1][1] << boundary_colors[1][2] << "]";
 
     fs << "}";
 }
@@ -81,8 +81,25 @@ void BSpline::read(const cv::FileNode& node)
     n = node["boundaryColoursInward"];
     if (!n.empty())
     {
-        //node["boundaryColoursInward"] >> boundary_colors[0];
-        //node["boundaryColoursOutward"] >> boundary_colors[1];
+        cv::Mat colour(3,1,CV_8UC1);
+        n = node["boundaryColoursInward"];
+        cv::FileNodeIterator it = n.begin(), it_end = n.end(); // Go through the node
+
+        int k=0;
+        for (; it != it_end; ++it)
+        {
+            boundary_colors[0][k] = (int)*it;
+            ++k;
+        }
+
+        n = node["boundaryColoursOutward"];
+        it = n.begin(), it_end = n.end();
+        k=0;
+        for (; it != it_end; ++it)
+        {
+            boundary_colors[1][k] = (int)*it;
+            ++k;
+        }
     }
 }
 
@@ -193,6 +210,10 @@ void BSpline::recompute()
 std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
 {
     Surface surf;
+    surf.direction = direction;
+    surf.splineRef = ref;
+    surf.m_splineGroup = m_splineGroup;
+
     float   zCoord;
 
     zCoord = -150; // makes sure that ghost surfaces do not cover normal surfaces in depth buffer
