@@ -91,7 +91,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="Curves">
           <attribute name="title">
@@ -782,12 +782,15 @@ background-color: rgba(127, 127, 127, 0);</string>
             <string>Shading Method</string>
            </property>
            <widget class="QRadioButton" name="shadingLab">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>20</y>
+              <y>120</y>
               <width>121</width>
-              <height>23</height>
+              <height>21</height>
              </rect>
             </property>
             <property name="text">
@@ -798,10 +801,13 @@ background-color: rgba(127, 127, 127, 0);</string>
             </property>
            </widget>
            <widget class="QRadioButton" name="shadingHLS">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>40</y>
+              <y>100</y>
               <width>121</width>
               <height>23</height>
              </rect>
@@ -811,6 +817,9 @@ background-color: rgba(127, 127, 127, 0);</string>
             </property>
            </widget>
            <widget class="QRadioButton" name="shadingOwn">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -827,7 +836,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>100</y>
+              <y>20</y>
               <width>171</width>
               <height>23</height>
              </rect>
@@ -869,7 +878,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>120</y>
+              <y>40</y>
               <width>107</width>
               <height>23</height>
              </rect>
@@ -1143,7 +1152,7 @@ background-color: rgba(127, 127, 127, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>741</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
