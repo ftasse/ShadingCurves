@@ -8,6 +8,8 @@
 #define WINVER 0x0500
 #include <windows.h>
 #include <psapi.h>
+#include <math.h>
+#include <iostream>
 
 #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 #include <unistd.h>
@@ -139,6 +141,28 @@ void getCurrentRSS(size_t &phys, size_t &virt)
     phys = (size_t)0L;			/* Unsupported. */
     return
 #endif
+}
+
+void draw_line_bresenham(int x0, int  y0, int x1, int y1, float w)
+{
+    glPointSize(w);
+    glDisable(GL_BLEND);
+    glBegin(GL_POINTS);
+
+    int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
+    int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1;
+    int err = (dx>dy ? dx : -dy)/2, e2;
+
+    for(;;){
+        glVertex2i(x0,y0);
+        if (x0==x1 && y0==y1) break;
+        e2 = err;
+        if (e2 >-dx) { err -= dy; x0 += sx; }
+        if (e2 < dy) { err += dx; y0 += sy; }
+    }
+
+    glEnd();
+    glEnable(GL_BLEND);
 }
 
 #endif // GLUTILS_H

@@ -15,4 +15,8 @@ cv::Mat loadImage(std::string fname);
 cv::Mat loadImageWithID(std::string imageID);
 void displayImageWithID(std::string imageID);
 
+
+//The mask has the same size as the image
+void customFloodFill(cv::Mat &img, cv::Mat &mask, cv::Scalar color, cv::Point2i seed);
+
 #endif // IMAGEUTILS_H
