@@ -1,5 +1,6 @@
 #include "ImageUtils.h"
 #include <queue>
+#include <stack>
 
 
 std::string imageLocationWithID(std::string imageID)
@@ -41,11 +42,17 @@ void displayImageWithID(std::string imageID)
     cv::destroyWindow( windowID );
 }
 
-void customFloodFill(cv::Mat& img, cv::Mat& mask, cv::Scalar color, cv::Point2i seed)
+void customFloodFill(cv::Mat& img, cv::Mat& mask, bool **marked,  cv::Scalar color, cv::Point2i seed)
 {
+    std::vector<std::pair<int, int> > dirs(4);
+    dirs[0] = std::pair<int, int>(0, 1);
+    dirs[1] = std::pair<int, int>(0, -1);
+    dirs[2] = std::pair<int, int>(1, 0);
+    dirs[3] = std::pair<int, int>(-1, 0);
+
     std::queue<cv::Point2i> area;
-    std::vector<cv::Point2i> masked;
     area.push(seed);
+    marked[seed.y][seed.x] = true;
     for (int k=0; k<3; ++k)
         img.at<cv::Vec3b>(seed.y, seed.x)[k] = color[k];
 
@@ -54,30 +61,23 @@ void customFloodFill(cv::Mat& img, cv::Mat& mask, cv::Scalar color, cv::Point2i 
         cv::Point2i point = area.front();
         area.pop();
 
-        for (int m=-1; m<=1; ++m)
-            for (int n=-1; n<=1; ++n)
-                if (((m!=0 || n!=0)&&(m==0 || n==0)) && point.x+m>=0 && point.x+m<img.cols && point.y+n>=0 && point.y+n<img.rows)
+        for (int i=0; i<dirs.size(); ++i)
+        {
+            int m = dirs[i].first;
+            int n = dirs[i].second;
+            if (point.x+m>=0 && point.x+m<img.cols && point.y+n>=0 && point.y+n<img.rows)
+            {
+                if ( !marked[point.y+n][point.x+m] )
                 {
-                    cv::Vec3b cur = img.at<cv::Vec3b> (point.y+n, point.x+m);
-                    if ((cur[0]!=color[0] || cur[1]!=color[1] || cur[2]!=color[2]) )
+                    marked[point.y+n][point.x+m] = true;
+                    for (int k=0; k<3; ++k)
+                        img.at<cv::Vec3b>(point.y+n, point.x+m)[k] = color[k];
+                    if (mask.at<uchar>(point.y, point.x) < 128)
                     {
-                        if (mask.at<uchar>(point.y, point.x) < 128)
-                        {
-                            area.push(cv::Point2i(point.x+m, point.y+n));
-                            for (int k=0; k<3; ++k)
-                                img.at<cv::Vec3b>(point.y+n, point.x+m)[k] = color[k];
-                        } else
-                        {
-                            //(mask.at<uchar>(point.y+n, point.x+m) > 128)
-                            masked.push_back(cv::Point2i(point.x+m, point.y+n));
-                        }
+                        area.push(cv::Point2i(point.x+m, point.y+n));
                     }
                 }
-    }
-
-    for (int i=0; i<masked.size(); ++i)
-    {
-        for (int k=0; k<3; ++k)
-            img.at<cv::Vec3b>(masked[i].y, masked[i].x)[k] = color[k];
+            }
+        }
     }
 }

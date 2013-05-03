@@ -1900,6 +1900,14 @@ void GLScene::update_region_coloring(cv::Mat img)
 
     cv::Mat result = m_curImage.clone();
 
+    bool **marked = new bool* [img.rows];
+    for (int i=0; i<img.rows; ++i)
+    {
+        marked[i] = new bool [img.cols];
+        for (int j=0; j<img.cols; ++j)
+            marked[i][j] = false;
+    }
+
     for (int l=m_splineGroup.colorMapping.size()-1; l>=0; --l)
     {
         QPoint seed = m_splineGroup.colorMapping[l].first;
@@ -1921,7 +1929,8 @@ void GLScene::update_region_coloring(cv::Mat img)
             continue;
         }*/
 
-        customFloodFill(result, mask_vals, color, cv::Point2i(seed.x(),seed.y()));
+
+        customFloodFill(result, mask_vals, marked,  color, cv::Point2i(seed.x(),seed.y()));
 
         //Uncomment this and comment the line above to use opencv floodfilling
         /*cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
@@ -1966,33 +1975,9 @@ void GLScene::update_region_coloring(cv::Mat img)
         }*/
     }
 
-    /*for (int i=0; i<result.rows; ++i)
-    {
-        for (int j=0; j<result.cols; ++j)
-        {
-            if (curv_img.at<uchar>(i,j) > 128)
-            {
-                bool stop = false;
-                for (int m=-1; m<=1; ++m)
-                {
-                    for (int n=-1; n<=1; ++n)
-                    {
-                        if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows &&
-                                j+n < result.cols && curv_img.at<uchar>(i+m,j+n) <128)
-                        {
-                            cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
-                            for (int k=0; k<3; ++k)
-                                result.at<cv::Vec3b>(i,j)[k] = current[k];
-                            curv_img.at<uchar>(i,j) = 0;
-                            stop = true;
-                            break;
-                        }
-                    }
-                    if (stop)   break;
-                }
-            }
-        }
-    }*/
+    for (int i=0; i<img.rows; ++i)
+        delete [] marked[i];
+    delete [] marked;
 
     m_curImage = result.clone();
 }
