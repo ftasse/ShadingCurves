@@ -971,7 +971,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
     QVector<ControlPoint> subDividePts = bspline.getDisplayPoints(drawingSubdLevels);
 
-    if (transform)
+    //if (transform)
     {
 
         glBegin(GL_LINE_STRIP);
@@ -980,7 +980,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
             glVertex2f(subDividePts[i].x(), subDividePts[i].y());
         }
         glEnd();
-    } else
+    } /*else
     {
         float line_width = 1.0;
         glGetFloatv(GL_LINE_WIDTH, &line_width);
@@ -988,7 +988,7 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
         {
             draw_line_bresenham(subDividePts[i].x(), subDividePts[i].y(), subDividePts[i+1].x(), subDividePts[i+1].y(), line_width);
         }
-    }
+    }*/
 
     glPopName();
     glPopName();
@@ -1411,7 +1411,7 @@ void GLScene::recomputeAllSurfaces()
     t.restart();
 
     cv::Mat dt, curvesIm;
-    curvesIm = curvesImage(false, 1.0);
+    curvesIm = curvesImage(false, 1.5);
     offscreen_rendering_timing = t.elapsed();
     t.restart();
 
@@ -1885,7 +1885,7 @@ void GLScene::update_region_coloring(cv::Mat img)
 
     cv::Mat curv_img;
     if (img.cols == 0)
-        curv_img = curvesImage(false, 1.0);
+        curv_img = curvesImage(false, 1.5);
     else    curv_img  = img.clone();
 
     //cv::imwrite("curv_img.png", curv_img);
@@ -1930,10 +1930,10 @@ void GLScene::update_region_coloring(cv::Mat img)
         }*/
 
 
-        customFloodFill(result, mask_vals, marked,  color, cv::Point2i(seed.x(),seed.y()));
+        //customFloodFill(result, mask_vals, marked,  color, cv::Point2i(seed.x(),seed.y()));
 
         //Uncomment this and comment the line above to use opencv floodfilling
-        /*cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
+        cv::floodFill(result, mask, cv::Point2i(seed.x(),seed.y()),color, 0, cv::Scalar(255,255,255), cv::Scalar(255,255,255));
         QVector<QPoint> neighbours;
         for (int i=0; i<result.rows; ++i)
         {
@@ -1972,12 +1972,40 @@ void GLScene::update_region_coloring(cv::Mat img)
         {
             for (int k=0; k<3; ++k)
                 result.at<cv::Vec3b>(neighbours[i].x(), neighbours[i].y())[k] = color[k];
-        }*/
+        }
     }
 
     for (int i=0; i<img.rows; ++i)
         delete [] marked[i];
     delete [] marked;
+
+    for (int i=0; i<result.rows; ++i)
+    {
+        for (int j=0; j<result.cols; ++j)
+        {
+            if (curv_img.at<uchar>(i,j) > 128)
+            {
+                bool stop = false;
+                for (int m=-1; m<=1; ++m)
+                {
+                    for (int n=-1; n<=1; ++n)
+                    {
+                        if ((m!=0 || n!=0) && i+m>=0 && j+n>=0 && i+m<result.rows &&
+                                j+n < result.cols && curv_img.at<uchar>(i+m,j+n) <128)
+                        {
+                            cv::Vec3b current = result.at<cv::Vec3b>(i+m,j+n);
+                            for (int k=0; k<3; ++k)
+                                result.at<cv::Vec3b>(i,j)[k] = current[k];
+                            curv_img.at<uchar>(i,j) = 0;
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if (stop)   break;
+                }
+            }
+        }
+    }
 
     m_curImage = result.clone();
 }
