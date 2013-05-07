@@ -2084,22 +2084,36 @@ void GLScene::createMergeGroups(QVector< QVector<int> > &mergedGroups,
             if (junctionInfo.valid)
             {
                 std::pair<int, int> merging;
+                std::pair<cv::Vec3d, cv::Vec3d> boundary_colors;
+
                 for (int l=0; l<otherSpline.num_surfaces(); ++l)
                 {
                     if (otherSpline.surfaceAt(l).vertices.size() > 1 && (otherSpline.surfaceAt(l).direction == INWARD_DIRECTION) == (junctionInfo.spline2Direction==0))
                     {
-                        surface_is_merged[otherSpline.surfaceAt(l).ref] = true;
                         merging.second = otherSpline.surfaceAt(l).ref;
+                        boundary_colors.second = otherSpline.boundary_colors[otherSpline.surfaceAt(l).direction!=INWARD_DIRECTION];
                     }
                 }
                 for (int l=0; l<bspline.num_surfaces(); ++l)
                 {
                     if (bspline.surfaceAt(l).vertices.size() > 1 && (bspline.surfaceAt(l).direction == INWARD_DIRECTION) == (junctionInfo.spline1Direction==0))
                     {
-                        surface_is_merged[bspline.surfaceAt(l).ref] = true;
                         merging.first = bspline.surfaceAt(l).ref;
+                        boundary_colors.first = bspline.boundary_colors[bspline.surfaceAt(l).direction!=INWARD_DIRECTION];
                     }
                 }
+
+                bool opposite_colors = false;
+                for (int k=0; k<3; ++k)
+                    if (boundary_colors.first[k] != boundary_colors.second[k])
+                    {
+                        opposite_colors = true; break;
+                    }
+                if (opposite_colors)    continue;
+
+                surface_is_merged[merging.second] = true;
+                surface_is_merged[merging.first] = true;
+
 
                 bool already_added = false;
                 for (int m=0; m<mergedGroups.size(); ++m)
