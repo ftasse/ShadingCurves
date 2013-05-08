@@ -25,6 +25,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
     subdivTime = 0;
     flatImage = true;
     clrVsTxtr = true;
+    multiSubd = 0;
     pathToData = "../imageshading/Data";
 
     backupTimer = new QTimer(this);
@@ -768,6 +769,77 @@ void GraphicsView::applyShading(bool showImg, bool writeImg)
     my_scene->updateDisplay();
 }
 
+void GraphicsView::runMultiSubd()
+{
+    int i, m, time, total, avrg, min, max;
+
+    emit setMultiSubdOutputMin("wait");
+    emit setMultiSubdOutputAvrg("wait");
+    emit setMultiSubdOutputMax("wait");
+
+    this->setCursor(Qt::WaitCursor);
+    QApplication::processEvents();
+
+    total = 0;
+    min = 1000000;
+    max = 0;
+    m = (int)(pow(10, multiSubd) + 0.5);
+
+    GLScene *my_scene = (GLScene *) scene();
+    std::vector<std::string> surfaces = my_scene->OFFSurfaces();
+
+    for (i = 0 ; i < m ; i++)
+    {
+        glvs = new GLviewsubd(my_scene->getImageHeight(), my_scene->getImageWidth(), my_scene->getImage());
+
+        glvs->offScreen = true;
+        glvs->clear = false;
+
+        // transfer meshes
+        for (unsigned int i=0; i<surfaces.size(); ++i)
+        {
+            std::istringstream is(surfaces[i]);
+            glvs->loadFile(is);
+        }
+
+        glvs->indexMesh = -1; //all meshes visible
+        glvs->super = superSampling; //supersampling (1, 2, or 4)
+        glvs->showImg = imgShowAll;
+        glvs->writeImg = imgWriteAll;
+        glvs->clipping = clipping;
+        glvs->clipMin = clipMin;
+        glvs->clipMax = clipMax;
+        glvs->shade = shade;
+        glvs->blackOut = blackOut;
+        glvs->flatImage = flatImage;
+        glvs->clrVsTxtr = clrVsTxtr;
+        glvs->setSubdivLevel(surfSubdLevel); // calls updateGL
+
+        time = glvs->subdivTime;
+        total += time;
+        if (time > max)
+        {
+            max = time;
+        }
+        if (time < min)
+        {
+            min = time;
+        }
+
+
+        delete glvs;
+    }
+
+    avrg = (int)((double)total / (double)m);
+
+    emit setMultiSubdOutputMin(QString::number(min));
+    emit setMultiSubdOutputAvrg(QString::number(avrg));
+    emit setMultiSubdOutputMax(QString::number(max));
+
+    this->setCursor(Qt::ArrowCursor);
+    QApplication::processEvents();
+}
+
 void GraphicsView::setBrush()
 {
     GLScene *my_scene = (GLScene *) scene();
@@ -910,4 +982,9 @@ void GraphicsView::setClrVsTxtr(bool b)
 {
     clrVsTxtr = b;
     applyShading();
+}
+
+void GraphicsView::setMultiSubd(int m)
+{
+    multiSubd = m;
 }

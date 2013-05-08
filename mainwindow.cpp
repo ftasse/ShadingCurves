@@ -124,26 +124,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(scene, SIGNAL(triggerShading()), ui->graphicsView, SLOT(applyShading()));
     connect(ui->flatImage, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setFlatImage(bool)));
     connect(ui->clrVsTxtr, SIGNAL(clicked(bool)), ui->graphicsView, SLOT(setClrVsTxtr(bool)));
-
+    connect(ui->multiSubdRun, SIGNAL(clicked()), ui->graphicsView, SLOT(runMultiSubd()));
+    connect(ui->multiSubdSpin, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(setMultiSubd(int)));
+    connect(ui->graphicsView, SIGNAL(setMultiSubdOutputMin(QString)), ui->multiSubdOutputMin, SLOT(setText(QString)));
+    connect(ui->graphicsView, SIGNAL(setMultiSubdOutputAvrg(QString)), ui->multiSubdOutputAvrg, SLOT(setText(QString)));
+    connect(ui->graphicsView, SIGNAL(setMultiSubdOutputMax(QString)), ui->multiSubdOutputMax, SLOT(setText(QString)));
 
     QAction *actionActivateBackup = new QAction(QString("Backup Current Project"), ui->menuFile);
     actionActivateBackup->setCheckable(true);
     actionActivateBackup->setChecked(true);
     ui->menuFile->addAction(actionActivateBackup);
     connect(actionActivateBackup, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(toggleBackupStatus(bool)));
-
-//    QPalette    plt;
-
-//    plt.setColor(QPalette::Window, Qt::red);
-//    plt.setColor(QPalette::WindowText, Qt::blue);
-
-//    plt.setColor(QPalette::Text, Qt::red);
-//    plt.setColor(QPalette::Background, Qt::blue);
-
-
-//    ui->super1->setAutoFillBackground(true);
-//    ui->super1->setPalette(plt);
-//    ui->super1->setText("1x");
 }
 
 MainWindow::~MainWindow()
