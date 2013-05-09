@@ -826,7 +826,6 @@ void GraphicsView::runMultiSubd()
             min = time;
         }
 
-
         delete glvs;
     }
 
