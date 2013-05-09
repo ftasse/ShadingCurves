@@ -783,7 +783,7 @@ void GraphicsView::runMultiSubd()
     total = 0;
     min = 1000000;
     max = 0;
-    m = (int)(pow(10, multiSubd) + 0.5);
+    m = (int)(pow(10.0, multiSubd) + 0.5);
 
     GLScene *my_scene = (GLScene *) scene();
     std::vector<std::string> surfaces = my_scene->OFFSurfaces();
