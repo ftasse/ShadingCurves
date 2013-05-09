@@ -145,10 +145,10 @@
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>16.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>7.5999999046325684e-001</x>
-          <y>9.9999997764825821e-003</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+      <shapePointAtrs><_><x>3.7000000476837158e-001</x>
+          <y>-2.2351741291171123e-010</y></_>
+        <_><x>1.2000000476837158e-001</x>
+          <y>9.9000000953674316e-001</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>3.4839447021484375e+001</x>
     <y>6.8407879638671875e+002</y>
     <z>0.</z>
@@ -166,10 +166,10 @@
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>36.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>7.5999999046325684e-001</x>
-          <y>9.9999997764825821e-003</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+      <shapePointAtrs><_><x>3.7000000476837158e-001</x>
+          <y>-2.2351741291171123e-010</y></_>
+        <_><x>1.2000000476837158e-001</x>
+          <y>9.9000000953674316e-001</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>6.9216194152832031e+001</x>
     <y>7.6700738525390625e+002</y>
     <z>0.</z>
@@ -187,10 +187,10 @@
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>36.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>7.5999999046325684e-001</x>
-          <y>9.9999997764825821e-003</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+      <shapePointAtrs><_><x>3.7000000476837158e-001</x>
+          <y>-2.2351741291171123e-010</y></_>
+        <_><x>1.2000000476837158e-001</x>
+          <y>9.9000000953674316e-001</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>1.7338919067382812e+002</x>
     <y>8.2955560302734375e+002</y>
     <z>0.</z>
@@ -208,10 +208,10 @@
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>36.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>7.5999999046325684e-001</x>
-          <y>9.9999997764825821e-003</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+      <shapePointAtrs><_><x>3.7000000476837158e-001</x>
+          <y>-2.2351741291171123e-010</y></_>
+        <_><x>1.2000000476837158e-001</x>
+          <y>9.9000000953674316e-001</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>3.3583599853515625e+002</x>
     <y>8.6293389892578125e+002</y>
     <z>0.</z>
@@ -390,9 +390,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>46.</extent>
       <height>-10.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -411,9 +411,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>10.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -432,9 +432,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>20.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -453,9 +453,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -474,9 +474,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>1.2000000596046424e-001</x>
+          <y>1.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -938,15 +938,15 @@
       <height>30.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+        <_><x>1.1000000596046447e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>12.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
+      <shapePointAtrs><_><x>1.6000000596046426e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+        <_><x>6.0000005960464488e-002</x>
+          <y>1.0100000000000000e+000</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>6.3002850341796875e+002</x>
     <y>3.0003930664062500e+002</y>
     <z>0.</z>
@@ -959,15 +959,15 @@
       <height>30.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+        <_><x>1.1000000596046447e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>27.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
+      <shapePointAtrs><_><x>1.6000000596046426e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+        <_><x>6.0000005960464488e-002</x>
+          <y>1.0100000000000000e+000</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>6.1445751953125000e+002</x>
     <y>3.3524493408203125e+002</y>
     <z>0.</z>
@@ -980,15 +980,15 @@
       <height>30.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+        <_><x>1.1000000596046447e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>42.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
+      <shapePointAtrs><_><x>1.6000000596046426e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+        <_><x>6.0000005960464488e-002</x>
+          <y>1.0100000000000000e+000</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>6.0159704589843750e+002</x>
     <y>3.7246609497070312e+002</y>
     <z>0.</z>
@@ -1001,15 +1001,15 @@
       <height>30.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+        <_><x>1.1000000596046447e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>54.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
+      <shapePointAtrs><_><x>1.0000000596046425e-001</x>
           <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
-          <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
+        <_><x>6.0000005960464488e-002</x>
+          <y>1.0100000000000000e+000</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>8.8559942626953125e+002</x>
     <y>4.4516848754882812e+002</y>
     <z>0.</z>
@@ -1022,8 +1022,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>30.</extent>
       <height>-30.</height>
@@ -1127,8 +1127,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>30.</extent>
       <height>-30.</height>
@@ -1148,8 +1148,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.4999999999999969e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1169,8 +1169,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.4999999999999969e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1190,8 +1190,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.4999999999999969e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1211,8 +1211,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.4999999999999969e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1230,10 +1230,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>30.</extent>
       <height>-40.</height>
@@ -1251,10 +1251,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1272,10 +1272,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1293,10 +1293,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1314,10 +1314,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1335,10 +1335,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1356,10 +1356,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1377,10 +1377,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1398,10 +1398,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1419,10 +1419,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1440,10 +1440,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>9.9999995529651640e-003</y></_>
-        <_><x>-9.9999948590993887e-003</x>
-          <y>6.2999999046325694e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>9.9999997764825821e-003</y></_>
+        <_><x>-9.9999951198697090e-003</x>
+          <y>6.2999999523162842e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>30.</height>
@@ -1461,10 +1461,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>156.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>30.</extent>
       <height>-40.</height>
@@ -1692,10 +1692,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1713,10 +1713,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1734,10 +1734,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1755,10 +1755,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1776,10 +1776,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1797,10 +1797,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>6.</extent>
       <height>-40.</height>
@@ -1818,10 +1818,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1839,10 +1839,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1860,10 +1860,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1881,10 +1881,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>76.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
+      <shapePointAtrs><_><x>4.0999999642372131e-001</x>
+          <y>1.0000000707805157e-002</y></_>
         <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+          <y>6.4999997615814209e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-40.</height>
@@ -1904,8 +1904,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -1925,8 +1925,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -1946,8 +1946,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -1967,8 +1967,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -1988,8 +1988,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2009,8 +2009,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2030,8 +2030,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2051,8 +2051,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2072,8 +2072,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2093,8 +2093,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2114,8 +2114,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2135,8 +2135,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2156,8 +2156,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2177,8 +2177,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2198,8 +2198,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2219,8 +2219,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2240,8 +2240,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2261,8 +2261,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2282,8 +2282,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2303,8 +2303,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2324,8 +2324,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2345,8 +2345,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2366,8 +2366,8 @@
       <height>-50.</height>
       <shapePointAtrs><_><x>4.0000000596046448e-001</x>
           <y>0.</y></_>
-        <_><x>5.9604644796207307e-009</x>
-          <y>6.3999999999999968e-001</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>5.9604645663569045e-009</x>
+          <y>6.3999998569488525e-001</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>15.</extent>
       <height>-30.</height>
@@ -2406,9 +2406,9 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>5.</height>
-      <shapePointAtrs><_><x>4.0000000596046448e-001</x>
-          <y>0.</y></_>
-        <_><x>1.5000000596046448e-001</x>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>236.</extent>
@@ -2721,10 +2721,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>-50.</height>
-      <shapePointAtrs><_><x>4.0999999046325653e-001</x>
-          <y>1.0000000670552256e-002</y></_>
-        <_><x>5.9604645663569045e-009</x>
-          <y>6.4999999642372153e-001</y></_></shapePointAtrs></attribute_dir1>
+      <shapePointAtrs><_><x>2.1000000596046431e-001</x>
+          <y>-2.0000000000000000e-002</y></_>
+        <_><x>7.0000005960464490e-002</x>
+          <y>1.</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>76.</extent>
       <height>-40.</height>
@@ -2742,16 +2742,16 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>3.9987999200820923e-001</x>
+      <shapePointAtrs><_><x>1.1987999200820899e-001</x>
           <y>1.0000223483075388e-005</y></_>
-        <_><x>1.5004999935626984e-001</x>
+        <_><x>6.0049999356269847e-002</x>
           <y>1.0035300254821777e+000</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>76.</extent>
       <height>-40.</height>
-      <shapePointAtrs><_><x>3.8655000925064087e-001</x>
-          <y>3.3399995882064104e-003</y></_>
-        <_><x>1.5003000199794769e-001</x>
+      <shapePointAtrs><_><x>3.7655000925064086e-001</x>
+          <y>1.3339999588206411e-002</y></_>
+        <_><x>1.7003000199794771e-001</x>
           <y>9.9999004602432251e-001</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>5.9916442871093750e+002</x>
     <y>3.9377215576171875e+002</y>
@@ -2763,10 +2763,10 @@
     <attribute_dir1><inwardDirection>1</inwardDirection>
       <extent>54.</extent>
       <height>40.</height>
-      <shapePointAtrs><_><x>3.9987999200820923e-001</x>
+      <shapePointAtrs><_><x>2.8987999200820913e-001</x>
           <y>1.0000223483075388e-005</y></_>
-        <_><x>1.5004999935626984e-001</x>
-          <y>1.0035300254821777e+000</y></_></shapePointAtrs></attribute_dir1>
+        <_><x>9.0049999356269839e-002</x>
+          <y>1.0135300254821777e+000</y></_></shapePointAtrs></attribute_dir1>
     <attribute_dir2><inwardDirection>0</inwardDirection>
       <extent>76.</extent>
       <height>-20.</height>
@@ -2963,8 +2963,8 @@
           <y>0.</y></_>
         <_><x>1.5000000596046448e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
-  <_><x>1.1908952319690823e+003</x>
-    <y>5.8336755608136673e+002</y>
+  <_><x>1.1908952636718750e+003</x>
+    <y>5.8336755371093750e+002</y>
     <z>0.</z>
     <ref>141</ref>
     <isSharp>0</isSharp>
@@ -2985,7 +2985,7 @@
         <_><x>1.5000000596046448e-001</x>
           <y>1.</y></_></shapePointAtrs></attribute_dir2></_>
   <_><x>1.2783997802734375e+003</x>
-    <y>5.9771014878382732e+002</y>
+    <y>5.9771014404296875e+002</y>
     <z>0.</z>
     <ref>142</ref>
     <isSharp>0</isSharp>
