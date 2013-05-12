@@ -1429,7 +1429,6 @@ void GLScene::recomputeAllSurfaces()
 
 //    float tracing_timer = 0;
 //    float RUNS = 100;
-
 //    for(int ii = 0; ii <= RUNS;ii++) {
 
     t.restart();
