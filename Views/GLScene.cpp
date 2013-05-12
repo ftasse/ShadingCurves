@@ -1427,10 +1427,10 @@ void GLScene::recomputeAllSurfaces()
     }
     dt_timing = t.elapsed();
 
-    float tracing_timer = 0;
-    float RUNS = 100;
+//    float tracing_timer = 0;
+//    float RUNS = 100;
 
-    for(int ii = 0; ii <= RUNS;ii++) {
+//    for(int ii = 0; ii <= RUNS;ii++) {
 
     t.restart();
 
@@ -1449,12 +1449,12 @@ void GLScene::recomputeAllSurfaces()
         }
     }
     surfaces_timing = t.elapsed();
-    tracing_timer += surfaces_timing;
-    }
+//    tracing_timer += surfaces_timing;
+//    }
 
-    surfaces_timing = tracing_timer/RUNS;
-    qDebug() << "************************";
-    qDebug() << "DTT tracing: " << surfaces_timing;
+//    surfaces_timing = tracing_timer/RUNS;
+//    qDebug() << "************************";
+//    qDebug() << "DTT tracing: " << surfaces_timing;
 
     tm = t2.elapsed();
     char timings[1024];
