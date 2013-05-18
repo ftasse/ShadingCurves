@@ -26,6 +26,9 @@ signals:
     void setStatusMessage(QString message);
     void setTimeOutput(QString t);
     void setTimeOutputSub(QString t);
+    void setMultiSubdOutputMin(QString t);
+    void setMultiSubdOutputAvrg(QString t);
+    void setMultiSubdOutputMax(QString t);
     
 public slots:
     void create_bspline();
@@ -86,6 +89,8 @@ public slots:
     void setBlackOut(bool b);
     void setFlatImage(bool b);
     void setClrVsTxtr(bool b);
+    void setMultiSubd(int m);
+    void runMultiSubd();
 
 private:
     QPointF currentCenterPoint;
@@ -94,7 +99,7 @@ private:
     MainWindow3D    *glw;
     GLviewsubd      *glvs;
 
-    int superSampling, surfSubdLevel, clipMin, clipMax, subdivTime;
+    int superSampling, surfSubdLevel, clipMin, clipMax, subdivTime, multiSubd;
     bool imgShowAll, imgWriteAll, clipping, timeIt, blackOut, interactiveShading, flatImage, clrVsTxtr;
 
     ShadingType     shade;
