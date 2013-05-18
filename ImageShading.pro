@@ -73,12 +73,13 @@ DEFINES += GLEW_STATIC
 }
 
 INCLUDEPATH += $$PWD
-win32:INCLUDEPATH += C:/opencv/build/include
+win32:INCLUDEPATH += C:/opencv/build/include $$(OPENCV_DIR)/include
 #unix:INCLUDEPATH += /local/scratch/jk520/OpenCV-2.4.4/include
 
 win32:LIBS +=  -L"C:/opencv-build/bin" \
                -L"C:/opencv-build/lib" \
-               -L"C:/opencv/build/x86/vc10/bin"
+               -L"$$(OPENCV_DIR)/bin" \
+               -L"$$(OPENCV_DIR)/lib"
 
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32 -lpsapi
 unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
@@ -91,3 +92,6 @@ QMAKE_CXXFLAGS_RELEASE += -O3
 QMAKE_CFLAGS_RELEASE += -O3
 #QMAKE_CXXFLAGS_RELEASE += -fopenmp
 #QMAKE_CFLAGS_RELEASE += -fopenmp
+
+RESOURCES += \
+    resources.qrc

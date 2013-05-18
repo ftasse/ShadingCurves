@@ -6,6 +6,10 @@
 //#include <GL/glu.h>
 #include "tostring.h"
 
+#include <QMouseEvent>
+#include <QElapsedTimer>
+#include <QDebug>
+
 using namespace std;
 
 GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGLWidget *shareWidget) : GLviewport(parent, shareWidget)

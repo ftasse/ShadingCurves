@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <string.h>
-
+#include <QtOpenGL>
 
 using namespace std;
 

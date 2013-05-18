@@ -2393,12 +2393,16 @@ void GLScene::resetImage()
     m_translation = QPointF(0.0, 0.0);
     QSize prevSize(m_curImage.rows, m_curImage.cols);
 
-    std::string blankImagePath = imageLocationWithID("blank.png");
-    m_curImage = loadImage(blankImagePath);
+    QImage img(":/Data/blank.png");
+    m_curImage = qimage2mat(img).clone();
     orgBlankImage = m_curImage.clone();
 
     if (prevSize.width() > 0)
         cv::resize(m_curImage, m_curImage, cv::Size(prevSize.height(), prevSize.width()));
+    else
+    {
+        splineGroup().imageSize = cv::Size(m_curImage.cols, m_curImage.rows);
+    }
 
     curDisplayMode = 0;
     changeDisplayModeText();

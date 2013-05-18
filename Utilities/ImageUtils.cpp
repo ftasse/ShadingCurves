@@ -16,7 +16,7 @@ std::string imageLocationWithID(std::string imageID)
 cv::Mat loadImage(std::string fname)
 {
     cv::Mat image = cv::imread(fname);
-    if (image.cols == 0)
+    if (image.empty())
     {
         qDebug("Could not load image: %s", fname.c_str());
     }
@@ -81,3 +81,11 @@ void customFloodFill(cv::Mat& img, cv::Mat& mask, bool **marked,  cv::Scalar col
         }
     }
 }
+
+cv::Mat qimage2mat(const QImage& qimage) {
+    cv::Mat mat = cv::Mat(qimage.height(), qimage.width(), CV_8UC4, (uchar*)qimage.bits(), qimage.bytesPerLine());
+    cv::Mat mat2 = cv::Mat(mat.rows, mat.cols, CV_8UC3 );
+    int from_to[] = { 0,0,  1,1,  2,2 };
+    cv::mixChannels( &mat, 1, &mat2, 1, from_to, 3 );
+    return mat2;
+};

@@ -1,12 +1,21 @@
+#include <QGLFrameBufferObject>
 #include <QResizeEvent>
 #include <QGLWidget>
+#include <QElapsedTimer>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QSpinBox>
 #include <QBrush>
+#include <QDebug>
+#include <QTimer>
 #include <fstream>
 #include "../Utilities/SurfaceUtils.h"
 #include "../Views/GraphicsView.h"
 #include "../Views/GLScene.h"
+
 
 #define BACKUP_TIME_INTERVAL 5*60*1000      //(in milliseconds)
 

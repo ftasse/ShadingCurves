@@ -6,7 +6,6 @@
 #include <string>
 #include "3D/point_3d.h"
 //#include "3D/spline.h"
-#include <QtOpenGL>
 
 // I ASSUME CLOCK-WISE ORIENTATION OF VERTICES WITHIN FACETS!
 
@@ -41,7 +40,7 @@ public:
 					my_curvMsmooth,
 					my_curvGsmooth;
 
-	GLfloat			my_normalFlat[3],
+	float			my_normalFlat[3],
 					my_normalSmooth[3];
 
 	void coutV(void);
@@ -92,7 +91,7 @@ public:
 					my_curvMsmooth,
 					my_curvGsmooth;
 
-	GLfloat			my_normalFlat[3],
+	float			my_normalFlat[3],
 					my_normalSmooth[3];
 
     Point_3D		my_Fpoi;
@@ -119,8 +118,8 @@ public:
 	void computeNormalsFlat(void);
 	void computeNormalsSmooth(unsigned int rings);
 
-	void calculateNormal(GLfloat *norm, GLfloat p0[3],
-						 GLfloat p1[3], GLfloat p2[3]);
+	void calculateNormal(float *norm, float p0[3],
+						 float p1[3], float p2[3]);
 
 
 	void getRingsF	(MeshFacet *fac, unsigned int r,

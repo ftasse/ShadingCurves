@@ -805,8 +805,22 @@ void BSplineGroup::loadAll(std::string fname)
     junctionInfos.clear();
 
     cv::FileStorage fs(fname.c_str(), cv::FileStorage::READ);
-    fs["Resolution"]["width"] >> imageSize.width;
-    fs["Resolution"]["height"] >> imageSize.height;
+    if (!fs.isOpened())
+    {
+        qWarning("Could not open file: %s", fname.c_str());
+        return;
+    }
+
+    int w, h;
+    fs["Resolution"]["width"] >> w;
+    fs["Resolution"]["height"] >> h;
+
+    if (w == 0 || h == 0)
+    {
+        qWarning("Invalid resolution size: %d x %d", w, h);
+        return;
+    } else
+        imageSize = cv::Size(w, h);
 
     cv::FileNode n = fs["ControlPoints"];
     {
