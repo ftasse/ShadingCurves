@@ -1,4 +1,6 @@
-#include <QGLFrameBufferObject>
+//#include <QGLFrameBufferObject>
+#include <QGLFramebufferObject>
+#include <QApplication>
 #include <QResizeEvent>
 #include <QGLWidget>
 #include <QElapsedTimer>
