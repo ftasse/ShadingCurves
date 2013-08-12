@@ -488,6 +488,13 @@ void GraphicsView::toggleBackupStatus(bool b)
     }
 }
 
+void GraphicsView::toggleUseBresenham(bool b)
+{
+    GLScene *my_scene = (GLScene *) scene();
+    my_scene->useBresenham = b;
+    my_scene->recomputeAllSurfaces();
+}
+
 void GraphicsView::saveOff()
 {
     QFileDialog::Options options;

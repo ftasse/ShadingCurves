@@ -97,6 +97,7 @@ bool Surface::writeOFF(std::ostream &ofs)
     //Write vertices
     for (int i=0; i<vertices.size(); ++i)
     {
+        //TODO we are only converting to int to account for the mismatch between coloured region (where we use integers) and surfaces.
         ofs << vertices[i].x() << " " << vertices[i].y() << " " << vertices[i].z() << std::endl;
     }
 

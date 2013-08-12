@@ -224,6 +224,8 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
     surf.controlMesh.push_back(QVector<int>());
     surf.controlMesh.push_back(QVector<int>());
 
+    float disp = 1.0;
+
     for (int i=0; i<subd_points.size(); ++i)
     {
         int orgId, trId;
@@ -267,7 +269,7 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
         }
 
 
-        QPointF translated =  (QPointF)subd_points[i]-0.5*normals[i];
+        QPointF translated =  (QPointF)subd_points[i]+1.0*normals[i]; //Start ghost surface a pixel away
         int vertexId = surf.addVertex(translated, zCoord);
         orgId = vertexId;
 
@@ -281,19 +283,19 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
             float ztmp = zCoord + surf.controlMesh[k].size()+1;
             if (isSharp)
             {
-                translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n1;
+                translated =  (QPointF)subd_points[i]+(disp)*n1;
                 vertexId = surf.addVertex(translated, ztmp);
                 surf.controlMesh[k].push_back(vertexId);
             }
 
-            translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*normals[i];
+            translated =  (QPointF)subd_points[i]+(disp)*normals[i];
             vertexId = surf.addVertex(translated, ztmp+1);
             surf.controlMesh[k].push_back(vertexId);
             if (k==0)  trId = vertexId;
 
             if (isSharp)
             {
-                translated =  (QPointF)subd_points[i]+(0.5+surf.controlMesh.size()-1-k)*n2;
+                translated =  (QPointF)subd_points[i]+(disp)*n2;
                 vertexId = surf.addVertex(translated, ztmp+2);
                 surf.controlMesh[k].push_back(vertexId);
             }
@@ -315,7 +317,7 @@ std::string BSpline::ghostSurfaceString(NormalDirection direction, cv::Mat img)
     }
 
     surf.computeFaceIndices();
-    QPointF pixelPoint = surf.vertices[surf.controlMesh.first()[surf.controlMesh.first().size()/2]];
+    QPointF pixelPoint = (QPointF)subd_points[1]+disp*normals[1];
     cv::Vec3b color = img.at<cv::Vec3b>(pixelPoint.y(), pixelPoint.x());
     std::string str = surf.surfaceToOFF(color)+"ghost";
     return str;

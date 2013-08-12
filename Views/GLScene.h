@@ -286,6 +286,7 @@ public:
     bool showColors;
     bool displaySimpleSurfaces;
     QPointF accumMouseChanges;
+    bool useBresenham;
     int curveSubdLevels;
     int drawingSubdLevels;
     int globalThickness;

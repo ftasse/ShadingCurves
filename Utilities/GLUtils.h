@@ -146,7 +146,6 @@ void getCurrentRSS(size_t &phys, size_t &virt)
 void draw_line_bresenham(int x0, int  y0, int x1, int y1, float w)
 {
     glPointSize(w);
-    glDisable(GL_BLEND);
     glBegin(GL_POINTS);
 
     int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -162,7 +161,6 @@ void draw_line_bresenham(int x0, int  y0, int x1, int y1, float w)
     }
 
     glEnd();
-    glEnable(GL_BLEND);
 }
 
 #endif // GLUTILS_H

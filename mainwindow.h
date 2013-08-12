@@ -16,6 +16,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void guiCleanup();
+
     GLScene *scene;
     
 private:

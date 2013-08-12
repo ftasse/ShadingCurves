@@ -49,6 +49,7 @@ public slots:
     void saveOff();
 
     void toggleBackupStatus(bool b);
+    void toggleUseBresenham(bool b);
     void changeControlPointSize(int pointSize);
     void changeBrushLightness(int type);
     void changeBrushSize(int size);
@@ -91,6 +92,11 @@ public slots:
     void setClrVsTxtr(bool b);
     void setMultiSubd(int m);
     void runMultiSubd();
+
+    int getSurfSubdLevel()
+    {
+        return surfSubdLevel;
+    }
 
 private:
     QPointF currentCenterPoint;

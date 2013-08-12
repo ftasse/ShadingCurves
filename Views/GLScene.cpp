@@ -46,6 +46,7 @@ GLScene::GLScene(QObject *parent) :
     showCurves = true;
     showNormals = true;
     showColors = true;
+    useBresenham = false;
     accumMouseChanges = QPointF(0.0,0.0);
     curveSubdLevels = DEFAULT_SUBDV_LEVELS;
     drawingSubdLevels = 5;
@@ -669,7 +670,7 @@ void GLScene::buildCurves(bool only_show_splines)
 
     if (showCurves)
     {
-        glLineWidth(pointSize/5.0);
+        glLineWidth(1.0); //glLineWidth(pointSize/5.0);
         for (int i=0; i<num_splines(); ++i)
         {
             if (spline(i).num_cpts() <= 1)
@@ -744,8 +745,8 @@ void GLScene::initialize()
         glGenTextures(1, &texId);
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_LINEAR
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //GL_LINEAR
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -971,24 +972,25 @@ void GLScene::draw_spline(int spline_id, bool only_show_splines, bool transform)
 
     QVector<ControlPoint> subDividePts = bspline.getDisplayPoints(drawingSubdLevels);
 
-    //if (transform)
+    glDisable(GL_BLEND);
+    if (!useBresenham)
     {
-
         glBegin(GL_LINE_STRIP);
         for (int i = 0; i < subDividePts.size(); ++i)
         {
             glVertex2f(subDividePts[i].x(), subDividePts[i].y());
         }
         glEnd();
-    } /*else
+    } else
     {
-        float line_width = 1.0;
+        float line_width;
         glGetFloatv(GL_LINE_WIDTH, &line_width);
         for (int i = 0; i < subDividePts.size()-1; ++i)
         {
             draw_line_bresenham(subDividePts[i].x(), subDividePts[i].y(), subDividePts[i+1].x(), subDividePts[i+1].y(), line_width);
         }
-    }*/
+    }
+    glEnable(GL_BLEND);
 
     glPopName();
     glPopName();
@@ -1411,7 +1413,8 @@ void GLScene::recomputeAllSurfaces()
     t.restart();
 
     cv::Mat dt, curvesIm;
-    curvesIm = curvesImage(false, 1.5);
+    float line_width = useBresenham?1.0:1.5;
+    curvesIm = curvesImage(false, line_width);
     offscreen_rendering_timing = t.elapsed();
     t.restart();
 
@@ -1880,8 +1883,8 @@ cv::Mat GLScene::curvesImage(bool only_closed_curves, float thickness)
     cv::Mat img = curvesImageBGR(only_closed_curves, thickness);
 
     cv::cvtColor(img, img, CV_BGR2RGB);
-    cv::cvtColor(img, img, CV_RGB2GRAY);   //cv::imwrite("curv_img_bef.png", img);
-    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); //cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
+    cv::cvtColor(img, img, CV_RGB2GRAY);   cv::imwrite("curv_img_bef.png", img);
+    cv::threshold( img, img, 250, 255,   CV_THRESH_BINARY); cv::imwrite("curv_img.png", img); //cv::imshow("Closed Curves", img);
 
     //qDebug("\n13 %.4f MB %s", img.cols*img.rows*img.elemSize()/(1024.0*1024.0), memory_info().toStdString().c_str());
 

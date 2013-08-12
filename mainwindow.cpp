@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     //Setup
     ui->setupUi(this);
+
     scene = new GLScene ();
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(false);
@@ -63,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->curveSubdivisionsBox, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeCurveSubdLevels(int)));
     connect(ui->drawingSubdivisionsBox, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeDisplaySubdLevels(int)));
     connect(ui->global_thickness_box, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeGlobalThickness(int)));
+    connect(ui->bresenhamCheckBox, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(toggleUseBresenham(bool)));
 
     connect(ui->sharp_box, SIGNAL(clicked(bool)), this, SLOT(change_point_sharpness()));
     connect(scene, SIGNAL(point_parameters_changed(bool, bool)), this, SLOT(update_point_sharpness_ui(bool,bool)));
@@ -135,12 +137,24 @@ MainWindow::MainWindow(QWidget *parent) :
     actionActivateBackup->setChecked(true);
     ui->menuFile->addAction(actionActivateBackup);
     connect(actionActivateBackup, SIGNAL(toggled(bool)), ui->graphicsView, SLOT(toggleBackupStatus(bool)));
+
+    guiCleanup();
 }
 
 MainWindow::~MainWindow()
 {
     delete scene;
     delete ui;
+}
+
+void MainWindow::guiCleanup()
+{
+    /*ui->curveSubdivisionsBox->setVisible(false);
+      ui->curveSubdivisionsLabel->setVisible(false);
+
+      scene->curveSubdLevels  = ui->graphicsView->getSurfSubdLevel();
+      connect(ui->spinBoxSubd, SIGNAL(valueChanged(int)), ui->graphicsView, SLOT(changeCurveSubdLevels(int)));
+      */
 }
 
 void MainWindow::change_slope_curve()

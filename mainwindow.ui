@@ -21,16 +21,7 @@
     <property name="spacing">
      <number>2</number>
     </property>
-    <property name="leftMargin">
-     <number>2</number>
-    </property>
-    <property name="topMargin">
-     <number>2</number>
-    </property>
-    <property name="rightMargin">
-     <number>2</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>2</number>
     </property>
     <item>
@@ -42,16 +33,7 @@
        <property name="spacing">
         <number>2</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -91,7 +73,7 @@
           <bool>true</bool>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="Curves">
           <attribute name="title">
@@ -375,7 +357,7 @@ background-color: rgba(127, 127, 127, 0);</string>
            <property name="geometry">
             <rect>
              <x>10</x>
-             <y>590</y>
+             <y>620</y>
              <width>184</width>
              <height>27</height>
             </rect>
@@ -500,7 +482,7 @@ background-color: rgba(127, 127, 127, 0);</string>
             <bool>true</bool>
            </property>
           </widget>
-          <widget class="QLabel" name="label_13">
+          <widget class="QLabel" name="curveSubdivisionsLabel">
            <property name="geometry">
             <rect>
              <x>22</x>
@@ -533,6 +515,22 @@ background-color: rgba(127, 127, 127, 0);</string>
            </property>
            <property name="value">
             <number>5</number>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="bresenhamCheckBox">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>590</y>
+             <width>181</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Use Bresenham's line</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
            </property>
           </widget>
          </widget>
