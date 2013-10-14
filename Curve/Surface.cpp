@@ -448,7 +448,7 @@ QVector<QVector<int> > Surface::setSurfaceCP(QVector<ControlPoint> controlPoints
 
 QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width,QLineF normalL)
 {
-    float currentD = 0;
+    float currentD = dt.at<float>(current.y(),current.x());
     QPointF new_cpt;
 
     while(true) {
@@ -456,7 +456,7 @@ QPointF Surface::traceDT(cv::Mat dt,QPoint current,float width,QLineF normalL)
         QPoint m = localMax(dt,cv::Rect(current.x()-1,current.y()-1,current.x()+1,current.y()+1)
                             ,&currentD,normalL);
         // check lines
-        if(fabs(oldD-currentD)<EPSILON || currentD >= width) {
+        if(fabs(oldD-currentD)<EPSILON || currentD >= width || (currentD-oldD)/(sqrt(pow(double(m.x()-current.x()),2.0)+pow(double(m.y()-current.y()),2.0)))<0.7) {
             new_cpt.rx() = m.rx();
             new_cpt.ry() = m.ry();
             break;
