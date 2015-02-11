@@ -14,8 +14,6 @@ using namespace std;
 GLabstract::GLabstract(QWidget *parent, QGLWidget *shareWidget) : QGLWidget(parent, shareWidget)
 {
     clr = 3;
-//	min = 0;
-//	max = 0;	
 }
 
 GLabstract::~GLabstract()
@@ -37,9 +35,6 @@ void GLabstract::resizeGL(int width, int height)
 
 void GLabstract::genColor(int clr, float x, float minx, float maxx, float col[3])
 {
-
-//	if (x > 0) x = floor(x);
-//	else x = ceil(x);
 
 	if (x > maxx) x = maxx;
 	if (x < minx) x = minx;
@@ -68,34 +63,6 @@ void GLabstract::genColor(int clr, float x, float minx, float maxx, float col[3]
 
 void GLabstract::genColorDiscr(float x, float col[3])
 {
-//	float value;
-////	value = (x - minx) / (maxx - minx) - 0.5;
-//    value = x;
-	
-////	float eps = 0.01;    //- for spline based curvG
-////    float eps = 0.0;     //- for spline based curvG
-//    float eps = 0.00008; //- for angle based curvG
-////    float eps = (maxx - minx) / 500.0;
-
-//    if (value > eps)
-//	{
-//		col[0] = 1;
-//		col[1] = 0;
-//		col[2] = 0;
-//	}
-//    else if (value < -eps)
-//	{
-//		col[0] = 0;
-//		col[1] = 0;
-//		col[2] = 1;
-//	}
-//	else
-//	{
-//		col[0] = 0;
-//		col[1] = 1;
-//		col[2] = 0;
-//	}
-
     if (x >= 0.1)
     {
         col[0] = 1;
@@ -119,50 +86,10 @@ void GLabstract::genColorDiscr(float x, float col[3])
 void GLabstract::genColorBW(float x, float minx, float maxx, float col[3])
 {
 	float value;
-
-//    value = (x - minx) / (maxx - minx);
-//	col[0] = value;
-//	col[1] = value;
-//	col[2] = value;
-
-//    if (minx == 1 && maxx == -1) // signal for luminance height
-//    {
-//        //minx = -127;
-//        //maxx = 128;
-//        if (x > 0 && x <= 128)
-//        {
-//            value = x / 128;
-//            col[0] = value;
-//            col[1] = value;
-//            col[2] = value;
-//        }
-//        else if (x > 128) // clip down
-//        {
-//            col[0] = 1;
-//            col[1] = 0;
-//            col[2] = 0;
-//        }
-//        else if (x < 0 && x >- -127)
-//        {
-//            value = x / 127;
-//            col[0] = value;
-//            col[1] = value;
-//            col[2] = value;
-//        }
-//        else // clip up
-//        {
-//            col[0] = 0;
-//            col[1] = 0;
-//            col[2] = 1;
-//        }
-//    }
-//    else // normal height
-//    {
-        value = (x - minx) / (maxx - minx);
-        col[0] = value;
-        col[1] = value;
-        col[2] = value;
-//    }
+    value = (x - minx) / (maxx - minx);
+    col[0] = value;
+    col[1] = value;
+    col[2] = value;
 }
 
 void GLabstract::genColorRG(float x, float minx, float maxx, float col[3])
@@ -322,9 +249,6 @@ void GLabstract::genColorHue2(float x, float minx, float maxx,  float col[3])
     }
 }
 
-/// Returns the world coordinates of a point in screen space.
-/// @param p input point in world space
-/// @return point in screen space
 Point_3D GLabstract::screenToWorld (int x, int y) 
 {
     makeCurrent();
@@ -339,9 +263,6 @@ Point_3D GLabstract::screenToWorld (int x, int y)
     return Point_3D(wldcoord[0], wldcoord[1], wldcoord[2]);
 }
 
-/// Returns the screen coordinates of a point in world space.
-/// @param p input point in screen space
-/// @return point in world space
 Point_3D GLabstract::worldToScreen(Point_3D p)
 {
     makeCurrent();

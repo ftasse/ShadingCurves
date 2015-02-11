@@ -24,8 +24,6 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 	glBar1	   = new GLbar();
 	glBar2	   = new GLbar();
 
-//    glBar1->setFixedSize(30, 180);
-//    glBar2->setFixedSize(30, 180);
     glBar1->setFixedSize(80, 20);
     glBar2->setFixedSize(80, 20);
 
@@ -38,11 +36,8 @@ MainWindow3D::MainWindow3D(GLuint iW, GLuint iH, cv::Mat *timg)
 	createActions();
 	createMenus();
 
-//	statusBar()->showMessage("Open a file...");
-
     setWindowTitle(tr("Mesh Visualisation"));
     setMinimumSize(350, 250);
-//    resize(width/3, 3*height/4);
 
 	NotFullScr = true;
 
@@ -1044,11 +1039,6 @@ void MainWindow3D::connectAll()
 	connect(glwidget2, SIGNAL(middleClicked()),
 			this, SLOT(fullScr()));
 
-//	connect(glwidget1, 	SIGNAL(updateNeeded()),
-//			this, 		  SLOT(update1()));
-//	connect(glwidget2, 	SIGNAL(updateNeeded()),
-//			this, 		  SLOT(update2()));
-
 	connect(glwidget1, 	SIGNAL(callBar(int)),
 			glBar1, 		  SLOT(setBar(int)));
 	connect(glwidget2, 	SIGNAL(callBar(int)),
@@ -1098,14 +1088,7 @@ void MainWindow3D::connectAll()
             glwidget1, 			  SLOT(setShowOld(bool)));
     connect(ctrlWidget1->checkFeature, 	SIGNAL(toggled(bool)),
             glwidget1, 			  SLOT(setShowFeatureLines(bool)));
-//    connect(ctrlWidget1->checkLine, 	SIGNAL(toggled(bool)),
-//            glwidget1, 			  SLOT(setShowLine(bool)));
-//	connect(ctrlWidget1->radioCtrlShaded, 	SIGNAL(toggled(bool)),
-//			glwidget1, 			  SLOT(setShowShadedCtrl(bool)));
-//	connect(ctrlWidget1->radioCtrlEdges, 	SIGNAL(toggled(bool)),
-//			glwidget1, 			  SLOT(setShowEdgedCtrl(bool)));
-//	connect(ctrlWidget1->radioCtrlCulled, 	SIGNAL(toggled(bool)),
-//			glwidget1, 			  SLOT(setShowCulledCtrl(bool)));
+
 	connect(ctrlWidget1->checkFull, 		SIGNAL(toggled(bool)),
 			this, 				  SLOT(toggleMyLayout1(bool)));
 	connect(glwidget1, 			SIGNAL(doubleClicked()),
@@ -1117,14 +1100,7 @@ void MainWindow3D::connectAll()
             glwidget2, 			  SLOT(setShowOld(bool)));
     connect(ctrlWidget2->checkFeature, 	SIGNAL(toggled(bool)),
             glwidget2, 			  SLOT(setShowFeatureLines(bool)));
-//    connect(ctrlWidget2->checkLine, 	SIGNAL(toggled(bool)),
-//            glwidget2, 			  SLOT(setShowLine(bool)));
-//	connect(ctrlWidget2->radioCtrlShaded, 	SIGNAL(toggled(bool)),
-//			glwidget2, 			  SLOT(setShowShadedCtrl(bool)));
-//	connect(ctrlWidget2->radioCtrlEdges, 	SIGNAL(toggled(bool)),
-//			glwidget2, 			  SLOT(setShowEdgedCtrl(bool)));
-//	connect(ctrlWidget2->radioCtrlCulled, 	SIGNAL(toggled(bool)),
-//			glwidget2, 			  SLOT(setShowCulledCtrl(bool)));
+
     connect(ctrlWidget2->checkFull, 		SIGNAL(toggled(bool)),
 			this, 				  SLOT(toggleMyLayout2(bool)));
 	connect(glwidget2, 			SIGNAL(doubleClicked()),
@@ -1140,10 +1116,6 @@ void MainWindow3D::connectAll()
 			glwidget1, 			  SLOT(setShowEdgedMesh(bool)));
 	connect(ctrlWidget1->radioMeshCulled, 	SIGNAL(toggled(bool)),
 			glwidget1, 			  SLOT(setShowCulledMesh(bool)));
-	connect(ctrlWidget1->radioMeshCurvM, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowCurvMMesh(bool)));
-	connect(ctrlWidget1->radioMeshCurvG, 	SIGNAL(toggled(bool)),
-			glwidget1, 			  SLOT(setShowCurvGMesh(bool)));
     connect(ctrlWidget1->radioMeshHeight, 	SIGNAL(toggled(bool)),
             glwidget1, 			  SLOT(setShowHeightMesh(bool)));
 	connect(ctrlWidget1->radioMeshIP, 	SIGNAL(toggled(bool)),
@@ -1159,10 +1131,6 @@ void MainWindow3D::connectAll()
 			glwidget2, 			  SLOT(setShowEdgedMesh(bool)));
 	connect(ctrlWidget2->radioMeshCulled, 	SIGNAL(toggled(bool)),
 			glwidget2, 			  SLOT(setShowCulledMesh(bool)));
-	connect(ctrlWidget2->radioMeshCurvM, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowCurvMMesh(bool)));
-	connect(ctrlWidget2->radioMeshCurvG, 	SIGNAL(toggled(bool)),
-			glwidget2, 			  SLOT(setShowCurvGMesh(bool)));
     connect(ctrlWidget2->radioMeshHeight, 	SIGNAL(toggled(bool)),
             glwidget2, 			  SLOT(setShowHeightMesh(bool)));
 	connect(ctrlWidget2->radioMeshIP, 	SIGNAL(toggled(bool)),
@@ -1196,12 +1164,6 @@ void MainWindow3D::connectAll()
 			glwidget1, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget1, 	  SLOT(changeStripeDensity(int)));
-//    connect(ctrlWidget1->sliderRld, 	SIGNAL(valueChanged(int)),
-//            this, 	  SLOT(setTimeInt1(int)));
-	connect(ctrlWidget1->sliderCurv1, 	SIGNAL(valueChanged(int)),
-			glwidget1, 	  SLOT(changeCurvRatio1(int)));
-	connect(ctrlWidget1->sliderCurv2, 	SIGNAL(valueChanged(int)),
-			glwidget1, 	  SLOT(changeCurvRatio2(int)));
 	connect(ctrlWidget2->sliderX, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(movePointX(int)));
 	connect(ctrlWidget2->sliderY, 	SIGNAL(valueChanged(int)),
@@ -1212,12 +1174,6 @@ void MainWindow3D::connectAll()
 			glwidget2, 	  SLOT(changeSmoothing(int)));
 	connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
 			glwidget2, 	  SLOT(changeStripeDensity(int)));
-//    connect(ctrlWidget2->sliderRld, 	SIGNAL(valueChanged(int)),
-//            this, 	  SLOT(setTimeInt2(int)));
-	connect(ctrlWidget2->sliderCurv1, 	SIGNAL(valueChanged(int)),
-			glwidget2, 	  SLOT(changeCurvRatio1(int)));
-	connect(ctrlWidget2->sliderCurv2, 	SIGNAL(valueChanged(int)),
-			glwidget2, 	  SLOT(changeCurvRatio2(int)));
 
 	connect(ctrlWidget1->xpButton, SIGNAL(clicked()),
 			glwidget1, SLOT(setRotXp()));
@@ -1258,31 +1214,6 @@ void MainWindow3D::connectAll()
 			glwidget1, 			  SLOT(setProbeOnCtrl(bool)));
 	connect(ctrlWidget2->checkOnCtrl, 	SIGNAL(toggled(bool)),
 			glwidget2, 			  SLOT(setProbeOnCtrl(bool)));
-
-    connect(ctrlWidget1->lapSmButton1, SIGNAL(clicked()),
-            glwidget1, SLOT(lapSm1()));
-    connect(ctrlWidget2->lapSmButton1, SIGNAL(clicked()),
-            glwidget2, SLOT(lapSm1()));
-
-    connect(ctrlWidget1->lapSmButton10, SIGNAL(clicked()),
-            glwidget1, SLOT(lapSm10()));
-    connect(ctrlWidget2->lapSmButton10, SIGNAL(clicked()),
-            glwidget2, SLOT(lapSm10()));
-
-    connect(ctrlWidget1->lapSmButton100, SIGNAL(clicked()),
-            glwidget1, SLOT(lapSm100()));
-    connect(ctrlWidget2->lapSmButton100, SIGNAL(clicked()),
-            glwidget2, SLOT(lapSm100()));
-
-    connect(ctrlWidget1->sliderLap,	SIGNAL(valueChanged(int)),
-            glwidget1, 	  SLOT(changeLapSmValue(int)));
-    connect(ctrlWidget2->sliderLap,	SIGNAL(valueChanged(int)),
-            glwidget2, 	  SLOT(changeLapSmValue(int)));
-
-//    connect(glwidget1, 	SIGNAL(openFile(const char *)),
-//            this, 		  SLOT(load1(const char*)));
-//    connect(glwidget2, 	SIGNAL(openFile(const char *)),
-//            this, 		  SLOT(load2(const char*)));
 
     connect(ctrlWidget1->buffer2imgButton, 	SIGNAL(clicked()),
             glwidget1, 		  SLOT(buffer2img()));

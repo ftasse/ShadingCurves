@@ -1,9 +1,6 @@
 #include "../Views/glew/GL/glew.h"
-//#include <QtGui>
-//#include <QtOpenGL>
 #include "glviewsubd.h"
 #include <assert.h>
-//#include <GL/glu.h>
 #include "tostring.h"
 
 #include <QMouseEvent>
@@ -16,24 +13,14 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 {
     setAcceptDrops(true);
 
-//    meshCtrl.clear();
-//	meshCurr.clear();
-//	meshSubd.clear();
-//    meshOld.clear();
-
     mesh_enabled = true;
     flat_mesh_enabled = false;
     smooth_mesh_enabled = false;
     edged_mesh_enabled = false;
     culled_mesh_enabled = false;
-    curvM_mesh_enabled = false;
-    curvG_mesh_enabled = false;
-    curvTG_mesh_enabled = false;
     height_mesh_enabled = true;
     feature_lines_enabled = false;
     IP_mesh_enabled = false;
-    triang_enabled = false;
-    triang2_enabled = false;
     ctrl_enabled = false;
     old_enabled = false;
     frame_enabled = false;
@@ -46,8 +33,6 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     writeImg = true;
     showImg = true;
 
-    subType = CC;
-
     verInd = -1;
     verIndSub = -1;
 
@@ -59,16 +44,10 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
 
     indexMesh = -1;
 
-    curvRatio1 = 0.0;
-    curvRatio2 = 0.0;
-
     stripeDensityLevel = 3;
-    lapSmValue = 10;
 
     imageWidth = iW;
     imageHeight = iH;
-
-//    this->setFixedSize(iW, iH);
 
     numberPaintCalls = 0;
 
@@ -91,80 +70,6 @@ GLviewsubd::GLviewsubd(GLuint iW, GLuint iH, cv::Mat *timg, QWidget *parent, QGL
     subdivTime = 0;
 
     surfBlendColours.clear();
-
-//    //COLOUR CONVERSION TESTS
-//    double L, a, b, R, G, B, Y, x, y;
-
-//    RGB2LAB(1,1,1,L,a,b);
-//    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    RGB2LAB(0,0,0,L,a,b);
-//    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    RGB2LAB(1,0,0,L,a,b);
-//    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    RGB2LAB(0,1,0,L,a,b);
-//    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    RGB2LAB(0,0,1,L,a,b);
-//    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
-
-//    matlabRGB2LAB(1,1,1,L,a,b);
-//    cout << "1 1 1 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    matlabRGB2LAB(0,0,0,L,a,b);
-//    cout << "0 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    matlabRGB2LAB(1,0,0,L,a,b);
-//    cout << "1 0 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    matlabRGB2LAB(0,1,0,L,a,b);
-//    cout << "0 1 0 RGB2LAB = " << L << " " << a << " " << b << endl;
-//    matlabRGB2LAB(0,0,1,L,a,b);
-//    cout << "0 0 1 RGB2LAB = " << L << " " << a << " " << b << endl;
-
-//    LAB2RGB(0,0,0,R,G,B);
-//    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
-
-//    LAB2RGB(32.3026,79.1967,-113.364,R,G,B);
-//    cout << "32.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-//    LAB2RGB(52.3026,79.1967,-113.364,R,G,B);
-//    cout << "52.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-//    LAB2RGB(100,79.1967,-113.364,R,G,B);
-//    cout << "100 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-
-//    matlabLAB2RGB(0,0,0,R,G,B);
-//    cout << "0 0 0 LAB2RGB = " << R << " " << G << " " << B << endl;
-
-//    matlabLAB2RGB(32.3026,79.1967,-113.364,R,G,B);
-//    cout << "32.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-//    matlabLAB2RGB(52.3026,79.1967,-113.364,R,G,B);
-//    cout << "52.3026 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-//    matlabLAB2RGB(100,79.1967,-113.364,R,G,B);
-//    cout << "100 79.1967 -113.364 LAB2RGB = " << R << " " << G << " " << B << endl;
-
-//    RGB2YXY(1,1,1,L,a,b);
-//    cout << "1 1 1 RGB2Yxy = " << L << " " << a << " " << b << endl;
-
-//    R = 0;
-//    G = 0;
-//    B = 0;
-//    RGB2YXY(R,G,B,Y,x,y);
-//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
-//    YXY2RGB(Y,x,y,R,G,B);
-//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
-
-//    R = 0;
-//    G = 0;
-//    B = 0;
-//    RGB2YXY(R,G,B,Y,x,y);
-//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
-//    Y += 0.1;
-//    YXY2RGB(Y,x,y,R,G,B);
-//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
-
-//    R = 0;
-//    G = 0;
-//    B = 0;
-//    RGB2YXY(R,G,B,Y,x,y);
-//    cout << R << " " << G << " " << B << " " << "RGB2Yxy = " << Y << " " << x << " " << y << endl;
-//    Y -= 0.1;
-//    YXY2RGB(Y,x,y,R,G,B);
-//    cout << Y << " " << x << " " << y << " " << "Yxy2RGB = " << R << " " << G << " " << B << endl;
 }
 
 GLviewsubd::~GLviewsubd()
@@ -183,26 +88,16 @@ GLviewsubd::~GLviewsubd()
             meshSubd[i][j] = NULL;
         }
     }
-//    meshSubd.clear();
 
     for (i = 0 ; i < meshCtrl.size() ; i++)
     {
         delete meshOld[i];
-//        meshOld[i] = NULL;
     }
 
-//	if (clear)
-//	{
         for (i = 0 ; i < meshCtrl.size() ; i++)
         {
             delete meshCtrl[i];
-//            meshCtrl[i] = NULL;
         }
-//		meshCtrl.clear();
-//		meshCurr.clear();
-//        meshOld.clear();
-//		setRotZero();
-//	}
 }
 
 void GLviewsubd::subdivide(void)
@@ -256,9 +151,6 @@ void GLviewsubd::setSubdivLevel(int newLevel)
                 }
             }
         }
-
-//        emit subdivLevelChanged(newLevel);
-//        cout << "subdivide End " << endl;
     }
     subdivTime = timer.elapsed();
     qDebug() << "3D: Subdivision: " << subdivTime << "ms";
@@ -274,7 +166,6 @@ void GLviewsubd::setClr(int newColor)
     if (clr != newColor)
     {
         clr = newColor;
-        buildCurvGMesh();
         buildHeightMesh();
         updateGL();
     }
@@ -323,10 +214,6 @@ void GLviewsubd::buildAll(void)
             else if (culled_mesh_enabled)
             {
                 buildCulledMesh();
-            }
-            else if (curvG_mesh_enabled)
-            {
-                buildCurvGMesh();
             }
             else if (height_mesh_enabled)
             {
@@ -379,23 +266,13 @@ void GLviewsubd::initializeGL(void)
 
     alpha = 0.0;
 
-//    if (joinTheDarkSide)
-//    {
-//        glClearColor(0, 0, 0, 0);
-//    }
-//    else
-//    {
-//        glClearColor(1, 1, 1, 0);
-//    }
-
     glClearColor(col_back[0], col_back[1], col_back[2], col_back[3]);
 
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_NORMALIZE);
-//    glDepthMask(GL_FALSE);
-//    glEnable(GL_CULL_FACE);
+
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     glLightfv(GL_LIGHT0, GL_AMBIENT,  lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  lightDiffuse1);
@@ -413,9 +290,6 @@ void GLviewsubd::initializeGL(void)
 //    glEnable(GL_LIGHT2);
 
     glLoadIdentity();
-//    glOrtho(0, imageWidth, imageHeight, 0, -1000.0, 1000.0);
-
-//    swapBuffers();
 
     glGenTextures(7, textID); // 7th for image texture
 
@@ -554,9 +428,6 @@ void GLviewsubd::paintGL(void)
             #endif
         #endif
         glReadPixels(0, 0, super*imageWidth, super*imageHeight, inputColourFormat, GL_FLOAT, img.data);
-
-//        tmp = img.at<cv::Vec4f>(0,0)[0]; // for an empty image, use this value as `zero'
-//        cout << "Zero level: " << tmp << endl;
 
         if (flatImage)
         {
@@ -884,39 +755,6 @@ void GLviewsubd::paintGL(void)
                             imgFillShaded.at<cv::Vec4f>(y,x)[1] = G;
                             imgFillShaded.at<cv::Vec4f>(y,x)[2] = R;
                         }
-
-                        //old code with just white and black
-//                        if (val < valMin || val > valMax)
-//                        {
-//                            B = imgFillShaded.at<cv::Vec4f>(y,x)[0];
-//                            G = imgFillShaded.at<cv::Vec4f>(y,x)[1];
-//                            R = imgFillShaded.at<cv::Vec4f>(y,x)[2];
-//                            if (val < valMin)
-//                            {
-//                                //make darker -- connect to black
-//                                tmp = 2 * val;
-//                                B *= tmp;
-//                                G *= tmp;
-//                                R *= tmp;
-//                            }
-//                            else
-//                            {
-//                                //make brighter -- connect to white
-//                                tmp = 2 * (1 - val);
-//                                B = 1 - B;
-//                                G = 1 - G;
-//                                R = 1 - R;
-//                                B *= tmp;
-//                                G *= tmp;
-//                                R *= tmp;
-//                                B = 1 - B;
-//                                G = 1 - G;
-//                                R = 1 - R;
-//                            }
-//                            imgFillShaded.at<cv::Vec4f>(y,x)[0] = B;
-//                            imgFillShaded.at<cv::Vec4f>(y,x)[1] = G;
-//                            imgFillShaded.at<cv::Vec4f>(y,x)[2] = R;
-//                        }
                     }
                 }
             }
@@ -1051,38 +889,27 @@ void GLviewsubd::paintGL(void)
             {
                 if (flat_mesh_enabled)
                 {
-        //			cout << "Calling flat_mesh_list" << endl;
                     glCallList(flat_mesh_list);
                 }
                 if (smooth_mesh_enabled)
                 {
-        //			cout << "Calling smooth_mesh_list" << endl;
                     glCallList(smooth_mesh_list);
                 }
                 else if (edged_mesh_enabled)
                 {
                     glCallList(edged_mesh_list);
-        //			cout << "Calling edged_mesh_list" << endl;
                 }
                 else if (culled_mesh_enabled)
                 {
                     glCallList(culled_mesh_list);
-        //			cout << "Calling culled_mesh_list" << endl;
-                }
-                else if (curvG_mesh_enabled)
-                {
-                    glCallList(curvG_mesh_list);
-        //			cout << "Calling curvG_mesh_list" << endl;
                 }
                 else if (height_mesh_enabled)
                 {
                     glCallList(height_mesh_list);
-        //			cout << "Calling curvG_mesh_list" << endl;
                 }
                 else if (IP_mesh_enabled)
                 {
                     glCallList(IP_mesh_list);
-        //			cout << "Calling curvG_mesh_list" << endl;
                 }
             }
 
@@ -1097,16 +924,10 @@ void GLviewsubd::paintGL(void)
                 {
         //			glClear(GL_DEPTH_BUFFER_BIT);
                 }
-        //		cout << "Calling ctrl_list" << endl;
-
-    //            buildPoiBound();
 
                 glCallList(ctrl_list);
                 glCallList(poiBound_list);
             }
-
-//            glClear(GL_DEPTH_BUFFER_BIT);
-//            glCallList(poiSub_list);
 
             if (Lab_enabled)
             {
@@ -1307,48 +1128,6 @@ void GLviewsubd::drawPoiBound()
 void GLviewsubd::drawFrame()
 {
     int     z;
-//    Point_3D    p0, p1, p2, p3;
-
-//    glDisable(GL_TEXTURE_1D);
-
-//    if (indexMesh > -1)
-//    {
-//        p0 = meshCtrl[indexMesh]->my_centre;
-//        p1 = p0;
-//        p2 = p0;
-//        p3 = p0;
-//        p1.setX(p1.getX()  + 0.1 / meshCtrl[0]->my_scale);
-//        p2.setY(p1.getY()  + 0.1 / meshCtrl[0]->my_scale);
-//        p3.setZ(p1.getZ()  + 0.1 / meshCtrl[0]->my_scale);
-//    }
-//    else
-//    {
-//        p0 = Point_3D(0.5 * (double)imageWidth, 0.5 * (double)imageHeight, 0);
-//        p1 = p0;
-//        p2 = p1;
-//        p3 = p2;
-
-//        p1.setX(p1.getX() + 0.1 * (double)qMin(imageWidth, imageHeight));
-//        p2.setY(p1.getY() + 0.1 * (double)qMin(imageWidth, imageHeight));
-//        p3.setZ(p1.getZ() + 0.1 * (double)qMin(imageWidth, imageHeight));
-//    }
-
-//    // draw frame
-//    glLineWidth(7);
-//    glBegin(GL_LINES);
-//        glColor3fv(col_red);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_red);
-//        glVertex3fv(p0.getCoords());
-//        glVertex3fv(p1.getCoords());
-//        glColor3fv(col_green);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_green);
-//        glVertex3fv(p0.getCoords());
-//        glVertex3fv(p2.getCoords());
-//        glColor3fv(col_blue);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_blue);
-//        glVertex3fv(p0.getCoords());
-//        glVertex3fv(p3.getCoords());
-//    glEnd();
 
     //draw rectangle with image texture
     glDisable(GL_TEXTURE_GEN_S);
@@ -1390,17 +1169,6 @@ void GLviewsubd::drawFrame()
         glTexCoord2i(0, 0);
         glVertex3f(0, super * imageHeight, z);
     glEnd();
-
-//    //draw rectangle
-//    glLineWidth(4);
-//    glBegin(GL_LINE_LOOP);
-//        glColor3fv(col_dead);
-//        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col_dead);
-//        glVertex3f(0, 0, 0);
-//        glVertex3f(imageWidth, 0 ,0);
-//        glVertex3f(imageWidth, imageHeight, 0);
-//        glVertex3f(0, imageHeight, 0);
-//    glEnd();
 
     glDisable(GL_POLYGON_OFFSET_FILL);
     glDisable(GL_TEXTURE_2D);
@@ -1820,70 +1588,6 @@ void GLviewsubd::buildCulledMesh()
     glEndList();
 }
 
-void GLviewsubd::buildCurvMMesh()
-{
-//	unsigned int j;
-
-//	makeCurrent();
-//	if(curvM_mesh_list)	glDeleteLists(curvM_mesh_list, 1);
-//	curvM_mesh_list = glGenLists (1);
-//	glNewList (curvM_mesh_list, GL_COMPILE);
-//		glEnable(GL_LIGHTING);
-//		for (j = 0 ; j < meshCurr.size() ; j++)
-//		{
-//			drawMesh(MEAN, meshCurr[j], j, 0);
-//		}
-//	glEndList();
-}
-
-void GLviewsubd::buildCurvGMesh()
-{
-    unsigned int j;
-    PointPrec	 minG, maxG;
-
-    minG = 100000000000;
-    maxG = -minG;
-
-    for (j = 0 ; j < meshCtrl.size() ; j++)
-    {
-        meshCurr[j]->compCurv(); // TO DO: call just compCurvG();
-
-        //sync max. curvatures
-        if (meshCurr[j]->my_minG < minG) minG = meshCurr[j]->my_minG;
-        if (meshCurr[j]->my_maxG > maxG) maxG = meshCurr[j]->my_maxG;
-
-        meshCurr[j]->compCurvSmooth(smoothCoef);
-    }
-    //sync max. curvatures
-    for (j = 0 ; j < meshCtrl.size() ; j++)
-    {
-        meshCurr[j]->my_minG = minG;
-        meshCurr[j]->my_maxG = maxG;
-    }
-
-    makeCurrent();
-    if(curvG_mesh_list)	glDeleteLists(curvG_mesh_list, 1);
-    curvG_mesh_list = glGenLists (1);
-    glNewList (curvG_mesh_list, GL_COMPILE);
-        glEnable(GL_LIGHTING);
-//		for (j = 0 ; j < meshCurr.size() ; j++)
-//		{
-//            drawMesh(GAUSSIAN, meshCurr[j], j, 0);
-//		}
-        if (indexMesh > -1 )
-        {
-            drawMesh(GAUSSIAN, meshCurr[indexMesh], indexMesh, 0);
-        }
-        else
-        {
-            for (j = 0 ; j < meshCurr.size() ; j++)
-            {
-                drawMesh(GAUSSIAN, meshCurr[j], j, 0);
-            }
-        }
-    glEndList();
-}
-
 void GLviewsubd::buildHeightMesh()
 {
     unsigned int j;
@@ -1923,14 +1627,7 @@ void GLviewsubd::buildFeatureLines()
     feature_lines_list = glGenLists (1);
     glNewList (feature_lines_list, GL_COMPILE);
         glDisable(GL_LIGHTING);
-//        for (j = 0 ; j < meshCurr.size() ; j++)
-//        {
-//            drawFeatureLines(meshCurr[j]);
-//        }
-//        if (indexMesh > -1 )
-//        {
-//            drawFeatureLines(meshCurr[indexMesh]);
-//        }
+
         if (indexMesh > -1 )
         {
             drawFeatureLines(meshCurr[indexMesh]);
@@ -1954,10 +1651,7 @@ void GLviewsubd::buildIPMesh()
     IP_mesh_list = glGenLists (1);
     glNewList (IP_mesh_list, GL_COMPILE);
         glEnable(GL_LIGHTING);
-//		for (j = 0 ; j < meshCurr.size() ; j++)
-//		{
-//            drawMesh(ISOPHOTES, meshCurr[j], j, 0);
-//		}
+
         if (indexMesh > -1 )
         {
             drawMesh(ISOPHOTES, meshCurr[indexMesh], indexMesh, 0);
@@ -2082,10 +1776,9 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
 //        return;
 
     unsigned int 	i, j;
-    PointPrec 		val1, val2, value, minz, maxz;
+    PointPrec 		value, minz, maxz;
     MeshFacet		*facet;
-    Mesh 			tri;
-    float           eps, epsG, epsZ;
+    float           epsG, epsZ;
     GLfloat         heightClr[3];
 
 //    GLfloat ambientParams[4] = {0.2, 0.2, 0.2, 1};
@@ -2221,8 +1914,6 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             break;
 
-        case MEAN:
-        case GAUSSIAN:
         case HEIGHT:
             if (type == HEIGHT && clr == 3)
             {
@@ -2245,16 +1936,6 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
                 glDisable(GL_LIGHTING);
             }
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-
-//            glEnable(GL_BLEND);
-//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-//            glEnable(GL_BLEND);
-//            glDisable(GL_STENCIL_TEST);
-//            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//            glDepthMask(GL_FALSE);
-
             break;
 
         case ISOPHOTES:
@@ -2291,39 +1972,6 @@ void GLviewsubd::drawMesh(DrawMeshType type, Mesh *mesh, unsigned int index, uns
             else
             {
                 glNormal3fv(facet->my_corners[j].my_vertex->my_normalSmooth);
-                if (type == GAUSSIAN)
-                {
-                    val1 = (mesh->my_minG);
-                    val2 = (mesh->my_maxG);
-                    if (val1 < 0) val1 = val1 / pow(1.414, curvRatio2);
-                    if (val2 > 0) val2 = val2 / pow(1.414, curvRatio1);
-                    value = (facet->my_corners[j].my_vertex->my_curvGsmooth - val1) / (val2 - val1);
-
-                    if (clr == 2)
-                    {
-                        eps = (val2 - val1) / 500.0;
-                        if (facet->my_corners[j].my_vertex->my_curvGsmooth > eps)
-                        {
-                            glTexCoord1f(0.75);
-                        }
-                        else if (facet->my_corners[j].my_vertex->my_curvGsmooth < -eps)
-                        {
-                            glTexCoord1f(0.25);
-                        }
-                        else
-                        {
-                            glTexCoord1f(0.5);
-                        }
-                    }
-                    else
-                    {
-                        if (value < 0) value = 0;
-                        if (value > 1) value = 1;
-                        value *= 1 - 2 * epsG;
-                        value += epsG;
-                        glTexCoord1f(value);
-                    }
-                }
                 if (type == HEIGHT)
                 {
                     if (clr == 2)
@@ -2457,7 +2105,6 @@ void GLviewsubd::regenSurfs()
 //    bool                    alive;
 
     level = meshCurr[0]->my_level;
-//    alive = meshCurr[0]->lifeIsOn; // ideally, I'd need to remember the state of all facets!
 
     for (i = 0 ; i < meshSubd.size() ; i++)
     {
@@ -2474,24 +2121,13 @@ void GLviewsubd::regenSurfs()
         meshCurr[j] = meshCtrl[j];
     }
 
-//cout << "RegenSurfs with level: " << level << endl;
-
     setSubdivLevel(level);
-
-//    if (alive)
-//    {
-//        for (i = 0 ; i < meshSubd.size() ; i++)
-//        {
-//            meshCurr[i]->lifeInit();
-//        }
-//    }
 }
 
 void GLviewsubd::resetSurfs()
 {
     unsigned int	i, j, level;
     std::vector < Mesh* > tmp;
-//    bool                    alive;
 
     if (meshCurr.size() > 0)
     {
@@ -2549,7 +2185,6 @@ void GLviewsubd::loadFile(std::istream &is)
         meshCtrl.clear();
         meshCurr.clear();
         meshOld.clear();
-//		setRotZero();
         surfBlendColours.clear();
     }
 
@@ -2630,20 +2265,6 @@ void GLviewsubd::setPoint(int index)
 
 
     buildPoi();
-    updateGL();
-}
-
-void GLviewsubd::changeSmoothing(int change)
-{
-    unsigned int j;
-
-    smoothCoef = change;
-    for (j = 0 ; j < meshCtrl.size() ; j++)
-    {
-        meshCurr[j]->compCurvSmooth(smoothCoef);
-        meshCurr[j]->computeNormalsSmooth(smoothCoef);
-    }
-    buildAll();
     updateGL();
 }
 
@@ -2779,28 +2400,6 @@ cout << "CHSD called" << endl;
     updateGL();
 }
 
-void GLviewsubd::changeCurvRatio1(int newRatio)
-{
-    if (newRatio != curvRatio1)
-    {
-        curvRatio1 = newRatio;
-//		buildCurvMMesh();
-        buildCurvGMesh();
-        updateGL();
-    }
-}
-
-void GLviewsubd::changeCurvRatio2(int newRatio)
-{
-    if (newRatio != curvRatio2)
-    {
-        curvRatio2 = newRatio;
-//		buildCurvMMesh();
-        buildCurvGMesh();
-        updateGL();
-    }
-}
-
 void GLviewsubd::updateAll()
 {
     unsigned int j;
@@ -2831,51 +2430,6 @@ void GLviewsubd::setProbeOnCtrl(const bool b)
     emit indexChanged(verInd + 1); // shifted by 1 because of 'Select...'
 }
 
-void GLviewsubd::setCC(const bool b)
-{
-    subType = CC;
-    if (b)
-    {
-        resetSurfs();
-    }
-}
-
-void GLviewsubd::setCCB(const bool b)
-{
-    subType = CCB;
-    if (b)
-    {
-        resetSurfs();
-    }
-}
-
-void GLviewsubd::setICC(const bool b)
-{
-    subType = ICC;
-    if (b)
-    {
-        resetSurfs();
-    }
-}
-
-void GLviewsubd::setCF(const bool b)
-{
-    subType = CF;
-    if (b)
-    {
-        resetSurfs();
-    }
-}
-
-void GLviewsubd::setLAP(const bool b)
-{
-    subType = LAP;
-    if (b)
-    {
-        resetSurfs();
-    }
-}
-
 void GLviewsubd::setShowIPMesh(const bool b)
 {
     IP_mesh_enabled = b;
@@ -2887,85 +2441,6 @@ void GLviewsubd::setShowIPMesh(const bool b)
         updateGL();
     }
 }
-
-void GLviewsubd::lapSm1(void)
-{
-    unsigned int    i;
-
-    for (i = 0 ; i < meshCtrl.size() ; i++)
-    {
-        meshCurr[i]->LaplacianSmooth(lapSmValue);
-    }
-
-    updateAll();
-}
-
-void GLviewsubd::lapSm10(void)
-{
-    unsigned int    i, j;
-
-    for (j = 0 ; j < 10 ; j ++)
-    {
-        for (i = 0 ; i < meshCtrl.size() ; i++)
-        {
-            meshCurr[i]->LaplacianSmooth(lapSmValue);
-        }
-    }
-    updateAll();
-}
-
-void GLviewsubd::lapSm100(void)
-{
-    unsigned int    i, j;
-
-    for (j = 0 ; j < 100 ; j ++)
-    {
-        for (i = 0 ; i < meshCtrl.size() ; i++)
-        {
-            meshCurr[i]->LaplacianSmooth(lapSmValue);
-        }
-    }
-    updateAll();
-}
-
-void GLviewsubd::changeLapSmValue(int newValue)
-{
-    lapSmValue = newValue;
-}
-
-//void GLviewsubd::dragEnterEvent(QDragEnterEvent *event)
-//{
-//    if (event->mimeData()->hasFormat("text/plain"))
-//    {
-//        event->acceptProposedAction();
-//    }
-//}
-
-//void GLviewsubd::dropEvent(QDropEvent *event)
-//{
-//    QString         str;
-//    QByteArray 		bytes;
-//    const char 			*file_name;
-
-//    if (event->mimeData()->hasUrls())
-//    {
-////        foreach (QUrl url, event->mimeData()->urls())
-////        {
-////            std::cout << url.toString().toUtf8().constData() << endl;
-////        }
-
-//        str = event->mimeData()->urls().at(0).toString();
-
-//        str = str.remove(0,7);
-
-//        bytes = str.toAscii();
-//        file_name = bytes.data();
-
-//        emit openFile(file_name);
-//    }
-
-//    event->acceptProposedAction();
-//}
 
 void GLviewsubd::buffer2img()
 {

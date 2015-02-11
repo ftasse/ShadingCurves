@@ -4,7 +4,6 @@
 #include <QGLWidget>
 #include <iostream>
 #include "3D/point_3d.h"
-//#include "../Views/glew/GL/glew.h"
 
 class GLabstract : public QGLWidget
 {
@@ -20,7 +19,6 @@ public:
     };
 
 	int 	clr;
-//	float 	min, max;
 
 public slots:
 	

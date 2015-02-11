@@ -16,14 +16,12 @@ GLbar::~GLbar()
 
 QSize GLbar::minimumSizeHint() const
 {
-//    return QSize(30, 180);
     return QSize(120, 30);
 }
 
 QSize GLbar::sizeHint() const
 
 {
-//    return QSize(30, 180);
     return QSize(120, 30);
 }
 
@@ -54,23 +52,7 @@ void GLbar::drawBar()
 	float 		col[3];
 	int 		i, maxi;
 	float 		step = 0.05;
-//    int			w, h;
 	Point_3D 	poi;
-
-//    w = size().width();
-//    h = size().height();
-
-//    cout << "drawBar() called with dimensions: " << w << " " << h << endl;
-
-//    float 	minx = floor(screenToWorld(0, 0).getX());
-//    float 	maxx = ceil (screenToWorld(w, h).getX());
-//    float 	miny = floor(screenToWorld(0, 0).getY());
-//    float 	maxy = ceil (screenToWorld(w, h).getY());
-
-//    float 	minx = -1;
-//    float 	maxx = 1;
-//    float 	miny = -3;
-//    float 	maxy = 3;
 
     float 	minx = -2;
     float 	maxx = 2;
@@ -85,11 +67,6 @@ void GLbar::drawBar()
         genColor(clr, i - maxi * 0.5, - maxi * 0.5, maxi * 0.5 - 1, col);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
 
-//            glVertex3f(minx, miny + i * step, 0.0);
-//            glVertex3f(maxx, miny + i * step, 0.0);
-//            glVertex3f(maxx, miny + (i + 1) * step, 0.0);
-//            glVertex3f(minx, miny + (i + 1) * step, 0.0);
-
         glVertex3f(minx + i * step, miny, 0.0);
         glVertex3f(minx + (i + 1) * step, miny, 0.0);
         glVertex3f(minx + (i + 1) * step, maxy, 0.0);
@@ -97,9 +74,6 @@ void GLbar::drawBar()
 
         glEnd();
     }
-
-//    cout << "drawBar() called with: " <<
-//            minx << " " << maxx << " " << miny << " " << maxy << endl;
 }
 
 void GLbar::buildBar()
@@ -126,10 +100,6 @@ void GLbar::buildBar()
 
 void GLbar::setBar(int color)
 {
-//	if (clr != -1)
-//	{
-//		bar_enabled = true;
-//	}
 	clr = color;
 	buildBar();
 	updateGL();

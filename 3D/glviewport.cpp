@@ -21,7 +21,6 @@ GLviewport::GLviewport(QWidget *parent, QGLWidget *shareWidget) : GLabstract(par
 	boundingCube  = 5;
     alpha         = 0.3;
 
-    //    joinTheDarkSide = false;
     joinTheDarkSide = true;
 
 	lightAmbient[0]  = 0.6;
@@ -221,9 +220,6 @@ void GLviewport::mouseMoveEvent(QMouseEvent *event)
 
 void GLviewport::wheelEvent(QWheelEvent *event)
 {
-
-//    setScale(scale + event->delta() * scaleWheelSpeed / boundingCube);
-
 	emit scaleChanged(scale + event->delta() * scaleWheelSpeed / boundingCube);
 }
 
@@ -232,13 +228,11 @@ void GLviewport::mouseDoubleClickEvent(QMouseEvent *event)
 	if (event->buttons() & Qt::RightButton)
 	{
 		emit doubleClicked();
-//		cout << "MC" << endl;
 	}
 }
 
 void GLviewport::setScale(double newScale)
 {
-//	makeCurrent();
 
 	if (newScale < minScale * (1 / boundingCube))
 	{
@@ -249,18 +243,8 @@ void GLviewport::setScale(double newScale)
 	{
 		double ratio = newScale / scale;
 
-//        if (ratio > 1.0)
-//        {
-			ratio *= ratio; // just a fix for closeups
-//        }
-//        else
-//        {
-//        	ratio -+ 0.1;
-//        }
+        ratio *= ratio; // just a fix for closeups
 
-//cout << ratio << endl;
-
-		// Pre-multiply by scaling matrix
 		GLdouble currentMatrix[16] = {0};
 		makeCurrent();
 		glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
@@ -275,7 +259,6 @@ void GLviewport::setScale(double newScale)
 
 void GLviewport::setRot(double rot, float ax1, float ax2, float ax3)
 {
-	// Pre-multiply by rotation matrix
 	GLdouble currentMatrix[16] = {0};
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
@@ -287,12 +270,10 @@ void GLviewport::setRot(double rot, float ax1, float ax2, float ax3)
 
 void GLviewport::setRotXp(void)
 {
-	// Pre-multiply by rotation matrix
 	GLdouble currentMatrix[16] = {0};
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-//	glRotatef(rotIncr, 1, 0, 0);
     glTranslatef(panningScale * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
@@ -300,12 +281,10 @@ void GLviewport::setRotXp(void)
 
 void GLviewport::setRotXm(void)
 {
-	// Pre-multiply by rotation matrix
 	GLdouble currentMatrix[16] = {0};
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-//	glRotatef(-rotIncr, 1, 0, 0);
     glTranslatef(-panningScale * my_scale, 0, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
@@ -314,12 +293,10 @@ void GLviewport::setRotXm(void)
 
 void GLviewport::setRotYp(void)
 {
-	// Pre-multiply by rotation matrix
 	GLdouble currentMatrix[16] = {0};
 	makeCurrent();
 	glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
 	glLoadIdentity();
-//	glRotatef(rotIncr, 0, 1, 0);
     glTranslatef(0, panningScale * my_scale, 0);
 	glMultMatrixd(currentMatrix);
 	updateGL();
@@ -327,17 +304,14 @@ void GLviewport::setRotYp(void)
 
 void GLviewport::setRotYm(void)
 {
-    // Pre-multiply by rotation matrix
     GLdouble currentMatrix[16] = {0};
     makeCurrent();
     glGetDoublev(GL_MODELVIEW_MATRIX, currentMatrix);
     glLoadIdentity();
-//	glRotatef(-rotIncr, 0, 1, 0);
     glTranslatef(0, -panningScale * my_scale, 0);
     glMultMatrixd(currentMatrix);
     updateGL();
 }
-
 
 void GLviewport::setRotZp(void)
 {

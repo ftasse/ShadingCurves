@@ -32,24 +32,22 @@ public:
                     *zeroButton,
 					*xpButton, *xmButton, *ypButton, *ymButton, 
                     *zpButton, *zmButton, *zerButton,
-                    *lapSmButton1, *lapSmButton10, *lapSmButton100,
                     *buffer2imgButton;
     QComboBox 		*colorMenu, *meshMenu;
    	QSpinBox 		*subdLevelSpinbox;
    	
-	QSlider 		*sliderX, *sliderY, *sliderZ, *sliderSm, *sliderRld, 
-                    *sliderCurv1, *sliderCurv2, *sliderLap;
+    QSlider 		*sliderX, *sliderY, *sliderZ, *sliderSm, *sliderRld;
 
 	QRadioButton 	*radioCtrlShaded, *radioCtrlEdges, *radioCtrlCulled,
                     *radioMeshFlat, *radioMeshSmooth, *radioMeshEdges, *radioMeshCulled,
-                    *radioMeshCurvM, *radioMeshCurvG, *radioMeshCurvTG, *radioMeshHeight, *radioMeshIP;
+                    *radioMeshHeight, *radioMeshIP;
  	
     QCheckBox 		*checkCtrl, *checkOld, *checkFrame, *checkFull, *checkMesh,
                     *checkOnCtrl,
-                    *checkTransf, *checkClear, *checkFeature, *checkLine,
+                    *checkTransf, *checkClear, *checkFeature,
                     *checkLab;
  	
-    QGroupBox 		*ctrlGroupBox, *meshGroupBox, *miscGroupBox, *laplGroupBox;
+    QGroupBox 		*ctrlGroupBox, *meshGroupBox, *miscGroupBox;
  	
  	QFrame			*line;
  	

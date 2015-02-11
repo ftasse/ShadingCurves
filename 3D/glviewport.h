@@ -17,7 +17,7 @@ public:
 
 	enum DrawMeshType
 	{
-        FLAT, SMOOTH, WIREFRAME, SOLIDFRAME, MEAN, GAUSSIAN, TGAUSSIAN, HEIGHT, ISOPHOTES
+        FLAT, SMOOTH, WIREFRAME, SOLIDFRAME, HEIGHT, ISOPHOTES
 	};
 
 	QSize minimumSizeHint() const;
@@ -51,8 +51,6 @@ signals:
 
 protected:
 	void sphereProject      (float x, float y, float (&v)[3]);
-//	void calculateNormal(GLfloat *norm, GLfloat p0[3],
-//	                     GLfloat p1[3], GLfloat p2[3]);
 
 	float         boundingCube;
     float         scale, my_scale;
@@ -90,9 +88,6 @@ protected:
     GLfloat     col_red[4];
     GLfloat     col_green[4];
     GLfloat     col_blue[4];
-
-
-//    GLfloat     fogColor[4];
 
 };
 

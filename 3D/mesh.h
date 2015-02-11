@@ -5,11 +5,8 @@
 #include <list>
 #include <string>
 #include "3D/point_3d.h"
-//#include "3D/spline.h"
 
 // I ASSUME CLOCK-WISE ORIENTATION OF VERTICES WITHIN FACETS!
-
-//#define PI		3.14159265358979
 
 class MeshFacet;
 
@@ -49,8 +46,8 @@ public:
 class MeshCorner
 {
 public:
-    MeshCorner() { ; };
-   ~MeshCorner() { ; };
+    MeshCorner() { ; }
+   ~MeshCorner() { ; }
 
     unsigned int	 my_index;
     unsigned int	 my_vIndex;
@@ -72,24 +69,16 @@ public:
 class MeshFacet
 {
 public:
-    MeshFacet() { drawMe = true; };
-   ~MeshFacet() { ; };
-//    MeshFacet(const MeshFacet &orig);
+    MeshFacet() { drawMe = true; }
+   ~MeshFacet() { ; }
 
 	unsigned int 	my_index,
-                    my_valency,
-                    my_lifeVal;
+                    my_valency;
 
     std::vector <unsigned int> my_vertIndices;
 	std::vector <MeshCorner>   my_corners;
-    std::vector <MeshFacet* >  my_lifeFacets;
 
     std::vector<Point_3D>      my_faceContr; // facet contributions from vertices
-
-	PointPrec		my_curvM,
-					my_curvG,
-					my_curvMsmooth,
-					my_curvGsmooth;
 
 	float			my_normalFlat[3],
 					my_normalSmooth[3];
@@ -111,9 +100,6 @@ public:
 	void save		(const char *fileName, bool isPly);
 	void transf		(void);
 	void build		(void);
-	void compCurv	(void);
-	void compCurvSmooth(unsigned int rings);
-    void compCurvG	(void);
 
 	void computeNormalsFlat(void);
 	void computeNormalsSmooth(unsigned int rings);
@@ -121,20 +107,9 @@ public:
 	void calculateNormal(float *norm, float p0[3],
 						 float p1[3], float p2[3]);
 
-
-	void getRingsF	(MeshFacet *fac, unsigned int r,
-					 std::vector< std::vector <unsigned int> > *ring_facets,
-					 std::vector< std::vector <unsigned int> > *ring_vertices);
-
-	void getRingsV	(MeshVertex *vert, unsigned int r,
-					 std::vector< std::vector <unsigned int> > *ring_facets,
-					 std::vector< std::vector <unsigned int> > *ring_vertices);
-
     void getEdgeConnectedV(MeshVertex *vert, std::vector< MeshVertex* > *Vs);
 
     void CatmullClark(Mesh *mesh);
-
-    void LaplacianSmooth(int lapSmvalue);
 
     void times(const char *which);
 
@@ -167,11 +142,7 @@ public:
 	Point_3D		my_EV,
 					my_newEV;
 
-	PointPrec		my_minM,
-					my_maxM,
-					my_minG,
-                    my_maxG,
-                    my_minz,
+    PointPrec		my_minz,
                     my_maxz;
 
 	bool			rever,
@@ -185,9 +156,6 @@ public:
 	std::vector <MeshFacet>  	my_facets;
 
 	std::vector <MeshCorner*>	my_boundaryCorners;
-
-    static const float          ccW[], ccA[], ccB[], ccC[],
-                                cfA[], cfB[], cfC[];
 };
 
 #endif
