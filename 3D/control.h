@@ -34,7 +34,6 @@ public:
                     *zpButton, *zmButton, *zerButton,
                     *lapSmButton1, *lapSmButton10, *lapSmButton100,
                     *buffer2imgButton;
-//    QComboBox 		*dropMenu;
     QComboBox 		*colorMenu, *meshMenu;
    	QSpinBox 		*subdLevelSpinbox;
    	
