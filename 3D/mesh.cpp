@@ -7,8 +7,9 @@
 #include <assert.h>
 #include <algorithm> // for reverse();
 #include <string>
+#if defined(_OPENMP)
 #include <omp.h>
-
+#endif
 #include <time.h>
 
 #ifdef __linux__

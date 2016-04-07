@@ -53,7 +53,7 @@ HEADERS  += mainwindow.h \
     3D/point_3d.h \
     3D/tostring.h \
     3D/types.h \
-    Views/glew/glew.h \
+    Views/glew/GL/glew.h \
     Views/glew/GL/wglew.h \
     Views/glew/GL/glxew.h \
     Views/glew/GL/glew.h \
@@ -82,10 +82,13 @@ win32:LIBS +=  -L"C:/opencv-build/bin" \
                -L"$$(OPENCV_DIR)/lib"
 
 win32:LIBS += -lopencv_core243 -lopencv_highgui243 -lopencv_imgproc243 -lopengl32 -lglu32 -lpsapi
-unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lGLU
+unix:LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui 
+unix:!macx:LIBS += -lGLU
 
-QMAKE_CXXFLAGS += -std=c++0x
-QMAKE_CFLAGS += -std=c++0x
+win32:QMAKE_CXXFLAGS += -std=c++0x
+win32:QMAKE_CFLAGS += -std=c++0x
+unix:!macx:QMAKE_CXXFLAGS += -std=c++0x
+unix:!macx:QMAKE_CFLAGS += -std=c++0x
 
 #unix:LIBS += -fopenmp
 QMAKE_CXXFLAGS_RELEASE += -O3

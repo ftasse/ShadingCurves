@@ -28,7 +28,11 @@
 //Include opengl headers
 
 #include "Views/glew/GL/glew.h"
+#if defined(__APPLE__) && defined(__MACH__)
+#include <OpenGL/glu.h>
+#else
 #include <GL/glu.h>
+#endif
 
 bool isEqual(Point3d p, Point3d q)
 {
